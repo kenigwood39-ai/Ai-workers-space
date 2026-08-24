@@ -9,17 +9,37 @@ import {
   Sparkles, 
   Coins, 
   Send, 
-  SlidersHorizontal,
   Bot, 
-  Zap, 
-  RefreshCw, 
-  Database 
+  RefreshCw 
 } from 'lucide-react';
 
 const SUPABASE_URL = 'https://kxesopofbqwrnzohnbqs.supabase.co';
 const SUPABASE_ANON_KEY = 'Sb_publishable_yOkm8byVqjmQZHvvVKIE6Q_Zx324mjy';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const INITIAL_TASKS = [
+  {
+    id: 1,
+    title: 'Генерация реалистичного фуд-арта для ресторанного меню',
+    prompt: 'Hyper-realistic gourmet burger photoshoot, cinematic warm lighting, 8k resolution, photorealistic studio shot --ar 16:9 --v 6.0',
+    tools: ['Midjourney v6'],
+    budget: 450,
+    currency: 'AWS',
+    author: 'RestoGroup',
+    preview_url: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80'
+  },
+  {
+    id: 2,
+    title: 'Анимация персонажа для инди-игры (Cyberpunk)',
+    prompt: 'Cyberpunk nomad warrior standing in the neon rain, smooth cinematic camera rotation --motion 5',
+    tools: ['FLUX.1', 'Runway Gen-3'],
+    budget: 800,
+    currency: 'AWS',
+    author: 'CyberIndie Studio',
+    preview_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'
+  }
+];
 
 const CREATORS = [
   {
@@ -28,7 +48,7 @@ const CREATORS = [
     rating: '4.98',
     deals: 64,
     skills: ['Midjourney', 'FLUX.1', 'ComfyUI'],
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'
   },
   {
     id: 2,
@@ -36,15 +56,15 @@ const CREATORS = [
     rating: '5.00',
     deals: 92,
     skills: ['Runway Gen-3', 'Luma Dream', 'ElevenLabs'],
-    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80',
+    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80'
   }
 ];
 
 function App() {
   const [activeTab, setActiveTab] = useState('feed');
   const [userRole, setUserRole] = useState('freelancer');
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [tasks, setTasks] = useState(INITIAL_TASKS);
+  const [loading, setLoading] = useState(false);
   const [filterTool, setFilterTool] = useState('All');
   
   const [newTitle, setNewTitle] = useState('');
@@ -53,68 +73,27 @@ function App() {
   const [newTool, setNewTool] = useState('Midjourney v6');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    { id: 1, sender: 'Алексей "PromptMaster"', text: 'Привет! Готов выполнить генерации по ТЗ.', is_me: false }
+  ]);
   const [chatInput, setChatInput] = useState('');
 
   const fetchTasks = async () => {
     setLoading(true);
     try {
-      const { data } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-      if (data && data.length > 0) {
+      const { data, error } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
+      if (!error && data && data.length > 0) {
         setTasks(data);
-      } else {
-        setTasks([
-          {
-            id: 1,
-            title: 'Генерация реалистичного фуд-арта для сети ресторанов',
-            prompt: 'Hyper-realistic gourmet burger photoshoot, cinematic warm lighting, 8k resolution, photorealistic studio shot --ar 16:9 --v 6.0',
-            tools: ['Midjourney v6', 'Photoshop AI'],
-            budget: 450,
-            currency: 'AWS',
-            author: 'RestoGroup',
-            role: 'Заказчик',
-            status: 'open',
-            preview_url: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80'
-          },
-          {
-            id: 2,
-            title: 'Анимация персонажа для трейлера инди-игры',
-            prompt: 'Cyberpunk nomad warrior standing in the neon rain, smooth movement, cinematic camera rotation --motion 5',
-            tools: ['Runway Gen-3', 'FLUX.1'],
-            budget: 800,
-            currency: 'AWS',
-            author: 'CyberIndie Studio',
-            role: 'Заказчик',
-            status: 'open',
-            preview_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'
-          }
-        ]);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (e) {
+      console.warn('Supabase fetch:', e);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchMessages = async () => {
-    try {
-      const { data } = await supabase.from('messages').select('*').order('created_at', { ascending: true });
-      if (data && data.length > 0) {
-        setMessages(data);
-      } else {
-        setMessages([
-          { id: 1, sender: 'Алексей "PromptMaster"', text: 'Готов протестировать генерацию по вашей задаче!', is_me: false }
-        ]);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   useEffect(() => {
     fetchTasks();
-    fetchMessages();
   }, []);
 
   const handleCreateTask = async (e) => {
@@ -123,43 +102,43 @@ function App() {
 
     setIsSubmitting(true);
     const newTask = {
+      id: Date.now(),
       title: newTitle,
-      prompt: newPrompt || 'Техническое задание будет предоставлено исполнителю',
+      prompt: newPrompt || 'Техническое задание будет передано исполнителю в чате',
       tools: [newTool],
       budget: Number(newBudget),
       currency: 'AWS',
       author: 'Вы (Заказчик)',
-      role: 'Заказчик',
-      status: 'open',
       preview_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80'
     };
 
     try {
       await supabase.from('tasks').insert([newTask]);
     } catch (err) {
-      console.error(err);
+      console.warn('Insert error:', err);
     }
-    
+
+    setTasks(prev => [newTask, ...prev]);
     setIsSubmitting(false);
     setNewTitle('');
     setNewPrompt('');
     setNewBudget('');
     setActiveTab('feed');
-    fetchTasks();
   };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
 
-    const newMessage = { sender: 'Вы', text: chatInput, is_me: true };
+    const newMessage = { id: Date.now(), sender: 'Вы', text: chatInput, is_me: true };
+    setMessages(prev => [...prev, newMessage]);
+    setChatInput('');
+
     try {
       await supabase.from('messages').insert([newMessage]);
     } catch (err) {
-      console.error(err);
+      console.warn('Chat send error:', err);
     }
-    setChatInput('');
-    fetchMessages();
   };
 
   const filteredTasks = filterTool === 'All' 
@@ -182,16 +161,16 @@ function App() {
               </span>
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
-                <span className="text-[10px] text-emerald-400/90 font-mono uppercase">
-                  Supabase Live DB
+                <span className="text-[10px] text-emerald-400 font-mono uppercase">
+                  Online
                 </span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-cyan-500/30 text-xs font-mono">
-              <Coins className="w-4 h-4 text-amber-400 animate-pulse" />
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-cyan-500/30 text-xs font-mono">
+              <Coins className="w-4 h-4 text-amber-400" />
               <span className="text-slate-300">Баланс:</span>
               <span className="text-cyan-300 font-bold">1,450 AWS</span>
             </div>
@@ -208,11 +187,11 @@ function App() {
       </header>
 
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:px-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <aside className="lg:col-span-3 flex lg:flex-col gap-2 overflow-x-auto">
+        <aside className="lg:col-span-3 flex lg:flex-col gap-2 overflow-x-auto pb-2 lg:pb-0">
           <button
             onClick={() => setActiveTab('feed')}
             className={`flex-1 lg:flex-none flex items-center gap-3 px-4 py-3 rounded-xl border font-medium text-sm transition-all ${
-              activeTab === 'feed' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' : 'bg-slate-900/40 border-slate-800 text-slate-400'
+              activeTab === 'feed' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' : 'bg-slate-900/60 border-slate-800 text-slate-400'
             }`}
           >
             <Sparkles className="w-4 h-4 text-cyan-400" />
@@ -223,7 +202,7 @@ function App() {
           <button
             onClick={() => setActiveTab('create')}
             className={`flex-1 lg:flex-none flex items-center gap-3 px-4 py-3 rounded-xl border font-medium text-sm transition-all ${
-              activeTab === 'create' ? 'bg-fuchsia-500/20 border-fuchsia-500 text-fuchsia-300' : 'bg-slate-900/40 border-slate-800 text-slate-400'
+              activeTab === 'create' ? 'bg-fuchsia-500/20 border-fuchsia-500 text-fuchsia-300' : 'bg-slate-900/60 border-slate-800 text-slate-400'
             }`}
           >
             <PlusCircle className="w-4 h-4 text-fuchsia-400" />
@@ -233,7 +212,7 @@ function App() {
           <button
             onClick={() => setActiveTab('creators')}
             className={`flex-1 lg:flex-none flex items-center gap-3 px-4 py-3 rounded-xl border font-medium text-sm transition-all ${
-              activeTab === 'creators' ? 'bg-teal-500/20 border-teal-500 text-teal-300' : 'bg-slate-900/40 border-slate-800 text-slate-400'
+              activeTab === 'creators' ? 'bg-teal-500/20 border-teal-500 text-teal-300' : 'bg-slate-900/60 border-slate-800 text-slate-400'
             }`}
           >
             <UserCheck className="w-4 h-4 text-teal-400" />
@@ -243,7 +222,7 @@ function App() {
           <button
             onClick={() => setActiveTab('chat')}
             className={`flex-1 lg:flex-none flex items-center gap-3 px-4 py-3 rounded-xl border font-medium text-sm transition-all ${
-              activeTab === 'chat' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' : 'bg-slate-900/40 border-slate-800 text-slate-400'
+              activeTab === 'chat' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' : 'bg-slate-900/60 border-slate-800 text-slate-400'
             }`}
           >
             <MessageSquare className="w-4 h-4 text-cyan-400" />
@@ -274,45 +253,39 @@ function App() {
                 </button>
               </div>
 
-              {loading ? (
-                <div className="text-center py-20 bg-slate-950/40 rounded-2xl border border-slate-800 font-mono text-cyan-400 animate-pulse">
-                  Загрузка базы данных Supabase...
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-4">
-                  {filteredTasks.map((task) => (
-                    <div key={task.id} className="bg-[#0D121F]/90 p-5 rounded-2xl border border-slate-800/80 hover:border-cyan-500/50 flex flex-col md:flex-row gap-5 items-start md:items-center">
-                      <div className="w-full md:w-32 h-32 rounded-xl overflow-hidden border border-cyan-500/20 bg-slate-950 flex-shrink-0">
-                        <img src={task.preview_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe'} alt="" className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 space-y-2 min-w-0">
-                        <h3 className="font-bold text-base text-slate-100 truncate">{task.title}</h3>
-                        <p className="text-xs text-slate-400 line-clamp-2 font-mono bg-slate-950/60 p-2 rounded-lg border border-slate-800/50">
-                          <span className="text-cyan-400">Prompt: </span>{task.prompt}
-                        </p>
-                        <div className="flex items-center gap-3 text-xs text-slate-400">
-                          <span>{task.author || 'Заказчик'}</span>
-                          <span>•</span>
-                          <span className="text-emerald-400 font-mono">ID: #{task.id}</span>
-                        </div>
-                      </div>
-                      <div className="w-full md:w-auto flex md:flex-col items-center md:items-end justify-between gap-3">
-                        <div className="font-mono text-lg font-extrabold text-cyan-400">{task.budget} {task.currency || 'AWS'}</div>
-                        <button onClick={() => setActiveTab('chat')} className="px-4 py-2 rounded-xl bg-cyan-500 text-black font-bold text-xs">
-                          Взять заказ
-                        </button>
+              <div className="grid grid-cols-1 gap-4">
+                {filteredTasks.map((task) => (
+                  <div key={task.id} className="bg-[#0D121F] p-5 rounded-2xl border border-slate-800 hover:border-cyan-500/50 flex flex-col md:flex-row gap-5 items-start md:items-center transition-colors">
+                    <div className="w-full md:w-32 h-32 rounded-xl overflow-hidden border border-cyan-500/20 bg-slate-950 flex-shrink-0">
+                      <img src={task.preview_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe'} alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 space-y-2 min-w-0">
+                      <h3 className="font-bold text-base text-slate-100 truncate">{task.title}</h3>
+                      <p className="text-xs text-slate-400 line-clamp-2 font-mono bg-slate-950/60 p-2 rounded-lg border border-slate-800/50">
+                        <span className="text-cyan-400">Prompt: </span>{task.prompt}
+                      </p>
+                      <div className="flex items-center gap-3 text-xs text-slate-400">
+                        <span>{task.author || 'Заказчик'}</span>
+                        <span>•</span>
+                        <span className="text-emerald-400 font-mono">ID: #{task.id}</span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                    <div className="w-full md:w-auto flex md:flex-col items-center md:items-end justify-between gap-3">
+                      <div className="font-mono text-lg font-extrabold text-cyan-400">{task.budget} {task.currency || 'AWS'}</div>
+                      <button onClick={() => setActiveTab('chat')} className="px-4 py-2 rounded-xl bg-cyan-500 text-black font-bold text-xs hover:bg-cyan-400 transition-colors">
+                        Взять заказ
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </>
           )}
 
           {activeTab === 'create' && (
             <div className="bg-[#0D121F] p-6 sm:p-8 rounded-2xl border border-cyan-500/30">
-              <h2 className="text-xl font-bold text-cyan-400 mb-1">Создать задание (Live DB)</h2>
-              <p className="text-xs text-slate-400 mb-6">Задача мгновенно сохранится в базу данных Supabase.</p>
+              <h2 className="text-xl font-bold text-cyan-400 mb-1">Создать задание</h2>
+              <p className="text-xs text-slate-400 mb-6">Задача появится в ленте и сохранится в базе данных.</p>
               <form onSubmit={handleCreateTask} className="space-y-4">
                 <input
                   type="text"
@@ -320,13 +293,13 @@ function App() {
                   placeholder="Название проекта"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:border-cyan-500 outline-none"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:border-cyan-500 outline-none"
                 />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <select
                     value={newTool}
                     onChange={(e) => setNewTool(e.target.value)}
-                    className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm outline-none"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm outline-none"
                   >
                     <option value="Midjourney v6">Midjourney v6</option>
                     <option value="FLUX.1">FLUX.1</option>
@@ -338,7 +311,7 @@ function App() {
                     placeholder="Бюджет (AWS)"
                     value={newBudget}
                     onChange={(e) => setNewBudget(e.target.value)}
-                    className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm outline-none"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm outline-none"
                   />
                 </div>
                 <textarea
@@ -346,12 +319,12 @@ function App() {
                   placeholder="Вставьте рабочий промпт или требования..."
                   value={newPrompt}
                   onChange={(e) => setNewPrompt(e.target.value)}
-                  className="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-4 text-sm outline-none"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm outline-none"
                 />
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white font-bold text-sm"
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white font-bold text-sm hover:opacity-90"
                 >
                   {isSubmitting ? 'Сохранение...' : 'Опубликовать заказ'}
                 </button>
@@ -366,8 +339,8 @@ function App() {
                 <span className="text-xs text-teal-400 font-mono">Escrow: Холд 250 AWS</span>
               </div>
               <div className="flex-1 p-4 overflow-y-auto space-y-3">
-                {messages.map((msg, i) => (
-                  <div key={i} className={`flex flex-col ${msg.is_me ? 'items-end' : 'items-start'}`}>
+                {messages.map((msg) => (
+                  <div key={msg.id} className={`flex flex-col ${msg.is_me ? 'items-end' : 'items-start'}`}>
                     <div className={`max-w-[80%] rounded-xl px-4 py-2 text-sm ${msg.is_me ? 'bg-cyan-600 text-white' : 'bg-slate-900 border border-slate-800'}`}>
                       <p>{msg.text}</p>
                     </div>
@@ -382,7 +355,7 @@ function App() {
                   onChange={(e) => setChatInput(e.target.value)}
                   className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm outline-none"
                 />
-                <button type="submit" className="p-2.5 bg-cyan-500 text-black rounded-xl"><Send className="w-4 h-4" /></button>
+                <button type="submit" className="p-2.5 bg-cyan-500 text-black rounded-xl hover:bg-cyan-400"><Send className="w-4 h-4" /></button>
               </form>
             </div>
           )}
@@ -401,7 +374,7 @@ function App() {
                   <div className="flex flex-wrap gap-1">
                     {creator.skills.map(s => <span key={s} className="text-[10px] bg-slate-900 px-2 py-1 rounded text-cyan-300 border border-slate-800">{s}</span>)}
                   </div>
-                  <button onClick={() => setActiveTab('chat')} className="w-full py-2 bg-slate-900 text-teal-300 border border-teal-500/30 rounded-xl text-xs font-semibold">
+                  <button onClick={() => setActiveTab('chat')} className="w-full py-2 bg-slate-900 text-teal-300 border border-teal-500/30 rounded-xl text-xs font-semibold hover:bg-slate-800">
                     Написать
                   </button>
                 </div>
@@ -414,4 +387,7 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  ReactDOM.createRoot(rootElement).render(<App />);
+}
