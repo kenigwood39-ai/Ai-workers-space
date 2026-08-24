@@ -27,13 +27,15 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     
+    /* Стили неоновых рамок аватаров */
     .frame-none { border: 2px solid transparent; }
-    .frame-cyan { border: 2px solid #06b6d4; box-shadow: 0 0 10px rgba(6, 182, 212, 0.6); }
-    .frame-fuchsia { border: 2px solid #d946ef; box-shadow: 0 0 12px rgba(217, 70, 239, 0.7); }
+    .frame-cyan { border: 2px solid #06b6d4; box-shadow: 0 0 10px rgba(6, 182, 212, 0.7); }
+    .frame-fuchsia { border: 2px solid #d946ef; box-shadow: 0 0 12px rgba(217, 70, 239, 0.8); }
     .frame-emerald { border: 2px solid #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.8); }
     .frame-amber { border: 2px solid #f59e0b; box-shadow: 0 0 18px rgba(245, 158, 11, 0.9); }
     .frame-rainbow { border: 2px solid #ec4899; box-shadow: 0 0 22px rgba(236, 72, 153, 1); animation: pulse 2s infinite; }
 
+    /* Стили рамок карточек объявлений */
     .card-frame-default { border: 1px solid rgba(51, 65, 85, 0.8); }
     .card-frame-neon { border: 1.5px solid #06b6d4; box-shadow: 0 0 15px rgba(6, 182, 212, 0.25); }
     .card-frame-cyber { border: 1.5px solid #d946ef; box-shadow: 0 0 18px rgba(217, 70, 239, 0.3); }
@@ -65,6 +67,28 @@
       rub: { rate: 92.5, symbol: 'RUB', net: 'Банковская карта' }
     };
 
+    // Модные минималистичные аватары
+    const MINIMAL_AVATARS = [
+      { id: 'min_free_1', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80', name: 'Dark Sphere', price: 0 },
+      { id: 'min_free_2', url: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=300&q=80', name: 'Minimal Glow', price: 0 },
+      { id: 'min_500', url: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=300&q=80', name: 'Glass Wave', price: 500 },
+      { id: 'min_1000', url: 'https://images.unsplash.com/photo-1633167606207-d840b5070fc2?auto=format&fit=crop&w=300&q=80', name: 'Obsidian Cube', price: 1000 },
+      { id: 'min_2000', url: 'https://images.unsplash.com/photo-1614680376593-902f749f7ffc?auto=format&fit=crop&w=300&q=80', name: 'Cyber Minimal', price: 2000 },
+      { id: 'min_3000', url: 'https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?auto=format&fit=crop&w=300&q=80', name: 'Liquid Chrome', price: 3000 },
+      { id: 'min_5000', url: 'https://images.unsplash.com/photo-1634926878768-2a5b3c42f139?auto=format&fit=crop&w=300&q=80', name: 'Matte VIP Gold', price: 5000 }
+    ];
+
+    // Рамки для аватаров
+    const AVATAR_FRAMES = [
+      { id: 'frame-none', name: 'Без рамки', class: 'frame-none', price: 0 },
+      { id: 'frame-cyan', name: 'Cyan Glow', class: 'frame-cyan', price: 500 },
+      { id: 'frame-fuchsia', name: 'Fuchsia Neon', class: 'frame-fuchsia', price: 1000 },
+      { id: 'frame-emerald', name: 'Emerald Edge', class: 'frame-emerald', price: 2000 },
+      { id: 'frame-amber', name: 'Gold Emperor', class: 'frame-amber', price: 3000 },
+      { id: 'frame-rainbow', name: 'Rainbow Mythic', class: 'frame-rainbow', price: 5000 }
+    ];
+
+    // Рамки карточек объявлений
     const TASK_CARD_FRAMES = [
       { id: 'card-frame-default', name: 'Стандартная', class: 'card-frame-default', price: 0 },
       { id: 'card-frame-neon', name: 'Неон Cyan', class: 'card-frame-neon', price: 1000 },
@@ -143,7 +167,7 @@
     function App() {
       const [tab, setTab] = useState('feed');
       const [role, setRole] = useState('client');
-      const [cabinetSubTab, setCabinetSubTab] = useState('my-orders');
+      const [cabinetSubTab, setCabinetSubTab] = useState('my-orders'); // 'my-orders' | 'shop'
       
       const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem('aws_active_user');
@@ -151,14 +175,24 @@
       });
 
       const [balance, setBalance] = useState(() => {
-        const b = localStorage.getItem('aws_balance_v8');
+        const b = localStorage.getItem('aws_balance_v9');
         if (b) return Number(b);
         return user?.email === 'kenigwood39@gmail.com' ? 25000 : 1000;
       });
 
       const [tasks, setTasks] = useState(() => {
-        const saved = localStorage.getItem('aws_tasks_v8');
+        const saved = localStorage.getItem('aws_tasks_v9');
         return saved ? JSON.parse(saved) : INITIAL_TASKS;
+      });
+
+      const [inventory, setInventory] = useState(() => {
+        const saved = localStorage.getItem('aws_inventory_v9');
+        return saved ? JSON.parse(saved) : {};
+      });
+
+      const [paidUnlocks, setPaidUnlocks] = useState(() => {
+        const saved = localStorage.getItem('aws_paid_unlocks');
+        return saved ? JSON.parse(saved) : {};
       });
 
       const [selectedCat, setSelectedCat] = useState('All');
@@ -186,7 +220,7 @@
       const [taskPhotos, setTaskPhotos] = useState([]);
       const [mainPhotoIndex, setMainPhotoIndex] = useState(0);
 
-      // Редактирование / Кастомизация объявления
+      // Редактирование
       const [editingTask, setEditingTask] = useState(null);
 
       const [viewingTask, setViewingTask] = useState(null);
@@ -196,14 +230,18 @@
       const [chatInput, setChatInput] = useState('');
 
       useEffect(() => {
-        localStorage.setItem('aws_tasks_v8', JSON.stringify(tasks));
+        localStorage.setItem('aws_tasks_v9', JSON.stringify(tasks));
       }, [tasks]);
 
       useEffect(() => {
-        localStorage.setItem('aws_balance_v8', balance.toString());
+        localStorage.setItem('aws_inventory_v9', JSON.stringify(inventory));
+      }, [inventory]);
+
+      useEffect(() => {
+        localStorage.setItem('aws_balance_v9', balance.toString());
       }, [balance]);
 
-      // Загрузка фото с устройства
+      // Загрузка аватарки с устройства
       const handleUploadAvatarFromFile = (e) => {
         const file = e.target.files[0];
         if (!file || !user) return;
@@ -212,11 +250,110 @@
           const updated = { ...user, avatar: reader.result };
           setUser(updated);
           localStorage.setItem('aws_active_user', JSON.stringify(updated));
-          alert('✓ Аватарка обновлена!');
+          alert('✓ Ваша аватарка успешно обновлена!');
         };
         reader.readAsDataURL(file);
       };
 
+      // Покупка и выбор аватара из каталога
+      const handleSelectAvatar = (item) => {
+        if (!user) { setAuthModalOpen(true); return; }
+        const userInv = inventory[user.id] || { avatars: [], frames: [], cardFrames: [] };
+
+        if (item.price === 0 || (userInv.avatars && userInv.avatars.includes(item.id))) {
+          const updated = { ...user, avatar: item.url };
+          setUser(updated);
+          localStorage.setItem('aws_active_user', JSON.stringify(updated));
+          alert(`✓ Аватар "${item.name}" установлен!`);
+        } else {
+          if (balance < item.price) {
+            alert(`Недостаточно средств. Стоимость: ${item.price} AWS`);
+            setWalletModalOpen(true);
+            return;
+          }
+          setBalance(prev => prev - item.price);
+          const newInv = {
+            ...inventory,
+            [user.id]: {
+              ...userInv,
+              avatars: [...(userInv.avatars || []), item.id]
+            }
+          };
+          setInventory(newInv);
+          const updated = { ...user, avatar: item.url };
+          setUser(updated);
+          localStorage.setItem('aws_active_user', JSON.stringify(updated));
+          alert(`🎉 Аватар "${item.name}" успешно куплен и установлен!`);
+        }
+      };
+
+      // Покупка и выбор рамки профиля
+      const handleSelectAvatarFrame = (frame) => {
+        if (!user) { setAuthModalOpen(true); return; }
+        const userInv = inventory[user.id] || { avatars: [], frames: [], cardFrames: [] };
+
+        if (frame.price === 0 || (userInv.frames && userInv.frames.includes(frame.id))) {
+          const updated = { ...user, avatarFrame: frame.class };
+          setUser(updated);
+          localStorage.setItem('aws_active_user', JSON.stringify(updated));
+          alert(`✓ Рамка "${frame.name}" активна!`);
+        } else {
+          if (balance < frame.price) {
+            alert(`Недостаточно средств. Стоимость: ${frame.price} AWS`);
+            setWalletModalOpen(true);
+            return;
+          }
+          setBalance(prev => prev - frame.price);
+          const newInv = {
+            ...inventory,
+            [user.id]: {
+              ...userInv,
+              frames: [...(userInv.frames || []), frame.id]
+            }
+          };
+          setInventory(newInv);
+          const updated = { ...user, avatarFrame: frame.class };
+          setUser(updated);
+          localStorage.setItem('aws_active_user', JSON.stringify(updated));
+          alert(`🎉 Неоновая рамка "${frame.name}" куплена!`);
+        }
+      };
+
+      // Покупка и выбор рамки объявлений
+      const handleSelectCardFrame = (cf) => {
+        if (!user) { setAuthModalOpen(true); return; }
+        const userInv = inventory[user.id] || { avatars: [], frames: [], cardFrames: [] };
+
+        if (cf.price === 0 || (userInv.cardFrames && userInv.cardFrames.includes(cf.id))) {
+          const updated = { ...user, cardFrame: cf.class };
+          setUser(updated);
+          localStorage.setItem('aws_active_user', JSON.stringify(updated));
+          setTasks(tasks.map(t => t.author_id === user.id ? { ...t, card_frame: cf.class } : t));
+          alert(`✓ Рамка объявлений "${cf.name}" применена!`);
+        } else {
+          if (balance < cf.price) {
+            alert(`Недостаточно средств. Стоимость: ${cf.price} AWS`);
+            setWalletModalOpen(true);
+            return;
+          }
+          setBalance(prev => prev - cf.price);
+          const newInv = {
+            ...inventory,
+            [user.id]: {
+              ...userInv,
+              cardFrames: [...(userInv.cardFrames || []), cf.id]
+            }
+          };
+          setInventory(newInv);
+          const updated = { ...user, cardFrame: cf.class };
+          setUser(updated);
+          localStorage.setItem('aws_active_user', JSON.stringify(updated));
+          setTasks(tasks.map(t => t.author_id === user.id ? { ...t, card_frame: cf.class } : t));
+          alert(`🎉 Рамка объявлений "${cf.name}" куплена и применена ко всем вашим таскам!`);
+        }
+      };
+
+      // Загрузка фото таска
       const handleUploadTaskPhotos = (e) => {
         const files = Array.from(e.target.files);
         if (!files.length) return;
@@ -238,7 +375,7 @@
         }
       };
 
-      // Прямая публикация
+      // Публикация
       const handleCreateTask = (e) => {
         e.preventDefault();
         if (!newTitle.trim()) return;
@@ -263,7 +400,7 @@
           currency: 'AWS',
           author: authorName,
           author_id: authorId,
-          card_frame: 'card-frame-gold',
+          card_frame: user?.cardFrame || 'card-frame-gold',
           executor_id: null,
           status: 'open',
           hidden: false,
@@ -280,11 +417,9 @@
         setTab('feed');
       };
 
-      // Сохранение отредактированного таска
       const handleSaveEditedTask = (e) => {
         e.preventDefault();
         if (!editingTask) return;
-
         const updatedBudget = Number(editingTask.budget) || 1000;
         const updatedTasks = tasks.map(t => {
           if (t.id === editingTask.id) {
@@ -296,39 +431,23 @@
           }
           return t;
         });
-
         setTasks(updatedTasks);
         setEditingTask(null);
-        alert('✓ Изменения в таске успешно сохранены!');
+        alert('✓ Изменения сохранены!');
       };
 
-      // Скрытие / Показ таска
       const handleToggleHideTask = (taskId) => {
-        const updated = tasks.map(t => {
-          if (t.id === taskId) {
-            return { ...t, hidden: !t.hidden };
-          }
-          return t;
-        });
-        setTasks(updated);
+        setTasks(tasks.map(t => t.id === taskId ? { ...t, hidden: !t.hidden } : t));
       };
 
-      // Удаление таска
       const handleDeleteTask = (taskId) => {
-        if (confirm('Вы уверены, что хотите безвозвратно удалить этот таск?')) {
+        if (confirm('Удалить этот таск?')) {
           setTasks(tasks.filter(t => t.id !== taskId));
         }
       };
 
-      // Кастомизация рамки конкретного таска
       const handleChangeTaskFrame = (taskId, frameClass) => {
-        const updated = tasks.map(t => {
-          if (t.id === taskId) {
-            return { ...t, card_frame: frameClass };
-          }
-          return t;
-        });
-        setTasks(updated);
+        setTasks(tasks.map(t => t.id === taskId ? { ...t, card_frame: frameClass } : t));
       };
 
       // Авторизация
@@ -350,7 +469,7 @@
           id: 'user_' + btoa(cleanEmail).substring(0, 10),
           email: cleanEmail,
           name: cleanEmail.split('@')[0],
-          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
+          avatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80',
           avatarFrame: 'frame-none',
           cardFrame: 'card-frame-default',
           verified: true
@@ -371,7 +490,7 @@
           id: 'user_' + btoa(cleanEmail).substring(0, 10),
           email: cleanEmail,
           name: cleanEmail.split('@')[0],
-          avatar: user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
+          avatar: user?.avatar || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80',
           avatarFrame: user?.avatarFrame || 'frame-none',
           cardFrame: user?.cardFrame || 'card-frame-default',
           verified: true
@@ -423,11 +542,9 @@
         setChatInput('');
       };
 
-      // Фильтр для ленты (не показываем скрытые таски)
       const feedTasks = tasks.filter(t => !t.hidden && (selectedCat === 'All' || t.category === selectedCat));
-      
-      // Мои таски (показываем все, включая скрытые)
       const myClientTasks = tasks.filter(t => user && t.author_id === user.id);
+      const userInv = user ? (inventory[user.id] || { avatars: [], frames: [], cardFrames: [] }) : { avatars: [], frames: [], cardFrames: [] };
 
       const formBudgetNum = Number(newBudget) || 0;
       const formEstimatedFee = calculateResponseFee(formBudgetNum);
@@ -535,8 +652,9 @@
               </button>
             </aside>
 
-            {/* Центральная часть ленты */}
+            {/* Центральная часть */}
             <section className="lg:col-span-9 space-y-4 min-w-0">
+              {/* ЛЕНТА ЗАКАЗОВ */}
               {tab === 'feed' && (
                 <>
                   <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0E1726] via-[#111C35] to-[#0A101D] border border-cyan-500/30 p-5 sm:p-7 shadow-xl">
@@ -575,7 +693,6 @@
                     ))}
                   </div>
 
-                  {/* Список карточек со свободным скроллом */}
                   <div className="grid grid-cols-1 gap-4">
                     {feedTasks.map((item) => {
                       const coverPhoto = (item.photos && item.photos[item.mainPhotoIndex || 0]) || item.photos?.[0] || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe';
@@ -642,117 +759,277 @@
                 </>
               )}
 
-              {/* ЛИЧНЫЙ КАБИНЕТ И УПРАВЛЕНИЕ СВОИМИ ТАСКАМИ */}
+              {/* ЛИЧНЫЙ КАБИНЕТ: ВКЛАДКИ (МОИ ТАСКИ / КАСТОМИЗАЦИЯ & МАГАЗИН) */}
               {tab === 'cabinet' && (
                 <div className="space-y-4">
+                  {/* Профиль шапка */}
                   <div className="bg-[#0D121F] p-5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3.5">
                       <div className={`w-14 h-14 rounded-2xl overflow-hidden ${user?.avatarFrame || 'frame-none'} flex-shrink-0 relative group`}>
-                        <img src={user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde'} className="w-full h-full object-cover" />
+                        <img src={user?.avatar || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80'} className="w-full h-full object-cover" />
                         <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
                           <i className="fa-solid fa-camera text-white text-xs"></i>
                           <input type="file" accept="image/*" className="hidden" onChange={handleUploadAvatarFromFile} />
                         </label>
                       </div>
                       <div>
-                        <h2 className="text-base sm:text-lg font-bold text-slate-100">{user?.name || 'Пользователь'}</h2>
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-base sm:text-lg font-bold text-slate-100">{user?.name || 'Пользователь'}</h2>
+                          <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-full font-mono">
+                            ✓ Проверен
+                          </span>
+                        </div>
                         <p className="text-xs text-slate-400 font-mono">{user?.email || 'kenigwood39@gmail.com'}</p>
                       </div>
                     </div>
                     <button 
                       onClick={() => setWalletModalOpen(true)}
-                      className="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-black font-bold text-xs rounded-xl flex items-center gap-1.5"
+                      className="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-black font-bold text-xs rounded-xl flex items-center gap-1.5 self-start sm:self-auto"
                     >
                       <i className="fa-solid fa-wallet"></i>
                       <span>Пополнить баланс</span>
                     </button>
                   </div>
 
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <span className="text-xs font-bold text-cyan-400">Мои опубликованные объявления ({myClientTasks.length})</span>
+                  {/* Переключатель вкладок кабинета */}
+                  <div className="flex items-center gap-2 border-b border-slate-800 pb-2 overflow-x-auto no-scrollbar">
+                    <button
+                      onClick={() => setCabinetSubTab('my-orders')}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2 ${
+                        cabinetSubTab === 'my-orders' ? 'bg-cyan-500 text-black font-bold' : 'bg-slate-900 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <i className="fa-solid fa-briefcase"></i>
+                      <span>Мои объявления ({myClientTasks.length})</span>
+                    </button>
+
+                    <button
+                      onClick={() => setCabinetSubTab('shop')}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2 ${
+                        cabinetSubTab === 'shop' ? 'bg-fuchsia-500 text-white font-bold shadow-lg shadow-fuchsia-500/20' : 'bg-slate-900 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <i className="fa-solid fa-palette"></i>
+                      <span>Кастомизация & Магазин 🛍️</span>
+                    </button>
                   </div>
 
-                  {/* Список своих объявлений с управлением */}
-                  {myClientTasks.length === 0 ? (
-                    <div className="text-center py-12 bg-[#0D121F] rounded-2xl border border-slate-800">
-                      <p className="text-slate-400 text-xs sm:text-sm">У вас пока нет созданных тасков</p>
-                      <button onClick={() => setTab('create')} className="mt-3 px-4 py-2 bg-cyan-500 text-black font-bold text-xs rounded-xl">
-                        Разместить первый таск
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-3">
-                      {myClientTasks.map(item => (
-                        <div key={item.id} className={`bg-[#0D121F] p-4 rounded-2xl ${item.card_frame || 'card-frame-default'} flex flex-col gap-3 min-w-0`}>
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded font-mono font-bold">{item.tool}</span>
-                                {item.hidden && (
-                                  <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-mono">
-                                    Скрыто из ленты
-                                  </span>
-                                )}
+                  {/* 1. ВКЛАДКА: МОИ ТАСКИ */}
+                  {cabinetSubTab === 'my-orders' && (
+                    myClientTasks.length === 0 ? (
+                      <div className="text-center py-12 bg-[#0D121F] rounded-2xl border border-slate-800">
+                        <p className="text-slate-400 text-xs sm:text-sm">У вас пока нет созданных тасков</p>
+                        <button onClick={() => setTab('create')} className="mt-3 px-4 py-2 bg-cyan-500 text-black font-bold text-xs rounded-xl">
+                          Разместить первый таск
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-3">
+                        {myClientTasks.map(item => (
+                          <div key={item.id} className={`bg-[#0D121F] p-4 rounded-2xl ${item.card_frame || 'card-frame-default'} flex flex-col gap-3 min-w-0`}>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded font-mono font-bold">{item.tool}</span>
+                                  {item.hidden && (
+                                    <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-mono">
+                                      Скрыто из ленты
+                                    </span>
+                                  )}
+                                </div>
+                                <h4 className="font-bold text-sm sm:text-base text-slate-100 mt-1">{item.title}</h4>
+                                <p className="text-xs text-slate-400 font-mono mt-0.5">
+                                  Бюджет: {item.budget.toLocaleString()} AWS • Отклик: {item.response_fee} AWS
+                                </p>
                               </div>
-                              <h4 className="font-bold text-sm sm:text-base text-slate-100 mt-1">{item.title}</h4>
-                              <p className="text-xs text-slate-400 font-mono mt-0.5">
-                                Бюджет: {item.budget.toLocaleString()} AWS • Отклик: {item.response_fee} AWS
-                              </p>
+
+                              <button onClick={() => openTaskChat(item)} className="px-3.5 py-1.5 bg-slate-900 border border-cyan-500/40 text-cyan-300 text-xs font-semibold rounded-xl self-start sm:self-auto">
+                                Чат сделки
+                              </button>
                             </div>
 
-                            <button onClick={() => openTaskChat(item)} className="px-3.5 py-1.5 bg-slate-900 border border-cyan-500/40 text-cyan-300 text-xs font-semibold rounded-xl self-start sm:self-auto">
-                              Чат сделки
-                            </button>
-                          </div>
+                            <div className="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                  onClick={() => setEditingTask(item)}
+                                  className="px-3 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 hover:text-cyan-300 hover:border-cyan-500 flex items-center gap-1.5"
+                                >
+                                  <i className="fa-solid fa-pen"></i>
+                                  <span>Редактировать</span>
+                                </button>
 
-                          {/* Панель управления своим таском */}
-                          <div className="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
-                            <div className="flex flex-wrap items-center gap-2">
-                              {/* Кнопка Редактировать */}
+                                <button
+                                  onClick={() => handleToggleHideTask(item.id)}
+                                  className={`px-3 py-1 rounded-lg border flex items-center gap-1.5 ${
+                                    item.hidden 
+                                      ? 'bg-amber-500/10 border-amber-500/40 text-amber-300' 
+                                      : 'bg-slate-900 border-slate-700 text-slate-300 hover:text-white'
+                                  }`}
+                                >
+                                  <i className={item.hidden ? "fa-solid fa-eye" : "fa-solid fa-eye-slash"}></i>
+                                  <span>{item.hidden ? 'Показать в ленте' : 'Скрыть'}</span>
+                                </button>
+
+                                <select
+                                  value={item.card_frame || 'card-frame-default'}
+                                  onChange={(e) => handleChangeTaskFrame(item.id, e.target.value)}
+                                  className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-cyan-300 font-mono outline-none"
+                                >
+                                  {TASK_CARD_FRAMES.map(f => (
+                                    <option key={f.id} value={f.class}>🎨 Рамка: {f.name}</option>
+                                  ))}
+                                </select>
+                              </div>
+
                               <button
-                                onClick={() => setEditingTask(item)}
-                                className="px-3 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 hover:text-cyan-300 hover:border-cyan-500 flex items-center gap-1.5"
+                                onClick={() => handleDeleteTask(item.id)}
+                                className="px-3 py-1 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 flex items-center gap-1.5"
                               >
-                                <i className="fa-solid fa-pen"></i>
-                                <span>Редактировать</span>
+                                <i className="fa-solid fa-trash-can"></i>
+                                <span>Удалить</span>
                               </button>
-
-                              {/* Кнопка Скрыть / Показать */}
-                              <button
-                                onClick={() => handleToggleHideTask(item.id)}
-                                className={`px-3 py-1 rounded-lg border flex items-center gap-1.5 ${
-                                  item.hidden 
-                                    ? 'bg-amber-500/10 border-amber-500/40 text-amber-300' 
-                                    : 'bg-slate-900 border-slate-700 text-slate-300 hover:text-white'
-                                }`}
-                              >
-                                <i className={item.hidden ? "fa-solid fa-eye" : "fa-solid fa-eye-slash"}></i>
-                                <span>{item.hidden ? 'Показать в ленте' : 'Скрыть'}</span>
-                              </button>
-
-                              {/* Выбор рамки для конкретного таска */}
-                              <select
-                                value={item.card_frame || 'card-frame-default'}
-                                onChange={(e) => handleChangeTaskFrame(item.id, e.target.value)}
-                                className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-cyan-300 font-mono outline-none"
-                              >
-                                {TASK_CARD_FRAMES.map(f => (
-                                  <option key={f.id} value={f.class}>🎨 Рамка: {f.name}</option>
-                                ))}
-                              </select>
                             </div>
-
-                            {/* Кнопка Удалить */}
-                            <button
-                              onClick={() => handleDeleteTask(item.id)}
-                              className="px-3 py-1 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 flex items-center gap-1.5"
-                            >
-                              <i className="fa-solid fa-trash-can"></i>
-                              <span>Удалить</span>
-                            </button>
                           </div>
+                        ))}
+                      </div>
+                    )
+                  )}
+
+                  {/* 2. ВКЛАДКА: МАГАЗИН КАСТОМИЗАЦИИ (МОДНЫЕ АВАТАРЫ И НЕОНОВЫЕ РАМКИ) */}
+                  {cabinetSubTab === 'shop' && (
+                    <div className="space-y-6">
+                      {/* Загрузка своего фото */}
+                      <div className="bg-[#0D121F] p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                          <i className="fa-solid fa-cloud-arrow-up text-cyan-400"></i>
+                          Загрузить свою персональную аватарку
+                        </h3>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                          <label className="px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-teal-400 text-black font-bold text-xs rounded-xl cursor-pointer hover:opacity-90 flex items-center gap-2">
+                            <i className="fa-solid fa-image"></i>
+                            <span>Выбрать фото из галереи телефона / ПК</span>
+                            <input type="file" accept="image/*" className="hidden" onChange={handleUploadAvatarFromFile} />
+                          </label>
+                          <span className="text-xs text-slate-400 font-mono">JPG, PNG, WEBP любого размера</span>
                         </div>
-                      ))}
+                      </div>
+
+                      {/* Коллекция модных минималистичных аватарок */}
+                      <div className="bg-[#0D121F] p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                            <i className="fa-solid fa-gem text-fuchsia-400"></i>
+                            Минималистичная коллекция аватаров
+                          </h3>
+                          <span className="text-[10px] text-slate-400 font-mono">Покупаются навсегда</span>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+                          {MINIMAL_AVATARS.map((item) => {
+                            const isOwned = item.price === 0 || (userInv.avatars && userInv.avatars.includes(item.id));
+                            const isEquipped = user?.avatar === item.url;
+
+                            return (
+                              <div key={item.id} className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex flex-col items-center text-center space-y-2 hover:border-cyan-500/40 transition-colors">
+                                <div className="w-14 h-14 rounded-xl overflow-hidden border border-slate-700 bg-slate-900 shadow-md">
+                                  <img src={item.url} className="w-full h-full object-cover" />
+                                </div>
+                                <div className="text-[11px] font-bold text-slate-200 truncate w-full">{item.name}</div>
+                                <div className="text-[10px] font-mono text-cyan-400">
+                                  {item.price === 0 ? 'Бесплатно' : `${item.price.toLocaleString()} AWS`}
+                                </div>
+                                <button
+                                  onClick={() => handleSelectAvatar(item)}
+                                  className={`w-full py-1 rounded-lg text-[10px] font-bold transition-colors ${
+                                    isEquipped 
+                                      ? 'bg-emerald-500 text-black' 
+                                      : isOwned 
+                                      ? 'bg-slate-800 text-cyan-300 hover:bg-slate-700' 
+                                      : 'bg-fuchsia-600 text-white hover:bg-fuchsia-500'
+                                  }`}
+                                >
+                                  {isEquipped ? 'Надето' : isOwned ? 'Выбрать' : 'Купить'}
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Неоновые рамки профиля */}
+                      <div className="bg-[#0D121F] p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                          <i className="fa-solid fa-circle-notch text-amber-400"></i>
+                          Неоновые рамки для аватара
+                        </h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                          {AVATAR_FRAMES.map((f) => {
+                            const isOwned = f.price === 0 || (userInv.frames && userInv.frames.includes(f.id));
+                            const isEquipped = user?.avatarFrame === f.class;
+
+                            return (
+                              <div key={f.id} className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex flex-col items-center text-center space-y-2">
+                                <div className={`w-12 h-12 rounded-xl overflow-hidden ${f.class}`}>
+                                  <img src={user?.avatar || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80'} className="w-full h-full object-cover" />
+                                </div>
+                                <div className="text-[11px] font-bold text-slate-200">{f.name}</div>
+                                <div className="text-[10px] font-mono text-amber-400">
+                                  {f.price === 0 ? 'Базовая' : `${f.price.toLocaleString()} AWS`}
+                                </div>
+                                <button
+                                  onClick={() => handleSelectAvatarFrame(f)}
+                                  className={`w-full py-1 rounded-lg text-[10px] font-bold transition-colors ${
+                                    isEquipped 
+                                      ? 'bg-emerald-500 text-black' 
+                                      : isOwned 
+                                      ? 'bg-slate-800 text-cyan-300 hover:bg-slate-700' 
+                                      : 'bg-amber-500 text-black hover:bg-amber-400'
+                                  }`}
+                                >
+                                  {isEquipped ? 'Надето' : isOwned ? 'Выбрать' : 'Купить'}
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Рамки для объявлений (на все таски) */}
+                      <div className="bg-[#0D121F] p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                          <i className="fa-solid fa-layer-group text-emerald-400"></i>
+                          Рамки объявлений (Применяются ко всем таскам)
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                          {TASK_CARD_FRAMES.map((cf) => {
+                            const isOwned = cf.price === 0 || (userInv.cardFrames && userInv.cardFrames.includes(cf.id));
+                            const isEquipped = user?.cardFrame === cf.class;
+
+                            return (
+                              <div key={cf.id} className={`bg-slate-950 p-3 rounded-xl ${cf.class} flex flex-col justify-between space-y-2.5`}>
+                                <div>
+                                  <div className="text-xs font-bold text-slate-100">{cf.name}</div>
+                                  <div className="text-[10px] font-mono text-emerald-400 mt-0.5">
+                                    {cf.price === 0 ? 'Стандарт' : `${cf.price.toLocaleString()} AWS`}
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => handleSelectCardFrame(cf)}
+                                  className={`w-full py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                                    isEquipped 
+                                      ? 'bg-emerald-500 text-black' 
+                                      : isOwned 
+                                      ? 'bg-slate-800 text-cyan-300 hover:bg-slate-700' 
+                                      : 'bg-emerald-600 text-black hover:bg-emerald-500'
+                                  }`}
+                                >
+                                  {isEquipped ? 'Активна' : isOwned ? 'Применить' : 'Купить'}
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
