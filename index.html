@@ -33,6 +33,7 @@
         author_id: 'client_sample_1',
         executor_id: null,
         status: 'open',
+        views: 142,
         preview: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80'
       },
       {
@@ -46,6 +47,7 @@
         author_id: 'client_sample_2',
         executor_id: null,
         status: 'open',
+        views: 89,
         preview: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'
       },
       {
@@ -59,6 +61,7 @@
         author_id: 'client_sample_3',
         executor_id: null,
         status: 'open',
+        views: 215,
         preview: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80'
       }
     ];
@@ -85,21 +88,29 @@
     function App() {
       const [tab, setTab] = useState('feed');
       const [role, setRole] = useState('freelancer');
+      const [cabinetSubTab, setCabinetSubTab] = useState('my-orders'); // 'my-orders' | 'favorites' | 'stats'
+      
       const [tasks, setTasks] = useState(() => {
         const saved = localStorage.getItem('aws_tasks');
         return saved ? JSON.parse(saved) : INITIAL_TASKS;
       });
+      const [favorites, setFavorites] = useState(() => {
+        const favs = localStorage.getItem('aws_favorites');
+        return favs ? JSON.parse(favs) : [];
+      });
       const [filter, setFilter] = useState('All');
 
-      // Авторизация
+      // Авторизация и подтверждение
       const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem('aws_active_user');
         return savedUser ? JSON.parse(savedUser) : null;
       });
       const [authModalOpen, setAuthModalOpen] = useState(false);
-      const [authMode, setAuthMode] = useState('login');
+      const [authMode, setAuthMode] = useState('login'); // 'login' | 'register' | 'verify_email'
       const [authEmail, setAuthEmail] = useState('');
       const [authPassword, setAuthPassword] = useState('');
+      const [verificationCode, setVerificationCode] = useState('');
+      const [generatedOtp, setGeneratedOtp] = useState('');
       const [authError, setAuthError] = useState('');
 
       // Форма задачи
@@ -108,31 +119,66 @@
       const [newBudget, setNewBudget] = useState('');
       const [newTool, setNewTool] = useState('Midjourney v6');
 
-      // Чат
-      const [messages, setMessages] = useState([
-        { id: 1, sender: 'Алексей "PromptMaster"', text: 'Здравствуйте! Готов выполнить тестовую генерацию по вашему ТЗ.', isMe: false }
-      ]);
+      // Чат сделки
+      const [selectedTaskForChat, setSelectedTaskForChat] = useState(null);
+      const [dealMessages, setDealMessages] = useState({});
       const [chatInput, setChatInput] = useState('');
 
       useEffect(() => {
         localStorage.setItem('aws_tasks', JSON.stringify(tasks));
       }, [tasks]);
 
-      // Обработка входа и регистрации
-      const handleAuth = (e) => {
+      useEffect(() => {
+        localStorage.setItem('aws_favorites', JSON.stringify(favorites));
+      }, [favorites]);
+
+      // Логика аутентификации
+      const handleStartRegister = (e) => {
         e.preventDefault();
         setAuthError('');
-
         if (authPassword.length < 6) {
-          setAuthError('Пароль должен быть не менее 6 символов');
+          setAuthError('Пароль должен содержать минимум 6 символов');
+          return;
+        }
+
+        // Генерируем 6-значный код подтверждения
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        setGeneratedOtp(code);
+        setAuthMode('verify_email');
+      };
+
+      const handleVerifyEmail = (e) => {
+        e.preventDefault();
+        if (verificationCode.trim() !== generatedOtp) {
+          setAuthError('Неверный код подтверждения!');
           return;
         }
 
         const cleanEmail = authEmail.trim().toLowerCase();
+        const newUser = {
+          id: 'user_' + btoa(cleanEmail).substring(0, 10),
+          email: cleanEmail,
+          name: cleanEmail.split('@')[0],
+          verified: true
+        };
+
+        setUser(newUser);
+        localStorage.setItem('aws_active_user', JSON.stringify(newUser));
+        setAuthModalOpen(false);
+        setAuthEmail('');
+        setAuthPassword('');
+        setVerificationCode('');
+      };
+
+      const handleLogin = (e) => {
+        e.preventDefault();
+        setAuthError('');
+        const cleanEmail = authEmail.trim().toLowerCase();
         const loggedUser = {
           id: 'user_' + btoa(cleanEmail).substring(0, 10),
           email: cleanEmail,
-          name: cleanEmail.split('@')[0]
+          name: cleanEmail.split('@')[0],
+          verified: true
         };
 
         setUser(loggedUser);
@@ -147,6 +193,15 @@
         localStorage.removeItem('aws_active_user');
       };
 
+      // Избранное
+      const toggleFavorite = (taskId) => {
+        if (favorites.includes(taskId)) {
+          setFavorites(favorites.filter(id => id !== taskId));
+        } else {
+          setFavorites([...favorites, taskId]);
+        }
+      };
+
       // Создание задачи
       const handleCreateTask = (e) => {
         e.preventDefault();
@@ -159,7 +214,7 @@
         const taskObj = {
           id: Date.now(),
           title: newTitle,
-          prompt: newPrompt || 'Техническое задание будет предоставлено исполнителю в чате',
+          prompt: newPrompt || 'ТЗ будет уточнено в чате заказа',
           tool: newTool,
           budget: Number(newBudget),
           currency: 'AWS',
@@ -167,6 +222,7 @@
           author_id: user.id,
           executor_id: null,
           status: 'open',
+          views: 1,
           preview: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80'
         };
 
@@ -174,10 +230,11 @@
         setNewTitle('');
         setNewPrompt('');
         setNewBudget('');
-        setTab('my-tasks');
+        setTab('cabinet');
+        setCabinetSubTab('my-orders');
       };
 
-      // Взять заказ в работу
+      // Взять задачу
       const handleTakeTask = (taskId) => {
         if (!user) {
           setAuthModalOpen(true);
@@ -191,20 +248,40 @@
           return t;
         });
         setTasks(updated);
-        setTab('my-tasks');
+
+        const target = updated.find(t => t.id === taskId);
+        openTaskChat(target);
       };
 
-      const handleSendMessage = (e) => {
-        e.preventDefault();
-        if (!chatInput.trim()) return;
+      // Открытие чата конкретного заказа
+      const openTaskChat = (task) => {
+        setSelectedTaskForChat(task);
+        if (!dealMessages[task.id]) {
+          setDealMessages(prev => ({
+            ...prev,
+            [task.id]: [
+              { id: 1, sender: task.author, text: `Привет! Заказ #${task.id} «${task.title}» запущен в работу. Присылай превью сюда!`, isMe: false }
+            ]
+          }));
+        }
+        setTab('deal_chat');
+      };
 
-        const msgObj = { 
-          id: Date.now(), 
-          sender: user ? user.name : 'Вы', 
-          text: chatInput, 
-          isMe: true 
+      const handleSendDealMessage = (e) => {
+        e.preventDefault();
+        if (!chatInput.trim() || !selectedTaskForChat) return;
+
+        const newMsg = {
+          id: Date.now(),
+          sender: user ? user.name : 'Вы',
+          text: chatInput,
+          isMe: true
         };
-        setMessages([...messages, msgObj]);
+
+        setDealMessages(prev => ({
+          ...prev,
+          [selectedTaskForChat.id]: [...(prev[selectedTaskForChat.id] || []), newMsg]
+        }));
         setChatInput('');
       };
 
@@ -214,6 +291,7 @@
 
       const myClientTasks = tasks.filter(t => user && t.author_id === user.id);
       const myFreelancerTasks = tasks.filter(t => user && t.executor_id === user.id);
+      const favoriteTasks = tasks.filter(t => favorites.includes(t.id));
 
       return (
         <div className="min-h-screen flex flex-col w-full max-w-full overflow-x-hidden">
@@ -226,11 +304,9 @@
                     <i className="fa-solid fa-robot text-base sm:text-lg"></i>
                   </div>
                 </div>
-                <div className="min-w-0">
-                  <span className="font-extrabold text-sm sm:text-xl tracking-wide sm:tracking-wider bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent truncate block">
-                    AI WORKERS SPACE
-                  </span>
-                </div>
+                <span className="font-extrabold text-sm sm:text-xl tracking-wide bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent truncate block">
+                  AI WORKERS SPACE
+                </span>
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
@@ -244,9 +320,15 @@
 
                 {user ? (
                   <div className="flex items-center gap-1.5">
-                    <span className="hidden sm:inline text-xs text-slate-300 font-mono bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">
-                      {user.name}
-                    </span>
+                    <button 
+                      onClick={() => setTab('cabinet')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all ${
+                        tab === 'cabinet' ? 'bg-cyan-500 text-black border-cyan-400' : 'bg-slate-900 border-slate-800 text-cyan-300'
+                      }`}
+                    >
+                      <i className="fa-solid fa-id-badge"></i>
+                      <span className="hidden sm:inline">{user.name}</span>
+                    </button>
                     <button 
                       onClick={handleLogout}
                       title="Выйти"
@@ -285,14 +367,14 @@
               <button
                 onClick={() => {
                   if (!user) setAuthModalOpen(true);
-                  else setTab('my-tasks');
+                  else setTab('cabinet');
                 }}
                 className={`flex-shrink-0 lg:flex-none flex items-center gap-2.5 px-3.5 py-2.5 sm:py-3 rounded-xl border font-medium text-xs sm:text-sm transition-all ${
-                  tab === 'my-tasks' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300' : 'bg-slate-900/60 border-slate-800 text-slate-400'
+                  tab === 'cabinet' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300' : 'bg-slate-900/60 border-slate-800 text-slate-400'
                 }`}
               >
-                <i className="fa-solid fa-folder-open text-emerald-400"></i>
-                <span className="whitespace-nowrap">Мои заказы</span>
+                <i className="fa-solid fa-user-gear text-emerald-400"></i>
+                <span className="whitespace-nowrap">Личный кабинет</span>
               </button>
 
               <button
@@ -317,19 +399,9 @@
                 <i className="fa-solid fa-users text-teal-400"></i>
                 <span className="whitespace-nowrap">Топ Креаторов</span>
               </button>
-
-              <button
-                onClick={() => setTab('chat')}
-                className={`flex-shrink-0 lg:flex-none flex items-center gap-2.5 px-3.5 py-2.5 sm:py-3 rounded-xl border font-medium text-xs sm:text-sm transition-all ${
-                  tab === 'chat' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' : 'bg-slate-900/60 border-slate-800 text-slate-400'
-                }`}
-              >
-                <i className="fa-solid fa-comments text-cyan-400"></i>
-                <span className="whitespace-nowrap">Сделки и Чат</span>
-              </button>
             </aside>
 
-            {/* Основная рабочая область */}
+            {/* Основная панель */}
             <section className="lg:col-span-9 space-y-4 min-w-0">
               {/* ЛЕНТА */}
               {tab === 'feed' && (
@@ -351,12 +423,23 @@
                   <div className="grid grid-cols-1 gap-4">
                     {displayedTasks.map((t) => (
                       <div key={t.id} className="bg-[#0D121F] p-4 sm:p-5 rounded-2xl border border-slate-800 hover:border-cyan-500/50 flex flex-col sm:flex-row gap-4 sm:items-center transition-all min-w-0">
-                        <div className="w-full sm:w-32 h-40 sm:h-32 rounded-xl overflow-hidden border border-cyan-500/20 bg-slate-950 flex-shrink-0">
+                        <div className="w-full sm:w-32 h-40 sm:h-32 rounded-xl overflow-hidden border border-cyan-500/20 bg-slate-950 flex-shrink-0 relative">
                           <img src={t.preview} className="w-full h-full object-cover" />
+                          <button 
+                            onClick={() => toggleFavorite(t.id)}
+                            className={`absolute top-2 right-2 w-8 h-8 rounded-full backdrop-blur-md flex items-center justify-center text-xs transition-colors ${
+                              favorites.includes(t.id) ? 'bg-amber-500/80 text-white' : 'bg-black/60 text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            <i className="fa-solid fa-star"></i>
+                          </button>
                         </div>
                         <div className="flex-1 min-w-0 space-y-2">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="text-[10px] bg-cyan-950 text-cyan-400 border border-cyan-800/40 px-2 py-0.5 rounded font-mono font-bold">{t.tool}</span>
+                            <span className="text-[11px] text-slate-400 font-mono flex items-center gap-1">
+                              <i className="fa-solid fa-eye text-slate-500"></i> {t.views || 0}
+                            </span>
                             <span className={t.status === 'in_progress' ? 'text-[11px] text-amber-400 font-semibold' : 'text-[11px] text-emerald-400 font-semibold'}>
                               {t.status === 'in_progress' ? '● В работе' : '● Открыт'}
                             </span>
@@ -386,78 +469,191 @@
                 </>
               )}
 
-              {/* МОИ ЗАКАЗЫ */}
-              {tab === 'my-tasks' && (
+              {/* ЛИЧНЫЙ КАБИНЕТ */}
+              {tab === 'cabinet' && (
                 <div className="space-y-4">
-                  <div className="bg-[#0D121F] p-4 sm:p-5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <h2 className="text-base sm:text-lg font-bold text-slate-100">
-                        {role === 'client' ? 'Мои опубликованные задания' : 'Взятые в работу задания'}
-                      </h2>
-                      <p className="text-xs text-slate-400">
-                        {role === 'client' ? 'Управление вашими задачами и откликами' : 'Проекты в работе и статус Escrow-выплаты'}
-                      </p>
+                  {/* Шапка кабинета */}
+                  <div className="bg-[#0D121F] p-5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300 text-xl font-bold font-mono">
+                        {user?.name?.substring(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-base sm:text-lg font-bold text-slate-100">{user?.name}</h2>
+                          <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-full font-mono">
+                            ✓ Email Verified
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400 font-mono">{user?.email}</p>
+                      </div>
                     </div>
-                    <span className="self-start sm:self-auto text-xs font-mono px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-lg">
-                      Роль: {role === 'client' ? 'Заказчик' : 'Исполнитель'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <div className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono">
+                        <span className="text-slate-400">Роль: </span>
+                        <span className="text-cyan-300 font-bold">{role === 'client' ? 'Заказчик' : 'Исполнитель'}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  {role === 'client' ? (
-                    myClientTasks.length === 0 ? (
-                      <div className="text-center py-12 bg-[#0D121F] rounded-2xl border border-slate-800">
-                        <i className="fa-solid fa-briefcase text-2xl text-slate-600 mb-2"></i>
-                        <p className="text-slate-300 font-medium text-xs sm:text-sm">У вас пока нет созданных тасков</p>
-                        <button onClick={() => setTab('create')} className="mt-3 px-4 py-2 bg-cyan-500 text-black font-bold text-xs rounded-xl">
-                          Создать первый заказ
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 gap-3">
-                        {myClientTasks.map(t => (
-                          <div key={t.id} className="bg-[#0D121F] p-4 rounded-2xl border border-cyan-500/30 flex flex-col sm:flex-row gap-3 sm:items-center justify-between min-w-0">
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-[10px] bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded font-mono">{t.tool}</span>
-                                <h4 className="font-bold text-sm text-slate-100 break-words">{t.title}</h4>
+                  {/* Вкладки внутри кабинета */}
+                  <div className="flex items-center gap-2 border-b border-slate-800 pb-2 overflow-x-auto no-scrollbar">
+                    <button
+                      onClick={() => setCabinetSubTab('my-orders')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                        cabinetSubTab === 'my-orders' ? 'bg-cyan-500 text-black font-bold' : 'bg-slate-900 text-slate-400'
+                      }`}
+                    >
+                      {role === 'client' ? `Мои таски (${myClientTasks.length})` : `В работе (${myFreelancerTasks.length})`}
+                    </button>
+                    <button
+                      onClick={() => setCabinetSubTab('favorites')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                        cabinetSubTab === 'favorites' ? 'bg-amber-500 text-black font-bold' : 'bg-slate-900 text-slate-400'
+                      }`}
+                    >
+                      <i className="fa-solid fa-star text-[10px]"></i>
+                      <span>Избранное ({favoriteTasks.length})</span>
+                    </button>
+                  </div>
+
+                  {/* Контент подвкладок кабинета */}
+                  {cabinetSubTab === 'my-orders' && (
+                    role === 'client' ? (
+                      myClientTasks.length === 0 ? (
+                        <div className="text-center py-12 bg-[#0D121F] rounded-2xl border border-slate-800">
+                          <i className="fa-solid fa-briefcase text-2xl text-slate-600 mb-2"></i>
+                          <p className="text-slate-300 font-medium text-xs sm:text-sm">У вас пока нет созданных тасков</p>
+                          <button onClick={() => setTab('create')} className="mt-3 px-4 py-2 bg-cyan-500 text-black font-bold text-xs rounded-xl">
+                            Создать первый заказ
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-3">
+                          {myClientTasks.map(t => (
+                            <div key={t.id} className="bg-[#0D121F] p-4 rounded-2xl border border-cyan-500/30 flex flex-col sm:flex-row gap-3 sm:items-center justify-between min-w-0">
+                              <div className="min-w-0 space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded font-mono">{t.tool}</span>
+                                  <h4 className="font-bold text-sm text-slate-100 break-words">{t.title}</h4>
+                                </div>
+                                <div className="flex items-center gap-3 text-xs text-slate-400 font-mono">
+                                  <span><i className="fa-solid fa-eye text-slate-500"></i> {t.views} просм.</span>
+                                  <span>•</span>
+                                  <span>Бюджет: {t.budget} AWS</span>
+                                  <span>•</span>
+                                  <span className={t.status === 'in_progress' ? 'text-amber-400 font-bold' : 'text-emerald-400'}>
+                                    {t.status === 'in_progress' ? 'В работе' : 'Поиск исполнителя'}
+                                  </span>
+                                </div>
                               </div>
-                              <p className="text-xs text-slate-400 font-mono">Бюджет: {t.budget} AWS • Статус: {t.status === 'in_progress' ? 'В работе' : 'Ожидает откликов'}</p>
+                              <button 
+                                onClick={() => openTaskChat(t)} 
+                                className="px-3.5 py-2 bg-slate-900 border border-cyan-500/40 text-cyan-300 text-xs font-semibold rounded-xl self-start sm:self-auto hover:bg-slate-800"
+                              >
+                                Чат с исполнителем
+                              </button>
                             </div>
-                            <button onClick={() => setTab('chat')} className="px-3.5 py-2 bg-slate-900 border border-cyan-500/40 text-cyan-300 text-xs font-semibold rounded-xl self-start sm:self-auto">
-                              Открыть чат
-                            </button>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      )
+                    ) : (
+                      myFreelancerTasks.length === 0 ? (
+                        <div className="text-center py-12 bg-[#0D121F] rounded-2xl border border-slate-800">
+                          <i className="fa-solid fa-bolt text-2xl text-slate-600 mb-2"></i>
+                          <p className="text-slate-300 font-medium text-xs sm:text-sm">Вы еще не взяли ни одного заказа</p>
+                          <button onClick={() => setTab('feed')} className="mt-3 px-4 py-2 bg-cyan-500 text-black font-bold text-xs rounded-xl">
+                            Выбрать задание в ленте
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-3">
+                          {myFreelancerTasks.map(t => (
+                            <div key={t.id} className="bg-[#0D121F] p-4 rounded-2xl border border-emerald-500/30 flex flex-col sm:flex-row gap-3 sm:items-center justify-between min-w-0">
+                              <div className="min-w-0 space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded font-mono">{t.tool}</span>
+                                  <h4 className="font-bold text-sm text-slate-100 break-words">{t.title}</h4>
+                                </div>
+                                <p className="text-xs text-slate-400 font-mono">Выплата: {t.budget} AWS (Escrow-холд) • Заказчик: {t.author}</p>
+                              </div>
+                              <button 
+                                onClick={() => openTaskChat(t)} 
+                                className="px-3.5 py-2 bg-emerald-500 text-black text-xs font-bold rounded-xl self-start sm:self-auto hover:bg-emerald-400"
+                              >
+                                Чат / Сдать генерацию
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )
                     )
-                  ) : (
-                    myFreelancerTasks.length === 0 ? (
+                  )}
+
+                  {cabinetSubTab === 'favorites' && (
+                    favoriteTasks.length === 0 ? (
                       <div className="text-center py-12 bg-[#0D121F] rounded-2xl border border-slate-800">
-                        <i className="fa-solid fa-bolt text-2xl text-slate-600 mb-2"></i>
-                        <p className="text-slate-300 font-medium text-xs sm:text-sm">Вы еще не взяли ни одного заказа</p>
-                        <button onClick={() => setTab('feed')} className="mt-3 px-4 py-2 bg-cyan-500 text-black font-bold text-xs rounded-xl">
-                          Перейти в ленту
-                        </button>
+                        <i className="fa-solid fa-star text-2xl text-slate-600 mb-2"></i>
+                        <p className="text-slate-300 font-medium text-xs sm:text-sm">В избранном пока пусто</p>
+                        <p className="text-xs text-slate-500 mt-1">Нажимайте на звездочку на карточках ленты, чтобы сохранить таски</p>
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 gap-3">
-                        {myFreelancerTasks.map(t => (
-                          <div key={t.id} className="bg-[#0D121F] p-4 rounded-2xl border border-emerald-500/30 flex flex-col sm:flex-row gap-3 sm:items-center justify-between min-w-0">
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-[10px] bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded font-mono">{t.tool}</span>
-                                <h4 className="font-bold text-sm text-slate-100 break-words">{t.title}</h4>
-                              </div>
-                              <p className="text-xs text-slate-400 font-mono">Выплата: {t.budget} AWS (Холд) • Заказчик: {t.author}</p>
+                        {favoriteTasks.map(t => (
+                          <div key={t.id} className="bg-[#0D121F] p-4 rounded-2xl border border-slate-800 flex items-center justify-between gap-3">
+                            <div>
+                              <h4 className="font-bold text-sm text-slate-100">{t.title}</h4>
+                              <p className="text-xs text-cyan-400 font-mono">{t.budget} AWS • {t.tool}</p>
                             </div>
-                            <button onClick={() => setTab('chat')} className="px-3.5 py-2 bg-emerald-500 text-black text-xs font-bold rounded-xl self-start sm:self-auto">
-                              Сдать работу
+                            <button onClick={() => toggleFavorite(t.id)} className="text-amber-400 hover:text-slate-400 text-sm">
+                              <i className="fa-solid fa-star"></i>
                             </button>
                           </div>
                         ))}
                       </div>
                     )
                   )}
+                </div>
+              )}
+
+              {/* ЧАТ ПО КОНКРЕТНОЙ СДЕЛКЕ */}
+              {tab === 'deal_chat' && selectedTaskForChat && (
+                <div className="bg-[#0D121F] rounded-2xl border border-cyan-500/30 overflow-hidden flex flex-col h-[520px]">
+                  <div className="bg-slate-950 px-4 py-3 border-b border-slate-800 flex justify-between items-center">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setTab('cabinet')} className="text-xs text-slate-400 hover:text-cyan-300 mr-1">
+                          <i className="fa-solid fa-arrow-left"></i>
+                        </button>
+                        <span className="text-xs sm:text-sm font-bold text-slate-200 truncate">Заказ #{selectedTaskForChat.id}: {selectedTaskForChat.title}</span>
+                      </div>
+                    </div>
+                    <span className="text-[11px] text-teal-400 font-mono flex-shrink-0 ml-2">Escrow: {selectedTaskForChat.budget} AWS</span>
+                  </div>
+
+                  <div className="flex-1 p-3 sm:p-4 overflow-y-auto space-y-3">
+                    {(dealMessages[selectedTaskForChat.id] || []).map((m) => (
+                      <div key={m.id} className={`flex flex-col ${m.isMe ? 'items-end' : 'items-start'}`}>
+                        <span className="text-[10px] text-slate-500 mb-0.5">{m.sender}</span>
+                        <div className={`max-w-[85%] rounded-xl px-3.5 py-2 text-xs sm:text-sm break-words ${m.isMe ? 'bg-cyan-600 text-white' : 'bg-slate-900 border border-slate-800 text-slate-200'}`}>
+                          <p>{m.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <form onSubmit={handleSendDealMessage} className="p-2.5 bg-slate-950 border-t border-slate-800 flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Отправить сообщение или ссылку на готовый результат..."
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs sm:text-sm outline-none"
+                    />
+                    <button type="submit" className="p-2 px-3.5 bg-cyan-500 text-black rounded-xl font-bold">
+                      <i className="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
+                  </form>
                 </div>
               )}
 
@@ -512,37 +708,6 @@
                 </div>
               )}
 
-              {/* ЧАТ */}
-              {tab === 'chat' && (
-                <div className="bg-[#0D121F] rounded-2xl border border-cyan-500/30 overflow-hidden flex flex-col h-[480px]">
-                  <div className="bg-slate-950 px-4 py-3 border-b border-slate-800 flex justify-between items-center">
-                    <span className="text-xs sm:text-sm font-bold text-slate-200 truncate">Алексей "PromptMaster"</span>
-                    <span className="text-[11px] text-teal-400 font-mono flex-shrink-0">Холд: 250 AWS</span>
-                  </div>
-                  <div className="flex-1 p-3 sm:p-4 overflow-y-auto space-y-3">
-                    {messages.map((m) => (
-                      <div key={m.id} className={`flex flex-col ${m.isMe ? 'items-end' : 'items-start'}`}>
-                        <div className={`max-w-[85%] rounded-xl px-3.5 py-2 text-xs sm:text-sm break-words ${m.isMe ? 'bg-cyan-600 text-white' : 'bg-slate-900 border border-slate-800 text-slate-200'}`}>
-                          <p>{m.text}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <form onSubmit={handleSendMessage} className="p-2.5 bg-slate-950 border-t border-slate-800 flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Сообщение..."
-                      value={chatInput}
-                      onChange={(e) => setChatInput(e.target.value)}
-                      className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs sm:text-sm outline-none"
-                    />
-                    <button type="submit" className="p-2 px-3.5 bg-cyan-500 text-black rounded-xl font-bold">
-                      <i className="fa-solid fa-paper-plane text-xs"></i>
-                    </button>
-                  </form>
-                </div>
-              )}
-
               {/* КРЕАТОРЫ */}
               {tab === 'creators' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -558,9 +723,6 @@
                       <div className="flex flex-wrap gap-1.5">
                         {c.skills.map(s => <span key={s} className="text-[10px] bg-slate-900 px-2 py-0.5 rounded text-cyan-300 border border-slate-800 font-mono">{s}</span>)}
                       </div>
-                      <button onClick={() => setTab('chat')} className="w-full py-2 bg-slate-900 text-teal-300 border border-teal-500/30 rounded-xl text-xs font-semibold">
-                        Написать
-                      </button>
                     </div>
                   ))}
                 </div>
@@ -568,7 +730,7 @@
             </section>
           </main>
 
-          {/* МОДАЛЬНОЕ ОКНО ВХОДА / РЕГИСТРАЦИИ */}
+          {/* МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ / ВЕРИФИКАЦИИ */}
           {authModalOpen && (
             <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
               <div className="bg-[#0D121F] border border-cyan-500/40 rounded-2xl p-5 sm:p-7 max-w-sm w-full relative">
@@ -579,61 +741,100 @@
                   <i className="fa-solid fa-xmark text-lg"></i>
                 </button>
 
-                <h3 className="text-lg font-bold text-slate-100 mb-1">
-                  {authMode === 'login' ? 'Вход в аккаунт' : 'Регистрация на платформе'}
-                </h3>
-                <p className="text-xs text-slate-400 mb-4">
-                  Доступ к публикации задач и управлению сделками
-                </p>
-
-                {authError && (
-                  <div className="p-2.5 mb-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
-                    {authError}
-                  </div>
+                {authMode === 'login' && (
+                  <>
+                    <h3 className="text-lg font-bold text-slate-100 mb-1">Вход в аккаунт</h3>
+                    <p className="text-xs text-slate-400 mb-4">Доступ к личным заказам и сделкам</p>
+                    {authError && <div className="p-2.5 mb-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">{authError}</div>}
+                    <form onSubmit={handleLogin} className="space-y-3">
+                      <input
+                        type="email"
+                        required
+                        placeholder="Ваш Email"
+                        value={authEmail}
+                        onChange={(e) => setAuthEmail(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-cyan-500 outline-none"
+                      />
+                      <input
+                        type="password"
+                        required
+                        placeholder="Пароль"
+                        value={authPassword}
+                        onChange={(e) => setAuthPassword(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-cyan-500 outline-none"
+                      />
+                      <button type="submit" className="w-full py-3 rounded-xl bg-cyan-500 text-black font-bold text-sm hover:bg-cyan-400">
+                        Войти
+                      </button>
+                    </form>
+                    <div className="mt-3 text-center text-xs text-slate-400">
+                      Впервые на платформе?{' '}
+                      <button onClick={() => { setAuthMode('register'); setAuthError(''); }} className="text-cyan-400 font-semibold hover:underline">
+                        Зарегистрироваться
+                      </button>
+                    </div>
+                  </>
                 )}
 
-                <form onSubmit={handleAuth} className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Email</label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="name@domain.com"
-                      value={authEmail}
-                      onChange={(e) => setAuthEmail(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:border-cyan-500 outline-none"
-                    />
-                  </div>
+                {authMode === 'register' && (
+                  <>
+                    <h3 className="text-lg font-bold text-slate-100 mb-1">Регистрация</h3>
+                    <p className="text-xs text-slate-400 mb-4">На ваш Email будет отправлен код подтверждения</p>
+                    {authError && <div className="p-2.5 mb-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">{authError}</div>}
+                    <form onSubmit={handleStartRegister} className="space-y-3">
+                      <input
+                        type="email"
+                        required
+                        placeholder="Ваш Email"
+                        value={authEmail}
+                        onChange={(e) => setAuthEmail(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-cyan-500 outline-none"
+                      />
+                      <input
+                        type="password"
+                        required
+                        placeholder="Придумайте пароль (от 6 символов)"
+                        value={authPassword}
+                        onChange={(e) => setAuthPassword(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-cyan-500 outline-none"
+                      />
+                      <button type="submit" className="w-full py-3 rounded-xl bg-cyan-500 text-black font-bold text-sm hover:bg-cyan-400">
+                        Получить код на Email
+                      </button>
+                    </form>
+                    <div className="mt-3 text-center text-xs text-slate-400">
+                      Уже есть аккаунт?{' '}
+                      <button onClick={() => { setAuthMode('login'); setAuthError(''); }} className="text-cyan-400 font-semibold hover:underline">
+                        Войти
+                      </button>
+                    </div>
+                  </>
+                )}
 
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Пароль</label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="Минимум 6 символов"
-                      value={authPassword}
-                      onChange={(e) => setAuthPassword(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:border-cyan-500 outline-none"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-3 rounded-xl bg-cyan-500 text-black font-bold text-xs sm:text-sm hover:bg-cyan-400 transition-colors mt-1"
-                  >
-                    {authMode === 'login' ? 'Войти' : 'Зарегистрироваться'}
-                  </button>
-                </form>
-
-                <div className="mt-3 text-center text-xs text-slate-400">
-                  {authMode === 'login' ? 'Впервые на платформе? ' : 'Уже есть аккаунт? '}
-                  <button
-                    onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthError(''); }}
-                    className="text-cyan-400 font-semibold hover:underline"
-                  >
-                    {authMode === 'login' ? 'Зарегистрироваться' : 'Войти'}
-                  </button>
-                </div>
+                {authMode === 'verify_email' && (
+                  <>
+                    <h3 className="text-lg font-bold text-slate-100 mb-1">Подтверждение Email</h3>
+                    <p className="text-xs text-slate-400 mb-2">Введите код, отправленный на <b>{authEmail}</b></p>
+                    <div className="p-2.5 mb-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-mono">
+                      Тестовый код верификации: <b>{generatedOtp}</b>
+                    </div>
+                    {authError && <div className="p-2.5 mb-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">{authError}</div>}
+                    <form onSubmit={handleVerifyEmail} className="space-y-3">
+                      <input
+                        type="text"
+                        required
+                        maxLength="6"
+                        placeholder="6-значный код"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value)}
+                        className="w-full bg-slate-950 border border-cyan-500 text-center text-lg font-mono tracking-widest rounded-xl px-3.5 py-2.5 text-cyan-300 outline-none"
+                      />
+                      <button type="submit" className="w-full py-3 rounded-xl bg-emerald-500 text-black font-bold text-sm hover:bg-emerald-400">
+                        Подтвердить и войти
+                      </button>
+                    </form>
+                  </>
+                )}
               </div>
             </div>
           )}
