@@ -23,15 +23,12 @@
 
     const TELEGRAM_LINK = "https://t.me/aiworkersspace";
 
-    // Функция динамического расчета отклика по правилам
     const calculateResponseFee = (budget) => {
       const b = Number(budget) || 0;
       if (b <= 2000) return 100;
       if (b <= 5000) {
-        // 5% от суммы, от 100 до 250
         return Math.max(100, Math.round(b * 0.05));
       }
-      // Свыше 5000: плавный рост до 1200 при 100000
       const fee = 250 + ((b - 5000) / (100000 - 5000)) * (1200 - 250);
       return Math.round(fee);
     };
@@ -68,7 +65,7 @@
         web: '💻 Сайты и Кодинг',
         biz: '⚡ Автоматизация бизнеса',
         gamedev: '👾 3D и GameDev',
-        takeTask: 'Взять заказ',
+        takeTask: 'Открыть таск / Чат',
         budget: 'Бюджет сделки',
         responseFee: 'Отклик',
         promptLabel: 'Prompt:',
@@ -86,7 +83,7 @@
         verified: '✓ Проверен',
         emptyFeed: 'В этой категории пока нет опубликованных тасков.',
         createTaskTitle: 'Создать задание',
-        createTaskSub: 'Бюджет будет зарезервирован в безопасном Escrow-холде до приёма работы.',
+        createTaskSub: 'Прикрепите референсы, выберите главное фото. Бюджет резервируется в Escrow.',
         taskNamePlaceholder: 'Название проекта (например: Генерация концепт-арта для фильма)',
         promptPlaceholder: 'Вставьте промпт или требования к стилю и формату...',
         publishBtn: 'Опубликовать заказ (Холд Escrow)',
@@ -108,7 +105,9 @@
         privacyPolicy: 'Политика конфиденциальности',
         userAgreement: 'Пользовательское соглашение',
         telegramChannel: 'Telegram Канал',
-        rightsReserved: 'Все права защищены.'
+        rightsReserved: 'Все права защищены.',
+        unlockChatBtn: 'Оплатить отклик и открыть чат',
+        chatLockedAlert: 'Чат заблокирован. Для общения и отправки решений оплатите отклик.'
       },
       en: {
         brand: 'AI WORKERS SPACE',
@@ -133,7 +132,7 @@
         web: '💻 Web & Coding',
         biz: '⚡ AI Business Agents',
         gamedev: '👾 3D & GameDev',
-        takeTask: 'Accept Task',
+        takeTask: 'View Task / Chat',
         budget: 'Total Budget',
         responseFee: 'Apply Fee',
         promptLabel: 'Prompt:',
@@ -151,7 +150,7 @@
         verified: '✓ Verified',
         emptyFeed: 'No tasks found in this category.',
         createTaskTitle: 'Post a New Task',
-        createTaskSub: 'Budget will be held securely in Escrow until you approve the final delivery.',
+        createTaskSub: 'Attach reference photos and select main cover. Budget held in Escrow.',
         taskNamePlaceholder: 'Project Title (e.g. Concept art generation for sci-fi film)',
         promptPlaceholder: 'Provide master prompt or specific creative requirements...',
         publishBtn: 'Publish Task (Hold Escrow)',
@@ -173,7 +172,9 @@
         privacyPolicy: 'Privacy Policy',
         userAgreement: 'Terms of Service',
         telegramChannel: 'Telegram Channel',
-        rightsReserved: 'All rights reserved.'
+        rightsReserved: 'All rights reserved.',
+        unlockChatBtn: 'Pay Fee to Unlock Chat',
+        chatLockedAlert: 'Chat is locked. Pay apply fee to participate in this specific deal.'
       }
     };
 
@@ -193,7 +194,12 @@
         executor_id: null,
         status: 'open',
         views: 480,
-        preview: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'
+        mainPhotoIndex: 0,
+        photos: [
+          'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80'
+        ]
       },
       {
         id: 102,
@@ -210,7 +216,11 @@
         executor_id: null,
         status: 'open',
         views: 310,
-        preview: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80'
+        mainPhotoIndex: 0,
+        photos: [
+          'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80'
+        ]
       },
       {
         id: 103,
@@ -227,7 +237,11 @@
         executor_id: null,
         status: 'open',
         views: 220,
-        preview: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=600&q=80'
+        mainPhotoIndex: 0,
+        photos: [
+          'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80'
+        ]
       },
       {
         id: 104,
@@ -244,7 +258,10 @@
         executor_id: null,
         status: 'open',
         views: 520,
-        preview: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80'
+        mainPhotoIndex: 0,
+        photos: [
+          'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80'
+        ]
       },
       {
         id: 105,
@@ -261,41 +278,11 @@
         executor_id: null,
         status: 'open',
         views: 410,
-        preview: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80'
-      },
-      {
-        id: 106,
-        category: 'web',
-        title: 'Интерактивный Web3 лендинг с 3D Canvas и анимацией Three.js',
-        title_en: 'Interactive Web3 Landing Page with 3D Canvas & Three.js',
-        prompt: 'Futuristic responsive landing page, Tailwind CSS, Framer Motion floating particles, wallet connect SDK integration and dark glassmorphism UI',
-        tool: 'Cursor / v0.dev',
-        budget: 45000,
-        response_fee: 710,
-        currency: 'AWS',
-        author: 'SolanaDeFi Protocol',
-        author_id: 'client_6',
-        executor_id: null,
-        status: 'open',
-        views: 390,
-        preview: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80'
-      },
-      {
-        id: 107,
-        category: 'gamedev',
-        title: 'Пак изометрических 3D ассетов Sci-Fi космической базы для UE5',
-        title_en: 'Pack of Isometric 3D Sci-Fi Space Colony assets for Unreal Engine 5',
-        prompt: 'Modular sci-fi space base buildings, solar panels, airlocks, low-poly stylized with PBR textures, clean topology, isometric view --v 6.0',
-        tool: 'Meshy 3D / Tripo AI',
-        budget: 25000,
-        response_fee: 460,
-        currency: 'AWS',
-        author: 'GalaxyQuest Games',
-        author_id: 'client_7',
-        executor_id: null,
-        status: 'open',
-        views: 330,
-        preview: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80'
+        mainPhotoIndex: 0,
+        photos: [
+          'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=800&q=80'
+        ]
       }
     ];
 
@@ -319,16 +306,6 @@
         category_en: 'AI-Video & Cinema',
         skills: ['Runway Gen-3', 'Suno AI v3.5', 'ElevenLabs'],
         avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80'
-      },
-      {
-        id: 3,
-        name: 'NeuralDev Core',
-        rating: '4.96',
-        deals: 51,
-        category: 'Боты & Автоматизация',
-        category_en: 'AI Agents & Code',
-        skills: ['Claude 3.5', 'Python', 'Make / n8n', 'Supabase'],
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
       }
     ];
 
@@ -341,19 +318,25 @@
       const [cabinetSubTab, setCabinetSubTab] = useState('my-orders');
       
       const [balance, setBalance] = useState(() => {
-        const b = localStorage.getItem('aws_balance_v3');
+        const b = localStorage.getItem('aws_balance_v4');
         return b ? Number(b) : 25000;
       });
 
       const [tasks, setTasks] = useState(() => {
         const savedVer = localStorage.getItem('aws_tasks_version');
-        if (savedVer === '3.0') {
+        if (savedVer === '4.0') {
           const saved = localStorage.getItem('aws_tasks');
           return saved ? JSON.parse(saved) : RICH_INITIAL_TASKS;
         }
-        localStorage.setItem('aws_tasks_version', '3.0');
+        localStorage.setItem('aws_tasks_version', '4.0');
         localStorage.setItem('aws_tasks', JSON.stringify(RICH_INITIAL_TASKS));
         return RICH_INITIAL_TASKS;
+      });
+
+      // Хранилище оплаченных откликов пользователя { [userId]: [taskId1, taskId2] }
+      const [paidUnlocks, setPaidUnlocks] = useState(() => {
+        const saved = localStorage.getItem('aws_paid_unlocks');
+        return saved ? JSON.parse(saved) : {};
       });
 
       const [favorites, setFavorites] = useState(() => {
@@ -387,12 +370,18 @@
       // Юридические документы
       const [legalModalOpen, setLegalModalOpen] = useState(null);
 
-      // Форма задачи
+      // Форма создания задачи
       const [newTitle, setNewTitle] = useState('');
       const [newCategory, setNewCategory] = useState('art');
       const [newPrompt, setNewPrompt] = useState('');
       const [newBudget, setNewBudget] = useState('');
       const [newTool, setNewTool] = useState('Midjourney v6');
+      const [photoUrls, setPhotoUrls] = useState(['', '']);
+      const [mainPhotoIndex, setMainPhotoIndex] = useState(0);
+
+      // Просмотр детального таска и слайдер
+      const [viewingTask, setViewingTask] = useState(null);
+      const [currentPhotoSlide, setCurrentPhotoSlide] = useState(0);
 
       // Чат и Escrow
       const [selectedTaskForChat, setSelectedTaskForChat] = useState(null);
@@ -408,11 +397,15 @@
       }, [tasks]);
 
       useEffect(() => {
+        localStorage.setItem('aws_paid_unlocks', JSON.stringify(paidUnlocks));
+      }, [paidUnlocks]);
+
+      useEffect(() => {
         localStorage.setItem('aws_favorites', JSON.stringify(favorites));
       }, [favorites]);
 
       useEffect(() => {
-        localStorage.setItem('aws_balance_v3', balance.toString());
+        localStorage.setItem('aws_balance_v4', balance.toString());
       }, [balance]);
 
       const toggleLang = () => {
@@ -482,6 +475,20 @@
         }
       };
 
+      // Добавление поля фото в форму
+      const handleAddPhotoField = () => {
+        if (photoUrls.length < 5) {
+          setPhotoUrls([...photoUrls, '']);
+        }
+      };
+
+      const handlePhotoUrlChange = (index, value) => {
+        const updated = [...photoUrls];
+        updated[index] = value;
+        setPhotoUrls(updated);
+      };
+
+      // Создание задачи
       const handleCreateTask = (e) => {
         e.preventDefault();
         if (!user) {
@@ -495,6 +502,11 @@
           setWalletModalOpen(true);
           return;
         }
+
+        const validPhotos = photoUrls.filter(u => u.trim().length > 0);
+        const finalPhotos = validPhotos.length > 0 ? validPhotos : [
+          'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80'
+        ];
 
         const taskObj = {
           id: Date.now(),
@@ -511,7 +523,8 @@
           executor_id: null,
           status: 'open',
           views: 1,
-          preview: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80'
+          mainPhotoIndex: mainPhotoIndex < finalPhotos.length ? mainPhotoIndex : 0,
+          photos: finalPhotos
         };
 
         setBalance(prev => prev - taskBudget);
@@ -519,40 +532,58 @@
         setNewTitle('');
         setNewPrompt('');
         setNewBudget('');
+        setPhotoUrls(['', '']);
+        setMainPhotoIndex(0);
         setTab('cabinet');
         setCabinetSubTab('my-orders');
       };
 
-      const handleTakeTask = (taskId) => {
+      // Проверка, оплачен ли чат текущим пользователем
+      const isChatUnlocked = (taskId, authorId) => {
+        if (!user) return false;
+        if (user.id === authorId) return true; // Заказчик всегда имеет доступ к своему чату
+        const userPaidList = paidUnlocks[user.id] || [];
+        return userPaidList.includes(taskId);
+      };
+
+      // Оплата отклика для открытия чата
+      const handleUnlockAndEnterChat = (task) => {
         if (!user) {
           setAuthModalOpen(true);
           return;
         }
 
-        const target = tasks.find(t => t.id === taskId);
-        const fee = target?.response_fee || calculateResponseFee(target?.budget || 5000);
-        
+        const fee = task.response_fee || calculateResponseFee(task.budget);
+
         if (balance < fee) {
-          alert(lang === 'ru' ? `Для отклика необходимо ${fee} AWS на балансе` : `You need ${fee} AWS to submit an application`);
+          alert(lang === 'ru' ? `Недостаточно средств. Для отклика требуется ${fee} AWS.` : `Insufficient balance. ${fee} AWS required.`);
           setWalletModalOpen(true);
           return;
         }
 
+        // Списание средств
         setBalance(prev => prev - fee);
 
-        const updated = tasks.map(t => {
-          if (t.id === taskId) {
-            return { ...t, status: 'in_progress', executor_id: user.id };
-          }
-          return t;
+        // Фиксация оплаты за этот таск
+        setPaidUnlocks(prev => {
+          const currentList = prev[user.id] || [];
+          return {
+            ...prev,
+            [user.id]: [...currentList, task.id]
+          };
         });
-        setTasks(updated);
 
-        const activeTask = updated.find(t => t.id === taskId);
-        openTaskChat(activeTask);
+        // Открываем чат
+        openTaskChat(task);
+      };
+
+      const openTaskModal = (task) => {
+        setViewingTask(task);
+        setCurrentPhotoSlide(task.mainPhotoIndex || 0);
       };
 
       const openTaskChat = (task) => {
+        setViewingTask(null);
         setSelectedTaskForChat(task);
         if (!dealMessages[task.id]) {
           setDealMessages(prev => ({
@@ -568,6 +599,12 @@
       const handleSendDealMessage = (e) => {
         e.preventDefault();
         if (!chatInput.trim() || !selectedTaskForChat) return;
+
+        // Блокировка отправки, если чат не разблокирован
+        if (!isChatUnlocked(selectedTaskForChat.id, selectedTaskForChat.author_id)) {
+          alert(t.chatLockedAlert);
+          return;
+        }
 
         const newMsg = {
           id: Date.now(),
@@ -657,7 +694,7 @@
         : tasks.filter(t => t.category === selectedCat);
 
       const myClientTasks = tasks.filter(t => user && t.author_id === user.id);
-      const myFreelancerTasks = tasks.filter(t => user && t.executor_id === user.id);
+      const myFreelancerTasks = tasks.filter(t => user && (t.executor_id === user.id || (paidUnlocks[user.id] || []).includes(t.id)));
       const favoriteTasks = tasks.filter(t => favorites.includes(t.id));
 
       const categoriesList = [
@@ -843,66 +880,89 @@
                     ))}
                   </div>
 
+                  {/* Список тасков */}
                   <div className="grid grid-cols-1 gap-4">
-                    {displayedTasks.map((item) => (
-                      <div key={item.id} className="bg-[#0D121F] p-4 sm:p-5 rounded-2xl border border-slate-800 hover:border-cyan-500/50 flex flex-col sm:flex-row gap-4 sm:items-center transition-all min-w-0">
-                        <div className="w-full sm:w-36 h-44 sm:h-32 rounded-xl overflow-hidden border border-cyan-500/20 bg-slate-950 flex-shrink-0 relative">
-                          <img src={item.preview} className="w-full h-full object-cover" />
-                          <button 
-                            onClick={() => toggleFavorite(item.id)}
-                            className={`absolute top-2 right-2 w-8 h-8 rounded-full backdrop-blur-md flex items-center justify-center text-xs transition-colors ${
-                              favorites.includes(item.id) ? 'bg-amber-500/80 text-white' : 'bg-black/60 text-slate-400 hover:text-white'
-                            }`}
-                          >
-                            <i className="fa-solid fa-star"></i>
-                          </button>
-                        </div>
-                        <div className="flex-1 min-w-0 space-y-2">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-[10px] bg-cyan-950 text-cyan-400 border border-cyan-800/40 px-2 py-0.5 rounded font-mono font-bold">{item.tool}</span>
-                            <span className="text-[11px] text-slate-400 font-mono flex items-center gap-1">
-                              <i className="fa-solid fa-eye text-slate-500"></i> {item.views || 0} {t.views}
-                            </span>
-                            <span className={
-                              item.status === 'completed' ? 'text-[11px] text-teal-400 font-bold' :
-                              item.status === 'review' ? 'text-[11px] text-purple-400 font-bold' :
-                              item.status === 'in_progress' ? 'text-[11px] text-amber-400 font-bold' : 'text-[11px] text-emerald-400 font-bold'
-                            }>
-                              {item.status === 'completed' ? t.statusCompleted :
-                               item.status === 'review' ? t.statusReview :
-                               item.status === 'in_progress' ? t.statusInProgress : t.statusOpen}
-                            </span>
-                          </div>
-                          <h3 className="font-bold text-sm sm:text-base text-slate-100 break-words leading-snug">
-                            {lang === 'en' && item.title_en ? item.title_en : item.title}
-                          </h3>
-                          <p className="text-xs text-slate-400 font-mono bg-slate-950/70 p-2.5 rounded-lg border border-slate-800/60 break-words">
-                            <span className="text-cyan-400">{t.promptLabel} </span>{item.prompt}
-                          </p>
-                          <div className="flex items-center gap-2 text-[11px] text-slate-400 truncate">
-                            <span>{item.author}</span>
-                            <span>•</span>
-                            <span className="text-emerald-400 font-mono">ID #{item.id}</span>
-                          </div>
-                        </div>
+                    {displayedTasks.map((item) => {
+                      const coverPhoto = (item.photos && item.photos[item.mainPhotoIndex || 0]) || item.photos?.[0] || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe';
+                      const isUnlocked = isChatUnlocked(item.id, item.author_id);
 
-                        <div className="w-full sm:w-auto flex sm:flex-col items-center sm:items-end justify-between gap-2.5 pt-2 sm:pt-0 border-t sm:border-0 border-slate-800/60">
-                          <div className="text-left sm:text-right">
-                            <div className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">{t.budget}</div>
-                            <div className="font-mono text-base sm:text-lg font-extrabold text-cyan-400">{item.budget.toLocaleString()} {item.currency}</div>
-                            <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                              {t.responseFee}: <span className="text-amber-400 font-semibold">{item.response_fee || 100} AWS</span>
+                      return (
+                        <div key={item.id} className="bg-[#0D121F] p-4 sm:p-5 rounded-2xl border border-slate-800 hover:border-cyan-500/50 flex flex-col sm:flex-row gap-4 sm:items-center transition-all min-w-0">
+                          <div 
+                            onClick={() => openTaskModal(item)}
+                            className="w-full sm:w-36 h-44 sm:h-32 rounded-xl overflow-hidden border border-cyan-500/20 bg-slate-950 flex-shrink-0 relative cursor-pointer group"
+                          >
+                            <img src={coverPhoto} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            {item.photos && item.photos.length > 1 && (
+                              <span className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-mono text-slate-200">
+                                <i className="fa-solid fa-images mr-1"></i>{item.photos.length}
+                              </span>
+                            )}
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id); }}
+                              className={`absolute top-2 right-2 w-8 h-8 rounded-full backdrop-blur-md flex items-center justify-center text-xs transition-colors ${
+                                favorites.includes(item.id) ? 'bg-amber-500/80 text-white' : 'bg-black/60 text-slate-400 hover:text-white'
+                              }`}
+                            >
+                              <i className="fa-solid fa-star"></i>
+                            </button>
+                          </div>
+
+                          <div className="flex-1 min-w-0 space-y-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-[10px] bg-cyan-950 text-cyan-400 border border-cyan-800/40 px-2 py-0.5 rounded font-mono font-bold">{item.tool}</span>
+                              <span className="text-[11px] text-slate-400 font-mono flex items-center gap-1">
+                                <i className="fa-solid fa-eye text-slate-500"></i> {item.views || 0} {t.views}
+                              </span>
+                              <span className={
+                                item.status === 'completed' ? 'text-[11px] text-teal-400 font-bold' :
+                                item.status === 'review' ? 'text-[11px] text-purple-400 font-bold' :
+                                item.status === 'in_progress' ? 'text-[11px] text-amber-400 font-bold' : 'text-[11px] text-emerald-400 font-bold'
+                              }>
+                                {item.status === 'completed' ? t.statusCompleted :
+                                 item.status === 'review' ? t.statusReview :
+                                 item.status === 'in_progress' ? t.statusInProgress : t.statusOpen}
+                              </span>
+                            </div>
+                            <h3 
+                              onClick={() => openTaskModal(item)}
+                              className="font-bold text-sm sm:text-base text-slate-100 break-words leading-snug cursor-pointer hover:text-cyan-300 transition-colors"
+                            >
+                              {lang === 'en' && item.title_en ? item.title_en : item.title}
+                            </h3>
+                            <p className="text-xs text-slate-400 font-mono bg-slate-950/70 p-2.5 rounded-lg border border-slate-800/60 break-words">
+                              <span className="text-cyan-400">{t.promptLabel} </span>{item.prompt}
+                            </p>
+                            <div className="flex items-center gap-2 text-[11px] text-slate-400 truncate">
+                              <span>{item.author}</span>
+                              <span>•</span>
+                              <span className="text-emerald-400 font-mono">ID #{item.id}</span>
                             </div>
                           </div>
-                          <button 
-                            onClick={() => handleTakeTask(item.id)} 
-                            className="px-4 py-2 rounded-xl bg-cyan-500 text-black font-bold text-xs hover:bg-cyan-400 flex-shrink-0"
-                          >
-                            {t.takeTask}
-                          </button>
+
+                          <div className="w-full sm:w-auto flex sm:flex-col items-center sm:items-end justify-between gap-2.5 pt-2 sm:pt-0 border-t sm:border-0 border-slate-800/60">
+                            <div className="text-left sm:text-right">
+                              <div className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">{t.budget}</div>
+                              <div className="font-mono text-base sm:text-lg font-extrabold text-cyan-400">{item.budget.toLocaleString()} {item.currency}</div>
+                              <div className="text-[10px] text-slate-500 font-mono mt-0.5">
+                                {t.responseFee}: <span className="text-amber-400 font-semibold">{item.response_fee || 100} AWS</span>
+                              </div>
+                            </div>
+                            <button 
+                              onClick={() => openTaskModal(item)} 
+                              className={`px-4 py-2 rounded-xl font-bold text-xs flex-shrink-0 transition-colors flex items-center gap-1.5 ${
+                                isUnlocked 
+                                  ? 'bg-emerald-500 text-black hover:bg-emerald-400' 
+                                  : 'bg-cyan-500 text-black hover:bg-cyan-400'
+                              }`}
+                            >
+                              <i className={isUnlocked ? "fa-solid fa-comments" : "fa-solid fa-eye"}></i>
+                              <span>{isUnlocked ? 'Открыть чат' : t.takeTask}</span>
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </>
               )}
@@ -1112,6 +1172,7 @@
                     </div>
                   </div>
 
+                  {/* История сообщений */}
                   <div className="flex-1 p-3 sm:p-4 overflow-y-auto space-y-3">
                     {(dealMessages[selectedTaskForChat.id] || []).map((m) => (
                       <div key={m.id} className={`flex flex-col ${m.isMe ? 'items-end' : 'items-start'}`}>
@@ -1123,22 +1184,38 @@
                     ))}
                   </div>
 
-                  <form onSubmit={handleSendDealMessage} className="p-2.5 bg-slate-950 border-t border-slate-800 flex gap-2">
-                    <input
-                      type="text"
-                      placeholder={lang === 'ru' ? 'Отправить сообщение или ссылку на работу...' : 'Type message or send download link...'}
-                      value={chatInput}
-                      onChange={(e) => setChatInput(e.target.value)}
-                      className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs sm:text-sm outline-none"
-                    />
-                    <button type="submit" className="p-2 px-3.5 bg-cyan-500 text-black rounded-xl font-bold">
-                      <i className="fa-solid fa-paper-plane text-xs"></i>
-                    </button>
-                  </form>
+                  {/* Блок отправки с защитой Paywall */}
+                  {isChatUnlocked(selectedTaskForChat.id, selectedTaskForChat.author_id) ? (
+                    <form onSubmit={handleSendDealMessage} className="p-2.5 bg-slate-950 border-t border-slate-800 flex gap-2">
+                      <input
+                        type="text"
+                        placeholder={lang === 'ru' ? 'Отправить сообщение или ссылку на работу...' : 'Type message or send download link...'}
+                        value={chatInput}
+                        onChange={(e) => setChatInput(e.target.value)}
+                        className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs sm:text-sm outline-none"
+                      />
+                      <button type="submit" className="p-2 px-3.5 bg-cyan-500 text-black rounded-xl font-bold">
+                        <i className="fa-solid fa-paper-plane text-xs"></i>
+                      </button>
+                    </form>
+                  ) : (
+                    <div className="p-3 bg-slate-950 border-t border-amber-500/40 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+                      <div className="flex items-center gap-2 text-amber-400 text-xs font-mono">
+                        <i className="fa-solid fa-lock text-sm"></i>
+                        <span>{t.chatLockedAlert}</span>
+                      </div>
+                      <button
+                        onClick={() => handleUnlockAndEnterChat(selectedTaskForChat)}
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-bold text-xs hover:opacity-90 transition-opacity"
+                      >
+                        {t.unlockChatBtn} ({selectedTaskForChat.response_fee || 100} AWS)
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* POST A TASK */}
+              {/* POST A TASK C ВЫБОРОМ ФОТО */}
               {tab === 'create' && (
                 <div className="bg-[#0D121F] p-5 sm:p-7 rounded-2xl border border-cyan-500/30">
                   <h2 className="text-lg sm:text-xl font-bold text-cyan-400 mb-1">{t.createTaskTitle}</h2>
@@ -1152,6 +1229,7 @@
                       onChange={(e) => setNewTitle(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:border-cyan-500 outline-none"
                     />
+
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <select
                         value={newCategory}
@@ -1189,6 +1267,54 @@
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm outline-none"
                       />
                     </div>
+
+                    {/* Мульти-загрузка фото с выбором главного */}
+                    <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs font-semibold text-slate-300">
+                          <i className="fa-solid fa-images text-cyan-400 mr-1.5"></i>
+                          Прикрепить фото / Референсы ({photoUrls.length}/5)
+                        </label>
+                        {photoUrls.length < 5 && (
+                          <button
+                            type="button"
+                            onClick={handleAddPhotoField}
+                            className="text-xs text-cyan-400 hover:text-cyan-300 font-mono"
+                          >
+                            + Добавить еще фото
+                          </button>
+                        )}
+                      </div>
+
+                      {photoUrls.map((url, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <input
+                            type="url"
+                            placeholder={`URL фото #${idx + 1} (например: https://images.unsplash.com/...)`}
+                            value={url}
+                            onChange={(e) => handlePhotoUrlChange(idx, e.target.value)}
+                            className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs font-mono text-slate-200 outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setMainPhotoIndex(idx)}
+                            className={`px-3 py-2 rounded-xl text-xs font-bold font-mono transition-all ${
+                              mainPhotoIndex === idx 
+                                ? 'bg-amber-500 text-black' 
+                                : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-white'
+                            }`}
+                            title="Сделать главной обложкой"
+                          >
+                            <i className="fa-solid fa-star mr-1"></i>
+                            {mainPhotoIndex === idx ? 'Главное' : 'Сделать главным'}
+                          </button>
+                        </div>
+                      ))}
+                      <p className="text-[10px] text-slate-500 font-mono">
+                        Главное фото будет отображаться на карточке в ленте. Остальные фото заказчик и фрилансеры смогут пролистать в галерее таска.
+                      </p>
+                    </div>
+
                     <textarea
                       rows="4"
                       placeholder={t.promptPlaceholder}
@@ -1196,6 +1322,7 @@
                       onChange={(e) => setNewPrompt(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-sm outline-none"
                     ></textarea>
+
                     <button
                       type="submit"
                       className="w-full py-3.5 rounded-xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white font-bold text-sm"
@@ -1230,6 +1357,96 @@
               )}
             </section>
           </main>
+
+          {/* МОДАЛЬНОЕ ОКНО ДЕТАЛЬНОГО ПРОСМОТРА ТАСКА С ГАЛЕРЕЕЙ */}
+          {viewingTask && (
+            <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-[#0D121F] border border-cyan-500/40 rounded-2xl p-5 sm:p-7 max-w-2xl w-full max-h-[90vh] flex flex-col relative overflow-y-auto">
+                <button 
+                  onClick={() => setViewingTask(null)}
+                  className="absolute top-4 right-4 text-slate-400 hover:text-white z-10"
+                >
+                  <i className="fa-solid fa-xmark text-lg"></i>
+                </button>
+
+                {/* Слайдер фото */}
+                <div className="relative w-full h-64 sm:h-80 rounded-xl overflow-hidden bg-slate-950 mb-4 border border-cyan-500/20">
+                  <img 
+                    src={viewingTask.photos[currentPhotoSlide] || viewingTask.photos[0]} 
+                    className="w-full h-full object-cover transition-all duration-300"
+                  />
+                  
+                  {viewingTask.photos.length > 1 && (
+                    <>
+                      <button 
+                        onClick={() => setCurrentPhotoSlide((prev) => (prev > 0 ? prev - 1 : viewingTask.photos.length - 1))}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black"
+                      >
+                        <i className="fa-solid fa-chevron-left"></i>
+                      </button>
+                      <button 
+                        onClick={() => setCurrentPhotoSlide((prev) => (prev < viewingTask.photos.length - 1 ? prev + 1 : 0))}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black"
+                      >
+                        <i className="fa-solid fa-chevron-right"></i>
+                      </button>
+                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/60 px-3 py-1 rounded-full backdrop-blur-md">
+                        {viewingTask.photos.map((_, i) => (
+                          <div 
+                            key={i} 
+                            onClick={() => setCurrentPhotoSlide(i)}
+                            className={`w-2 h-2 rounded-full cursor-pointer ${currentPhotoSlide === i ? 'bg-cyan-400' : 'bg-slate-600'}`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Информация о таске */}
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-xs bg-cyan-950 text-cyan-400 border border-cyan-800/40 px-2.5 py-1 rounded font-mono font-bold">
+                      {viewingTask.tool}
+                    </span>
+                    <div className="font-mono text-xl font-extrabold text-cyan-400">
+                      {viewingTask.budget.toLocaleString()} {viewingTask.currency}
+                    </div>
+                  </div>
+
+                  <h2 className="text-lg sm:text-xl font-bold text-slate-100">{viewingTask.title}</h2>
+
+                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800/80 text-xs font-mono text-slate-300">
+                    <span className="text-cyan-400 block mb-1">Промпт / Техническое задание:</span>
+                    {viewingTask.prompt}
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-800">
+                    <div>Заказчик: <span className="text-slate-200 font-semibold">{viewingTask.author}</span></div>
+                    <div>Отклик: <span className="text-amber-400 font-semibold">{viewingTask.response_fee} AWS</span></div>
+                  </div>
+
+                  {/* Кнопка действия с проверкой Paywall */}
+                  {isChatUnlocked(viewingTask.id, viewingTask.author_id) ? (
+                    <button
+                      onClick={() => openTaskChat(viewingTask)}
+                      className="w-full py-3 rounded-xl bg-emerald-500 text-black font-bold text-sm hover:bg-emerald-400 mt-2"
+                    >
+                      Перейти в чат сделки
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleUnlockAndEnterChat(viewingTask)}
+                      className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-bold text-sm hover:opacity-90 mt-2 flex items-center justify-center gap-2"
+                    >
+                      <i className="fa-solid fa-lock-open"></i>
+                      <span>Оплатить отклик ({viewingTask.response_fee || 100} AWS) и открыть чат</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Footer */}
           <footer className="mt-12 border-t border-cyan-500/20 bg-[#06080C] px-4 py-8 text-xs text-slate-400">
@@ -1577,3 +1794,4 @@
   </script>
 </body>
 </html>
+
