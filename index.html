@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>AI WORKERS SPACE — Биржа ИИ-специалистов</title>
+  <title>AI WORKERS SPACE — Нанимайте лучших AI-креаторов</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -21,9 +21,21 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
+    const CATEGORIES = [
+      { id: 'All', name: '🔥 Все заказы' },
+      { id: 'art', name: '🎨 Арт и Графика' },
+      { id: 'arch', name: '🏛️ Архитектура и Дизайн' },
+      { id: 'video', name: '🎬 AI-Видео и Кино' },
+      { id: 'music', name: '🎵 Музыка и Голос' },
+      { id: 'web', name: '💻 Сайты и Кодинг' },
+      { id: 'biz', name: '⚡ Автоматизация бизнеса' },
+      { id: '3d', name: '👾 3D и GameDev' }
+    ];
+
     const INITIAL_TASKS = [
       {
         id: 101,
+        category: 'art',
         title: 'Генерация реалистичного фуд-арта для ресторанного меню',
         prompt: 'Hyper-realistic gourmet burger photoshoot, cinematic warm lighting, 8k resolution --ar 16:9 --v 6.0',
         tool: 'Midjourney v6',
@@ -32,13 +44,14 @@
         author: 'RestoGroup',
         author_id: 'client_sample_1',
         executor_id: null,
-        status: 'open',
+        status: 'open', // 'open' | 'in_progress' | 'review' | 'completed'
         views: 142,
         preview: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80'
       },
       {
         id: 102,
-        title: 'Анимация персонажа для трейлера инди-игры',
+        category: 'video',
+        title: 'Кинематографичный AI-трейлер для инди-игры',
         prompt: 'Cyberpunk nomad warrior standing in neon rain, cinematic camera rotation --motion 5',
         tool: 'Runway Gen-3',
         budget: 800,
@@ -52,17 +65,33 @@
       },
       {
         id: 103,
-        title: 'Разработка серии персонажей для мобильной игры',
-        prompt: 'Stylized 3D cartoon characters, isometric view, vibrant colors, Octane render --v 6.0',
-        tool: 'FLUX.1',
-        budget: 620,
+        category: 'arch',
+        title: 'Концепт-арт современного видового отеля в горах',
+        prompt: 'Modern brutalist luxury villa embedded in alpine rocks, floor to ceiling glass, dusk atmosphere, architectural rendering',
+        tool: 'FLUX.1 / ControlNet',
+        budget: 950,
         currency: 'AWS',
-        author: 'PlayApex Games',
+        author: 'NordicArch',
         author_id: 'client_sample_3',
         executor_id: null,
         status: 'open',
         views: 215,
-        preview: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80'
+        preview: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        id: 104,
+        category: 'biz',
+        title: 'Разработка Telegram-бота с интеграцией Claude 3.5 для поддержки',
+        prompt: 'Automated CRM customer support bot with memory embeddings and Supabase vector store',
+        tool: 'Claude 3.5 / Python',
+        budget: 1200,
+        currency: 'AWS',
+        author: 'TechFin Group',
+        author_id: 'client_sample_4',
+        executor_id: null,
+        status: 'open',
+        views: 310,
+        preview: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80'
       }
     ];
 
@@ -72,6 +101,7 @@
         name: 'Алексей "PromptMaster"',
         rating: '4.98',
         deals: 64,
+        category: 'Арт & Архитектура',
         skills: ['Midjourney', 'FLUX.1', 'ComfyUI'],
         avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'
       },
@@ -80,8 +110,18 @@
         name: 'Elena Synthetica',
         rating: '5.00',
         deals: 92,
-        skills: ['Runway Gen-3', 'Luma Dream', 'ElevenLabs'],
+        category: 'AI-Видео & Саунд',
+        skills: ['Runway Gen-3', 'Suno AI', 'ElevenLabs'],
         avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80'
+      },
+      {
+        id: 3,
+        name: 'DevNeural',
+        rating: '4.95',
+        deals: 48,
+        category: 'Автоматизация & Боты',
+        skills: ['ChatGPT API', 'Claude 3.5', 'Make / n8n'],
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
       }
     ];
 
@@ -103,7 +143,7 @@
         const favs = localStorage.getItem('aws_favorites');
         return favs ? JSON.parse(favs) : [];
       });
-      const [filter, setFilter] = useState('All');
+      const [selectedCat, setSelectedCat] = useState('All');
 
       // Авторизация
       const [user, setUser] = useState(() => {
@@ -118,9 +158,9 @@
       const [generatedOtp, setGeneratedOtp] = useState('');
       const [authError, setAuthError] = useState('');
 
-      // Модалка кошелька BlockBee
+      // Кошелек
       const [walletModalOpen, setWalletModalOpen] = useState(false);
-      const [walletTab, setWalletTab] = useState('deposit'); // 'deposit' | 'withdraw'
+      const [walletTab, setWalletTab] = useState('deposit');
       const [selectedCrypto, setSelectedCrypto] = useState('usdt_trc20');
       const [depositAmount, setDepositAmount] = useState('100');
       const [withdrawAmount, setWithdrawAmount] = useState('');
@@ -129,11 +169,12 @@
 
       // Форма задачи
       const [newTitle, setNewTitle] = useState('');
+      const [newCategory, setNewCategory] = useState('art');
       const [newPrompt, setNewPrompt] = useState('');
       const [newBudget, setNewBudget] = useState('');
       const [newTool, setNewTool] = useState('Midjourney v6');
 
-      // Чат
+      // Чат и Escrow
       const [selectedTaskForChat, setSelectedTaskForChat] = useState(null);
       const [dealMessages, setDealMessages] = useState({});
       const [chatInput, setChatInput] = useState('');
@@ -230,6 +271,7 @@
 
         const taskObj = {
           id: Date.now(),
+          category: newCategory,
           title: newTitle,
           prompt: newPrompt || 'ТЗ будет уточнено в чате заказа',
           tool: newTool,
@@ -276,7 +318,7 @@
           setDealMessages(prev => ({
             ...prev,
             [task.id]: [
-              { id: 1, sender: task.author, text: `Привет! Заказ #${task.id} «${task.title}» запущен в работу. Присылай превью сюда!`, isMe: false }
+              { id: 1, sender: task.author, text: `Привет! Заказ #${task.id} запущен в работу. Средства заморожены в Escrow. Жду материалы!`, isMe: false }
             ]
           }));
         }
@@ -301,7 +343,52 @@
         setChatInput('');
       };
 
-      // Обработка симуляции пополнения через BlockBee
+      // Логика сдачи работы исполнителем
+      const handleSubmitWork = () => {
+        if (!selectedTaskForChat) return;
+        const updated = tasks.map(t => t.id === selectedTaskForChat.id ? { ...t, status: 'review' } : t);
+        setTasks(updated);
+        setSelectedTaskForChat({ ...selectedTaskForChat, status: 'review' });
+
+        const sysMsg = {
+          id: Date.now(),
+          sender: 'Система',
+          text: '📤 Исполнитель отправил работу на проверку. Заказчик, проверьте результат и нажмите «Принять работу».',
+          isMe: false
+        };
+        setDealMessages(prev => ({
+          ...prev,
+          [selectedTaskForChat.id]: [...(prev[selectedTaskForChat.id] || []), sysMsg]
+        }));
+      };
+
+      // Логика закрытия сделки и релиза Escrow заказчиком (с комиссией платформы 10%)
+      const handleApproveWork = () => {
+        if (!selectedTaskForChat) return;
+        const updated = tasks.map(t => t.id === selectedTaskForChat.id ? { ...t, status: 'completed' } : t);
+        setTasks(updated);
+        setSelectedTaskForChat({ ...selectedTaskForChat, status: 'completed' });
+
+        const netPayout = Math.round(selectedTaskForChat.budget * 0.9);
+        const commission = selectedTaskForChat.budget - netPayout;
+
+        // Если текущий юзер был исполнителем, баланс увеличивается
+        if (user && selectedTaskForChat.executor_id === user.id) {
+          setBalance(prev => prev + netPayout);
+        }
+
+        const sysMsg = {
+          id: Date.now(),
+          sender: 'Система Escrow',
+          text: `🎉 Сделка завершена! ${netPayout} AWS переведены исполнителю (комиссия биржи 10%: ${commission} AWS). Спасибо за работу!`,
+          isMe: false
+        };
+        setDealMessages(prev => ({
+          ...prev,
+          [selectedTaskForChat.id]: [...(prev[selectedTaskForChat.id] || []), sysMsg]
+        }));
+      };
+
       const handleConfirmDeposit = () => {
         const added = Number(depositAmount);
         if (added > 0) {
@@ -328,9 +415,9 @@
         }
       };
 
-      const displayedTasks = filter === 'All' 
+      const displayedTasks = selectedCat === 'All' 
         ? tasks 
-        : tasks.filter(t => (t.tool || '').toLowerCase().includes(filter.toLowerCase()));
+        : tasks.filter(t => t.category === selectedCat);
 
       const myClientTasks = tasks.filter(t => user && t.author_id === user.id);
       const myFreelancerTasks = tasks.filter(t => user && t.executor_id === user.id);
@@ -353,7 +440,6 @@
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                {/* Кнопка Баланса с вызовом BlockBee */}
                 <button
                   onClick={() => setWalletModalOpen(true)}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-amber-500/40 text-xs font-mono hover:bg-slate-800 transition-colors"
@@ -405,7 +491,7 @@
 
           {/* Контент */}
           <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-8 py-4 sm:py-6 grid grid-cols-1 lg:grid-cols-12 gap-5">
-            {/* Меню навигации */}
+            {/* Меню слева */}
             <aside className="lg:col-span-3 flex lg:flex-col gap-2 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
               <button
                 onClick={() => setTab('feed')}
@@ -459,20 +545,37 @@
               {/* ЛЕНТА */}
               {tab === 'feed' && (
                 <>
-                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar bg-slate-900/60 p-2.5 rounded-2xl border border-slate-800">
-                    {['All', 'Midjourney', 'FLUX', 'Runway'].map((item) => (
+                  {/* Главный презентационный баннер */}
+                  <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0E1726] via-[#111C35] to-[#0A101D] border border-cyan-500/30 p-5 sm:p-7 shadow-xl">
+                    <div className="relative z-10 max-w-xl space-y-2">
+                      <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-semibold tracking-wider">
+                        ✨ Новое поколение фриланса
+                      </span>
+                      <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
+                        Нанимайте лучших <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent">AI-креаторов</span>
+                      </h1>
+                      <p className="text-xs sm:text-sm text-slate-300">
+                        От кинематографичных видео и сложной архитектуры до автоматизации бизнеса и создания музыки. Безопасные сделки с Escrow-гарантом.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Направления и Категории */}
+                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar bg-slate-900/60 p-2 rounded-2xl border border-slate-800">
+                    {CATEGORIES.map((cat) => (
                       <button
-                        key={item}
-                        onClick={() => setFilter(item)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap ${
-                          filter === item ? 'bg-cyan-500 text-black' : 'bg-slate-800 text-slate-400'
+                        key={cat.id}
+                        onClick={() => setSelectedCat(cat.id)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                          selectedCat === cat.id ? 'bg-cyan-500 text-black font-bold shadow-lg shadow-cyan-500/20' : 'bg-slate-950 text-slate-400 border border-slate-800/80 hover:text-slate-200'
                         }`}
                       >
-                        {item}
+                        {cat.name}
                       </button>
                     ))}
                   </div>
 
+                  {/* Список карточек */}
                   <div className="grid grid-cols-1 gap-4">
                     {displayedTasks.map((t) => (
                       <div key={t.id} className="bg-[#0D121F] p-4 sm:p-5 rounded-2xl border border-slate-800 hover:border-cyan-500/50 flex flex-col sm:flex-row gap-4 sm:items-center transition-all min-w-0">
@@ -493,8 +596,14 @@
                             <span className="text-[11px] text-slate-400 font-mono flex items-center gap-1">
                               <i className="fa-solid fa-eye text-slate-500"></i> {t.views || 0}
                             </span>
-                            <span className={t.status === 'in_progress' ? 'text-[11px] text-amber-400 font-semibold' : 'text-[11px] text-emerald-400 font-semibold'}>
-                              {t.status === 'in_progress' ? '● В работе' : '● Открыт'}
+                            <span className={
+                              t.status === 'completed' ? 'text-[11px] text-teal-400 font-bold' :
+                              t.status === 'review' ? 'text-[11px] text-purple-400 font-bold' :
+                              t.status === 'in_progress' ? 'text-[11px] text-amber-400 font-bold' : 'text-[11px] text-emerald-400 font-bold'
+                            }>
+                              {t.status === 'completed' ? '✓ Завершен' :
+                               t.status === 'review' ? '● На проверке' :
+                               t.status === 'in_progress' ? '● В работе' : '● Открыт'}
                             </span>
                           </div>
                           <h3 className="font-bold text-sm sm:text-base text-slate-100 break-words leading-snug">{t.title}</h3>
@@ -595,8 +704,14 @@
                                   <span>•</span>
                                   <span>Бюджет: {t.budget} AWS</span>
                                   <span>•</span>
-                                  <span className={t.status === 'in_progress' ? 'text-amber-400 font-bold' : 'text-emerald-400'}>
-                                    {t.status === 'in_progress' ? 'В работе' : 'Поиск исполнителя'}
+                                  <span className={
+                                    t.status === 'completed' ? 'text-teal-400 font-bold' :
+                                    t.status === 'review' ? 'text-purple-400 font-bold' :
+                                    t.status === 'in_progress' ? 'text-amber-400 font-bold' : 'text-emerald-400'
+                                  }>
+                                    {t.status === 'completed' ? 'Сделка завершена' :
+                                     t.status === 'review' ? 'Исполнитель сдал работу' :
+                                     t.status === 'in_progress' ? 'В работе' : 'Поиск исполнителя'}
                                   </span>
                                 </div>
                               </div>
@@ -604,7 +719,7 @@
                                 onClick={() => openTaskChat(t)} 
                                 className="px-3.5 py-2 bg-slate-900 border border-cyan-500/40 text-cyan-300 text-xs font-semibold rounded-xl self-start sm:self-auto hover:bg-slate-800"
                               >
-                                Чат с исполнителем
+                                Чат сделки / Escrow
                               </button>
                             </div>
                           ))}
@@ -628,7 +743,7 @@
                                   <span className="text-[10px] bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded font-mono">{t.tool}</span>
                                   <h4 className="font-bold text-sm text-slate-100 break-words">{t.title}</h4>
                                 </div>
-                                <p className="text-xs text-slate-400 font-mono">Выплата: {t.budget} AWS (Escrow-холд) • Заказчик: {t.author}</p>
+                                <p className="text-xs text-slate-400 font-mono">Выплата: {Math.round(t.budget * 0.9)} AWS (Escrow-холд) • Заказчик: {t.author}</p>
                               </div>
                               <button 
                                 onClick={() => openTaskChat(t)} 
@@ -668,19 +783,59 @@
                 </div>
               )}
 
-              {/* ЧАТ СДЕЛКИ */}
+              {/* ЧАТ СДЕЛКИ И ПАНЕЛЬ ESCROW */}
               {tab === 'deal_chat' && selectedTaskForChat && (
-                <div className="bg-[#0D121F] rounded-2xl border border-cyan-500/30 overflow-hidden flex flex-col h-[520px]">
-                  <div className="bg-slate-950 px-4 py-3 border-b border-slate-800 flex justify-between items-center">
+                <div className="bg-[#0D121F] rounded-2xl border border-cyan-500/30 overflow-hidden flex flex-col h-[560px]">
+                  {/* Шапка чата */}
+                  <div className="bg-slate-950 px-4 py-3 border-b border-slate-800 flex flex-wrap justify-between items-center gap-2">
                     <div className="min-w-0 flex items-center gap-2">
                       <button onClick={() => setTab('cabinet')} className="text-xs text-slate-400 hover:text-cyan-300 mr-1">
                         <i className="fa-solid fa-arrow-left"></i>
                       </button>
                       <span className="text-xs sm:text-sm font-bold text-slate-200 truncate">Заказ #{selectedTaskForChat.id}: {selectedTaskForChat.title}</span>
                     </div>
-                    <span className="text-[11px] text-teal-400 font-mono flex-shrink-0 ml-2">Escrow: {selectedTaskForChat.budget} AWS</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] text-teal-400 font-mono bg-teal-950/80 px-2 py-0.5 rounded border border-teal-800/50">
+                        🔒 Escrow: {selectedTaskForChat.budget} AWS
+                      </span>
+                    </div>
                   </div>
 
+                  {/* Панель действий Escrow */}
+                  <div className="bg-slate-900/90 border-b border-slate-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-2 text-slate-300">
+                      <span className="font-semibold">Статус сделки:</span>
+                      <span className="font-mono text-cyan-300">
+                        {selectedTaskForChat.status === 'completed' ? '✓ Успешно завершена' :
+                         selectedTaskForChat.status === 'review' ? '⏳ Ожидает проверки заказчика' : '⚙️ В процессе выполнения'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {/* Кнопка для фрилансера */}
+                      {selectedTaskForChat.status === 'in_progress' && (
+                        <button
+                          onClick={handleSubmitWork}
+                          className="px-3 py-1.5 rounded-lg bg-fuchsia-500 text-white font-bold hover:bg-fuchsia-400 transition-colors"
+                        >
+                          Сдать результат на проверку
+                        </button>
+                      )}
+
+                      {/* Кнопка для заказчика */}
+                      {selectedTaskForChat.status !== 'completed' && (
+                        <button
+                          onClick={handleApproveWork}
+                          className="px-3 py-1.5 rounded-lg bg-emerald-500 text-black font-bold hover:bg-emerald-400 transition-colors flex items-center gap-1.5"
+                        >
+                          <i className="fa-solid fa-check"></i>
+                          <span>Принять и выплатить</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Сообщения */}
                   <div className="flex-1 p-3 sm:p-4 overflow-y-auto space-y-3">
                     {(dealMessages[selectedTaskForChat.id] || []).map((m) => (
                       <div key={m.id} className={`flex flex-col ${m.isMe ? 'items-end' : 'items-start'}`}>
@@ -692,10 +847,11 @@
                     ))}
                   </div>
 
+                  {/* Форма отправки */}
                   <form onSubmit={handleSendDealMessage} className="p-2.5 bg-slate-950 border-t border-slate-800 flex gap-2">
                     <input
                       type="text"
-                      placeholder="Отправить сообщение или ссылку на файл..."
+                      placeholder="Отправить сообщение или ссылку на работу..."
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs sm:text-sm outline-none"
@@ -711,39 +867,56 @@
               {tab === 'create' && (
                 <div className="bg-[#0D121F] p-5 sm:p-7 rounded-2xl border border-cyan-500/30">
                   <h2 className="text-lg sm:text-xl font-bold text-cyan-400 mb-1">Создать задание</h2>
-                  <p className="text-xs text-slate-400 mb-5">Бюджет задания будет зарезервирован в Escrow-холде.</p>
+                  <p className="text-xs text-slate-400 mb-5">Бюджет будет зарезервирован в безопасном Escrow-холде до приёма работы.</p>
                   <form onSubmit={handleCreateTask} className="space-y-4">
                     <input
                       type="text"
                       required
-                      placeholder="Название проекта"
+                      placeholder="Название проекта (например: Генерация концепт-арта для фильма)"
                       value={newTitle}
                       onChange={(e) => setNewTitle(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:border-cyan-500 outline-none"
                     />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <select
+                        value={newCategory}
+                        onChange={(e) => setNewCategory(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-sm outline-none text-slate-200"
+                      >
+                        <option value="art">🎨 Арт и Графика</option>
+                        <option value="arch">🏛️ Архитектура и Дизайн</option>
+                        <option value="video">🎬 AI-Видео и Кино</option>
+                        <option value="music">🎵 Музыка и Голос</option>
+                        <option value="web">💻 Сайты и Кодинг</option>
+                        <option value="biz">⚡ Автоматизация бизнеса</option>
+                        <option value="3d">👾 3D и GameDev</option>
+                      </select>
+
                       <select
                         value={newTool}
                         onChange={(e) => setNewTool(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm outline-none text-slate-200"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-sm outline-none text-slate-200"
                       >
                         <option value="Midjourney v6">Midjourney v6</option>
                         <option value="FLUX.1">FLUX.1</option>
                         <option value="Runway Gen-3">Runway Gen-3</option>
                         <option value="ComfyUI">ComfyUI</option>
+                        <option value="Suno AI">Suno AI</option>
+                        <option value="Claude 3.5">Claude 3.5</option>
                       </select>
+
                       <input
                         type="number"
                         required
                         placeholder="Бюджет (AWS)"
                         value={newBudget}
                         onChange={(e) => setNewBudget(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm outline-none"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-sm outline-none"
                       />
                     </div>
                     <textarea
                       rows="4"
-                      placeholder="Вставьте рабочий промпт или требования..."
+                      placeholder="Вставьте промпт или требования к стилю и формату..."
                       value={newPrompt}
                       onChange={(e) => setNewPrompt(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-sm outline-none"
@@ -752,7 +925,7 @@
                       type="submit"
                       className="w-full py-3.5 rounded-xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white font-bold text-sm"
                     >
-                      Опубликовать заказ
+                      Опубликовать заказ (Холд Escrow)
                     </button>
                   </form>
                 </div>
@@ -764,9 +937,10 @@
                   {CREATORS.map((c) => (
                     <div key={c.id} className="bg-[#0D121F] p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-3">
                       <div className="flex items-center gap-3">
-                        <img src={c.avatar} className="w-11 h-11 rounded-xl object-cover" />
+                        <img src={c.avatar} className="w-12 h-12 rounded-xl object-cover" />
                         <div>
                           <h3 className="font-bold text-sm text-slate-100">{c.name}</h3>
+                          <div className="text-[11px] text-cyan-400 font-medium">{c.category}</div>
                           <span className="text-xs text-slate-400 font-mono">{c.deals} сделок • ★ {c.rating}</span>
                         </div>
                       </div>
@@ -848,10 +1022,9 @@
                         onChange={(e) => setDepositAmount(e.target.value)}
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-cyan-300 outline-none"
                       />
-                      <span className="text-[10px] text-slate-500 mt-1 block font-mono">Курс: 1 USDT = 1 AWS (Комиссия сети 0%)</span>
+                      <span className="text-[10px] text-slate-500 mt-1 block font-mono">Курс: 1 USDT = 1 AWS (Комиссия 0%)</span>
                     </div>
 
-                    {/* QR код и адрес */}
                     <div className="p-3.5 bg-slate-950 rounded-xl border border-cyan-500/20 text-center space-y-2">
                       <div className="text-[11px] text-slate-400">Адрес для оплаты (BlockBee):</div>
                       <div className="bg-slate-900 p-2 rounded-lg text-xs font-mono text-cyan-400 select-all break-all border border-slate-800">
