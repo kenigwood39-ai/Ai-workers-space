@@ -34,6 +34,9 @@
         budget: 450,
         currency: 'AWS',
         author: 'RestoGroup',
+        author_id: 'sample-client-1',
+        executor_id: null,
+        status: 'open',
         preview: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80'
       },
       {
@@ -44,6 +47,9 @@
         budget: 800,
         currency: 'AWS',
         author: 'CyberIndie Studio',
+        author_id: 'sample-client-2',
+        executor_id: null,
+        status: 'open',
         preview: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'
       },
       {
@@ -54,6 +60,9 @@
         budget: 620,
         currency: 'AWS',
         author: 'PlayApex Games',
+        author_id: 'sample-client-3',
+        executor_id: null,
+        status: 'open',
         preview: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80'
       }
     ];
@@ -79,20 +88,47 @@
 
     function App() {
       const [tab, setTab] = useState('feed');
-      const [role, setRole] = useState('freelancer');
+      const [role, setRole] = useState('freelancer'); // 'freelancer' | 'client'
       const [tasks, setTasks] = useState(INITIAL_TASKS);
       const [loading, setLoading] = useState(false);
       const [filter, setFilter] = useState('All');
 
+      // Авторизация
+      const [user, setUser] = useState(null);
+      const [authModalOpen, setAuthModalOpen] = useState(false);
+      const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
+      const [authEmail, setAuthEmail] = useState('');
+      const [authPassword, setAuthPassword] = useState('');
+      const [authError, setAuthError] = useState('');
+
+      // Создание таска
       const [newTitle, setNewTitle] = useState('');
       const [newPrompt, setNewPrompt] = useState('');
       const [newBudget, setNewBudget] = useState('');
       const [newTool, setNewTool] = useState('Midjourney v6');
 
+      // Чат
       const [messages, setMessages] = useState([
         { id: 1, sender: 'Алексей "PromptMaster"', text: 'Здравствуйте! Готов приступить к выполнению вашего ТЗ.', isMe: false }
       ]);
       const [chatInput, setChatInput] = useState('');
+
+      // Проверка сессии при загрузке
+      useEffect(() => {
+        const checkUser = async () => {
+          const { data: { session } } = await db.auth.getSession();
+          if (session?.user) {
+            setUser(session.user);
+          }
+        };
+        checkUser();
+
+        const { data: { subscription } } = db.auth.onAuthStateChange((_event, session) => {
+          setUser(session?.user || null);
+        });
+
+        return () => subscription.unsubscribe();
+      }, []);
 
       const fetchTasks = async () => {
         setLoading(true);
@@ -112,8 +148,52 @@
         fetchTasks();
       }, []);
 
+      // Обработчик авторизации
+      const handleAuth = async (e) => {
+        e.preventDefault();
+        setAuthError('');
+
+        if (authMode === 'register') {
+          const { data, error } = await db.auth.signUp({
+            email: authEmail,
+            password: authPassword,
+          });
+          if (error) {
+            setAuthError(error.message);
+          } else {
+            setUser(data.user);
+            setAuthModalOpen(false);
+            setAuthEmail('');
+            setAuthPassword('');
+          }
+        } else {
+          const { data, error } = await db.auth.signInWithPassword({
+            email: authEmail,
+            password: authPassword,
+          });
+          if (error) {
+            setAuthError(error.message);
+          } else {
+            setUser(data.user);
+            setAuthModalOpen(false);
+            setAuthEmail('');
+            setAuthPassword('');
+          }
+        }
+      };
+
+      const handleLogout = async () => {
+        await db.auth.signOut();
+        setUser(null);
+      };
+
+      // Создание задачи
       const handleCreateTask = async (e) => {
         e.preventDefault();
+        if (!user) {
+          setAuthModalOpen(true);
+          return;
+        }
         if (!newTitle || !newBudget) return;
 
         const taskObj = {
@@ -123,7 +203,10 @@
           tool: newTool,
           budget: Number(newBudget),
           currency: 'AWS',
-          author: 'Вы (Заказчик)',
+          author: user.email.split('@')[0],
+          author_id: user.id,
+          executor_id: null,
+          status: 'open',
           preview: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80'
         };
 
@@ -137,14 +220,38 @@
         setNewTitle('');
         setNewPrompt('');
         setNewBudget('');
-        setTab('feed');
+        setTab('my-tasks');
+      };
+
+      // Взять заказ в работу (для исполнителя)
+      const handleTakeTask = async (taskId) => {
+        if (!user) {
+          setAuthModalOpen(true);
+          return;
+        }
+
+        const updated = tasks.map(t => {
+          if (t.id === taskId) {
+            return { ...t, status: 'in_progress', executor_id: user.id };
+          }
+          return t;
+        });
+        setTasks(updated);
+
+        try {
+          await db.from('tasks').update({ status: 'in_progress', executor_id: user.id }).eq('id', taskId);
+        } catch(e) {
+          console.log(e);
+        }
+
+        setTab('my-tasks');
       };
 
       const handleSendMessage = async (e) => {
         e.preventDefault();
         if (!chatInput.trim()) return;
 
-        const msgObj = { id: Date.now(), sender: 'Вы', text: chatInput, isMe: true };
+        const msgObj = { id: Date.now(), sender: user ? user.email.split('@')[0] : 'Вы', text: chatInput, isMe: true };
         setMessages([...messages, msgObj]);
         setChatInput('');
 
@@ -159,10 +266,14 @@
         ? tasks 
         : tasks.filter(t => (t.tool || '').toLowerCase().includes(filter.toLowerCase()));
 
+      // Фильтрация личных задач
+      const myClientTasks = tasks.filter(t => user && t.author_id === user.id);
+      const myFreelancerTasks = tasks.filter(t => user && t.executor_id === user.id);
+
       return (
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col relative">
           {/* Хедер */}
-          <header className="sticky top-0 z-50 bg-[#07090E]/90 backdrop-blur-md border-b border-cyan-500/20 px-4 py-3 sm:px-8">
+          <header className="sticky top-0 z-40 bg-[#07090E]/90 backdrop-blur-md border-b border-cyan-500/20 px-4 py-3 sm:px-8">
             <div className="max-w-6xl mx-auto flex items-center justify-between">
               <div className="flex items-center gap-3 cursor-pointer" onClick={() => setTab('feed')}>
                 <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-fuchsia-500 p-[1px]">
@@ -195,6 +306,28 @@
                   <i className={role === 'client' ? "fa-solid fa-briefcase" : "fa-solid fa-user-check"}></i>
                   <span>{role === 'client' ? 'Заказчик' : 'Исполнитель'}</span>
                 </button>
+
+                {user ? (
+                  <div className="flex items-center gap-2">
+                    <span className="hidden md:inline text-xs text-slate-300 font-mono bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">
+                      {user.email.split('@')[0]}
+                    </span>
+                    <button 
+                      onClick={handleLogout}
+                      className="px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold hover:bg-red-500/20"
+                    >
+                      <i className="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => { setAuthMode('login'); setAuthModalOpen(true); }}
+                    className="px-4 py-1.5 rounded-xl bg-cyan-500 text-black text-xs font-bold hover:bg-cyan-400 flex items-center gap-1.5"
+                  >
+                    <i className="fa-solid fa-user-lock"></i>
+                    <span>Вход</span>
+                  </button>
+                )}
               </div>
             </div>
           </header>
@@ -215,7 +348,34 @@
               </button>
 
               <button
-                onClick={() => setTab('create')}
+                onClick={() => {
+                  if (!user) {
+                    setAuthModalOpen(true);
+                  } else {
+                    setTab('my-tasks');
+                  }
+                }}
+                className={`flex-1 lg:flex-none flex items-center gap-3 px-4 py-3 rounded-xl border font-medium text-sm transition-all ${
+                  tab === 'my-tasks' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300' : 'bg-slate-900/60 border-slate-800 text-slate-400'
+                }`}
+              >
+                <i className="fa-solid fa-folder-open text-emerald-400"></i>
+                <span>Мои заказы</span>
+                {user && (
+                  <span className="ml-auto text-xs bg-emerald-950 px-2 py-0.5 rounded-full text-emerald-300 font-mono hidden lg:inline">
+                    {role === 'client' ? myClientTasks.length : myFreelancerTasks.length}
+                  </span>
+                )}
+              </button>
+
+              <button
+                onClick={() => {
+                  if (!user) {
+                    setAuthModalOpen(true);
+                  } else {
+                    setTab('create');
+                  }
+                }}
                 className={`flex-1 lg:flex-none flex items-center gap-3 px-4 py-3 rounded-xl border font-medium text-sm transition-all ${
                   tab === 'create' ? 'bg-fuchsia-500/20 border-fuchsia-500 text-fuchsia-300' : 'bg-slate-900/60 border-slate-800 text-slate-400'
                 }`}
@@ -247,6 +407,7 @@
 
             {/* Основная панель */}
             <section className="lg:col-span-9 space-y-5">
+              {/* ЛЕНТА */}
               {tab === 'feed' && (
                 <>
                   <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
@@ -287,11 +448,18 @@
                             <span>{t.author || 'Заказчик'}</span>
                             <span>•</span>
                             <span className="text-emerald-400 font-mono">ID #{t.id}</span>
+                            <span>•</span>
+                            <span className={t.status === 'in_progress' ? 'text-amber-400 font-semibold' : 'text-emerald-400 font-semibold'}>
+                              {t.status === 'in_progress' ? '● В работе' : '● Открыт'}
+                            </span>
                           </div>
                         </div>
                         <div className="w-full md:w-auto flex md:flex-col items-center md:items-end justify-between gap-3">
                           <div className="font-mono text-lg font-extrabold text-cyan-400">{t.budget} {t.currency || 'AWS'}</div>
-                          <button onClick={() => setTab('chat')} className="px-5 py-2 rounded-xl bg-cyan-500 text-black font-bold text-xs hover:bg-cyan-400">
+                          <button 
+                            onClick={() => handleTakeTask(t.id)} 
+                            className="px-5 py-2 rounded-xl bg-cyan-500 text-black font-bold text-xs hover:bg-cyan-400"
+                          >
                             Взять заказ
                           </button>
                         </div>
@@ -301,10 +469,88 @@
                 </>
               )}
 
+              {/* МОИ ЗАКАЗЫ */}
+              {tab === 'my-tasks' && (
+                <div className="space-y-4">
+                  <div className="bg-[#0D121F] p-5 rounded-2xl border border-slate-800 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-lg font-bold text-slate-100">
+                        {role === 'client' ? 'Мои опубликованные задания' : 'Взятые в работу задания'}
+                      </h2>
+                      <p className="text-xs text-slate-400">
+                        {role === 'client' 
+                          ? 'Управление вашими задачами, статусы выполнения и выбор кандидатов' 
+                          : 'Проекты в работе, дедлайны и статус холда оплаты (Escrow)'}
+                      </p>
+                    </div>
+                    <span className="text-xs font-mono px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-lg">
+                      Роль: {role === 'client' ? 'Заказчик' : 'Исполнитель'}
+                    </span>
+                  </div>
+
+                  {role === 'client' ? (
+                    myClientTasks.length === 0 ? (
+                      <div className="text-center py-16 bg-[#0D121F] rounded-2xl border border-slate-800">
+                        <i className="fa-solid fa-briefcase text-3xl text-slate-600 mb-3"></i>
+                        <p className="text-slate-300 font-medium text-sm">У вас пока нет созданных тасков</p>
+                        <button onClick={() => setTab('create')} className="mt-4 px-4 py-2 bg-cyan-500 text-black font-bold text-xs rounded-xl">
+                          Создать первый заказ
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-4">
+                        {myClientTasks.map(t => (
+                          <div key={t.id} className="bg-[#0D121F] p-5 rounded-2xl border border-cyan-500/30 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-[10px] bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded font-mono">{t.tool}</span>
+                                <h4 className="font-bold text-slate-100">{t.title}</h4>
+                              </div>
+                              <p className="text-xs text-slate-400 font-mono">Бюджет: {t.budget} AWS • Статус: {t.status === 'in_progress' ? 'В работе у исполнителя' : 'Ожидает откликов'}</p>
+                            </div>
+                            <button onClick={() => setTab('chat')} className="px-4 py-2 bg-slate-900 border border-cyan-500/40 text-cyan-300 text-xs font-semibold rounded-xl">
+                              Открыть чат сделки
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  ) : (
+                    myFreelancerTasks.length === 0 ? (
+                      <div className="text-center py-16 bg-[#0D121F] rounded-2xl border border-slate-800">
+                        <i className="fa-solid fa-bolt text-3xl text-slate-600 mb-3"></i>
+                        <p className="text-slate-300 font-medium text-sm">Вы еще не взяли ни одного заказа</p>
+                        <button onClick={() => setTab('feed')} className="mt-4 px-4 py-2 bg-cyan-500 text-black font-bold text-xs rounded-xl">
+                          Перейти в ленту заказов
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-4">
+                        {myFreelancerTasks.map(t => (
+                          <div key={t.id} className="bg-[#0D121F] p-5 rounded-2xl border border-emerald-500/30 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-[10px] bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded font-mono">{t.tool}</span>
+                                <h4 className="font-bold text-slate-100">{t.title}</h4>
+                              </div>
+                              <p className="text-xs text-slate-400 font-mono">Выплата: {t.budget} AWS (В холде Escrow) • Заказчик: {t.author}</p>
+                            </div>
+                            <button onClick={() => setTab('chat')} className="px-4 py-2 bg-emerald-500 text-black text-xs font-bold rounded-xl">
+                              Сдать работу / Чат
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
+
+              {/* РАЗМЕСТИТЬ ТАСК */}
               {tab === 'create' && (
                 <div className="bg-[#0D121F] p-6 sm:p-8 rounded-2xl border border-cyan-500/30">
                   <h2 className="text-xl font-bold text-cyan-400 mb-1">Создать задание (Live DB)</h2>
-                  <p className="text-xs text-slate-400 mb-6">Задача мгновенно сохранится в базу данных Supabase и отобразится в ленте.</p>
+                  <p className="text-xs text-slate-400 mb-6">Заказ будет привязан к вашему аккаунту и сохранен в базе данных.</p>
                   <form onSubmit={handleCreateTask} className="space-y-4">
                     <input
                       type="text"
@@ -336,7 +582,7 @@
                     </div>
                     <textarea
                       rows="4"
-                      placeholder="Вставьте промпт или требования к стилю..."
+                      placeholder="Вставьте промпт или технические требования к результату..."
                       value={newPrompt}
                       onChange={(e) => setNewPrompt(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm outline-none"
@@ -351,6 +597,7 @@
                 </div>
               )}
 
+              {/* ЧАТ */}
               {tab === 'chat' && (
                 <div className="bg-[#0D121F] rounded-2xl border border-cyan-500/30 overflow-hidden flex flex-col h-[520px]">
                   <div className="bg-slate-950 px-5 py-3.5 border-b border-slate-800 flex justify-between items-center">
@@ -369,7 +616,7 @@
                   <form onSubmit={handleSendMessage} className="p-3 bg-slate-950 border-t border-slate-800 flex gap-2">
                     <input
                       type="text"
-                      placeholder="Напишите сообщение исполнителям..."
+                      placeholder="Напишите сообщение..."
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm outline-none"
@@ -381,6 +628,7 @@
                 </div>
               )}
 
+              {/* КРЕАТОРЫ */}
               {tab === 'creators' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {CREATORS.map((c) => (
@@ -404,6 +652,76 @@
               )}
             </section>
           </main>
+
+          {/* МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ / РЕГИСТРАЦИИ */}
+          {authModalOpen && (
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-[#0D121F] border border-cyan-500/40 rounded-2xl p-6 sm:p-8 max-w-md w-full relative">
+                <button 
+                  onClick={() => setAuthModalOpen(false)}
+                  className="absolute top-4 right-4 text-slate-400 hover:text-white"
+                >
+                  <i className="fa-solid fa-xmark text-lg"></i>
+                </button>
+
+                <h3 className="text-xl font-bold text-slate-100 mb-1">
+                  {authMode === 'login' ? 'Вход в аккаунт' : 'Регистрация на платформе'}
+                </h3>
+                <p className="text-xs text-slate-400 mb-6">
+                  {authMode === 'login' ? 'Введите данные для доступа к личным заказам' : 'Создайте аккаунт, чтобы размещать таски и брать работу'}
+                </p>
+
+                {authError && (
+                  <div className="p-3 mb-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
+                    {authError}
+                  </div>
+                )}
+
+                <form onSubmit={handleAuth} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Email</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="name@domain.com"
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:border-cyan-500 outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Пароль</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="••••••••"
+                      value={authPassword}
+                      onChange={(e) => setAuthPassword(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:border-cyan-500 outline-none"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3 rounded-xl bg-cyan-500 text-black font-bold text-sm hover:bg-cyan-400 transition-colors mt-2"
+                  >
+                    {authMode === 'login' ? 'Войти' : 'Зарегистрироваться'}
+                  </button>
+                </form>
+
+                <div className="mt-4 text-center text-xs text-slate-400">
+                  {authMode === 'login' ? 'Впервые на платформе? ' : 'Уже есть аккаунт? '}
+                  <button
+                    onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthError(''); }}
+                    className="text-cyan-400 font-semibold hover:underline"
+                  >
+                    {authMode === 'login' ? 'Зарегистрироваться' : 'Войти'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
