@@ -21,6 +21,8 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
+    const TELEGRAM_LINK = "https://t.me/aiworkersspace"; // Вставьте сюда нужный юзернейм или ссылку на канал
+
     const I18N = {
       ru: {
         brand: 'AI WORKERS SPACE',
@@ -80,7 +82,11 @@
         withdrawAvail: 'Доступно к выводу:',
         withdrawAddressLabel: 'Ваш кошелек (USDT TRC-20 / TON):',
         requestWithdrawBtn: 'Запросить вывод',
-        dealsCount: 'сделок'
+        dealsCount: 'сделок',
+        privacyPolicy: 'Политика конфиденциальности',
+        userAgreement: 'Пользовательское соглашение',
+        telegramChannel: 'Telegram Канал',
+        rightsReserved: 'Все права защищены.'
       },
       en: {
         brand: 'AI WORKERS SPACE',
@@ -140,12 +146,15 @@
         withdrawAvail: 'Available for Withdrawal:',
         withdrawAddressLabel: 'Your Wallet Address (USDT TRC-20 / TON):',
         requestWithdrawBtn: 'Request Withdrawal',
-        dealsCount: 'deals'
+        dealsCount: 'deals',
+        privacyPolicy: 'Privacy Policy',
+        userAgreement: 'Terms of Service',
+        telegramChannel: 'Telegram Channel',
+        rightsReserved: 'All rights reserved.'
       }
     };
 
     const RICH_INITIAL_TASKS = [
-      // 🎨 АРТ И ГРАФИКА
       {
         id: 101,
         category: 'art',
@@ -178,7 +187,6 @@
         views: 185,
         preview: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=600&q=80'
       },
-      // 🎬 AI-ВИДЕО
       {
         id: 103,
         category: 'video',
@@ -211,7 +219,6 @@
         views: 290,
         preview: 'https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=600&q=80'
       },
-      // 🏛️ АРХИТЕКТУРА
       {
         id: 105,
         category: 'arch',
@@ -244,7 +251,6 @@
         views: 204,
         preview: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=600&q=80'
       },
-      // 🎵 МУЗЫКА И ГОЛОС
       {
         id: 107,
         category: 'music',
@@ -261,7 +267,6 @@
         views: 167,
         preview: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80'
       },
-      // ⚡ БИЗНЕС-АВТОМАТИЗАЦИЯ
       {
         id: 108,
         category: 'biz',
@@ -278,7 +283,6 @@
         views: 430,
         preview: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80'
       },
-      // 💻 САЙТЫ И КОДИНГ
       {
         id: 109,
         category: 'web',
@@ -295,7 +299,6 @@
         views: 388,
         preview: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80'
       },
-      // 👾 3D И GAMEDEV
       {
         id: 110,
         category: 'gamedev',
@@ -360,14 +363,13 @@
         return b ? Number(b) : 1450;
       });
 
-      // Всегда загружаем обновленные богатые таски при версии 2.0
       const [tasks, setTasks] = useState(() => {
         const savedVer = localStorage.getItem('aws_tasks_version');
-        if (savedVer === '2.0') {
+        if (savedVer === '2.2') {
           const saved = localStorage.getItem('aws_tasks');
           return saved ? JSON.parse(saved) : RICH_INITIAL_TASKS;
         }
-        localStorage.setItem('aws_tasks_version', '2.0');
+        localStorage.setItem('aws_tasks_version', '2.2');
         localStorage.setItem('aws_tasks', JSON.stringify(RICH_INITIAL_TASKS));
         return RICH_INITIAL_TASKS;
       });
@@ -399,6 +401,9 @@
       const [withdrawAmount, setWithdrawAmount] = useState('');
       const [withdrawAddress, setWithdrawAddress] = useState('');
       const [depositSuccess, setDepositSuccess] = useState(false);
+
+      // Юридические документы
+      const [legalModalOpen, setLegalModalOpen] = useState(null);
 
       // Форма задачи
       const [newTitle, setNewTitle] = useState('');
@@ -689,6 +694,17 @@
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                {/* Кнопка Telegram в шапке */}
+                <a
+                  href={TELEGRAM_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-semibold hover:bg-sky-500/20 transition-colors flex items-center gap-1.5"
+                >
+                  <i className="fa-brands fa-telegram text-sm"></i>
+                  <span className="hidden md:inline">Telegram</span>
+                </a>
+
                 {/* Language Switcher */}
                 <button
                   onClick={toggleLang}
@@ -751,7 +767,7 @@
 
           {/* Main Layout */}
           <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-8 py-4 sm:py-6 grid grid-cols-1 lg:grid-cols-12 gap-5">
-            {/* Sidebar Navigation */}
+            {/* Navigation */}
             <aside className="lg:col-span-3 flex lg:flex-col gap-2 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
               <button
                 onClick={() => setTab('feed')}
@@ -802,10 +818,8 @@
 
             {/* Central Panel */}
             <section className="lg:col-span-9 space-y-4 min-w-0">
-              {/* FEED */}
               {tab === 'feed' && (
                 <>
-                  {/* Hero Banner */}
                   <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0E1726] via-[#111C35] to-[#0A101D] border border-cyan-500/30 p-5 sm:p-7 shadow-xl">
                     <div className="relative z-10 max-w-xl space-y-2">
                       <span className="text-[10px] sm:text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-semibold tracking-wider">
@@ -820,7 +834,6 @@
                     </div>
                   </div>
 
-                  {/* Categories Pills */}
                   <div className="flex items-center gap-2 overflow-x-auto no-scrollbar bg-slate-900/60 p-2 rounded-2xl border border-slate-800">
                     {categoriesList.map((cat) => (
                       <button
@@ -835,71 +848,64 @@
                     ))}
                   </div>
 
-                  {/* Tasks List */}
-                  {displayedTasks.length === 0 ? (
-                    <div className="text-center py-12 bg-[#0D121F] rounded-2xl border border-slate-800 text-slate-400 text-xs sm:text-sm">
-                      {t.emptyFeed}
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-4">
-                      {displayedTasks.map((item) => (
-                        <div key={item.id} className="bg-[#0D121F] p-4 sm:p-5 rounded-2xl border border-slate-800 hover:border-cyan-500/50 flex flex-col sm:flex-row gap-4 sm:items-center transition-all min-w-0">
-                          <div className="w-full sm:w-36 h-44 sm:h-32 rounded-xl overflow-hidden border border-cyan-500/20 bg-slate-950 flex-shrink-0 relative">
-                            <img src={item.preview} className="w-full h-full object-cover" />
-                            <button 
-                              onClick={() => toggleFavorite(item.id)}
-                              className={`absolute top-2 right-2 w-8 h-8 rounded-full backdrop-blur-md flex items-center justify-center text-xs transition-colors ${
-                                favorites.includes(item.id) ? 'bg-amber-500/80 text-white' : 'bg-black/60 text-slate-400 hover:text-white'
-                              }`}
-                            >
-                              <i className="fa-solid fa-star"></i>
-                            </button>
+                  <div className="grid grid-cols-1 gap-4">
+                    {displayedTasks.map((item) => (
+                      <div key={item.id} className="bg-[#0D121F] p-4 sm:p-5 rounded-2xl border border-slate-800 hover:border-cyan-500/50 flex flex-col sm:flex-row gap-4 sm:items-center transition-all min-w-0">
+                        <div className="w-full sm:w-36 h-44 sm:h-32 rounded-xl overflow-hidden border border-cyan-500/20 bg-slate-950 flex-shrink-0 relative">
+                          <img src={item.preview} className="w-full h-full object-cover" />
+                          <button 
+                            onClick={() => toggleFavorite(item.id)}
+                            className={`absolute top-2 right-2 w-8 h-8 rounded-full backdrop-blur-md flex items-center justify-center text-xs transition-colors ${
+                              favorites.includes(item.id) ? 'bg-amber-500/80 text-white' : 'bg-black/60 text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            <i className="fa-solid fa-star"></i>
+                          </button>
+                        </div>
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-[10px] bg-cyan-950 text-cyan-400 border border-cyan-800/40 px-2 py-0.5 rounded font-mono font-bold">{item.tool}</span>
+                            <span className="text-[11px] text-slate-400 font-mono flex items-center gap-1">
+                              <i className="fa-solid fa-eye text-slate-500"></i> {item.views || 0} {t.views}
+                            </span>
+                            <span className={
+                              item.status === 'completed' ? 'text-[11px] text-teal-400 font-bold' :
+                              item.status === 'review' ? 'text-[11px] text-purple-400 font-bold' :
+                              item.status === 'in_progress' ? 'text-[11px] text-amber-400 font-bold' : 'text-[11px] text-emerald-400 font-bold'
+                            }>
+                              {item.status === 'completed' ? t.statusCompleted :
+                               item.status === 'review' ? t.statusReview :
+                               item.status === 'in_progress' ? t.statusInProgress : t.statusOpen}
+                            </span>
                           </div>
-                          <div className="flex-1 min-w-0 space-y-2">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-[10px] bg-cyan-950 text-cyan-400 border border-cyan-800/40 px-2 py-0.5 rounded font-mono font-bold">{item.tool}</span>
-                              <span className="text-[11px] text-slate-400 font-mono flex items-center gap-1">
-                                <i className="fa-solid fa-eye text-slate-500"></i> {item.views || 0} {t.views}
-                              </span>
-                              <span className={
-                                item.status === 'completed' ? 'text-[11px] text-teal-400 font-bold' :
-                                item.status === 'review' ? 'text-[11px] text-purple-400 font-bold' :
-                                item.status === 'in_progress' ? 'text-[11px] text-amber-400 font-bold' : 'text-[11px] text-emerald-400 font-bold'
-                              }>
-                                {item.status === 'completed' ? t.statusCompleted :
-                                 item.status === 'review' ? t.statusReview :
-                                 item.status === 'in_progress' ? t.statusInProgress : t.statusOpen}
-                              </span>
-                            </div>
-                            <h3 className="font-bold text-sm sm:text-base text-slate-100 break-words leading-snug">
-                              {lang === 'en' && item.title_en ? item.title_en : item.title}
-                            </h3>
-                            <p className="text-xs text-slate-400 font-mono bg-slate-950/70 p-2.5 rounded-lg border border-slate-800/60 break-words">
-                              <span className="text-cyan-400">{t.promptLabel} </span>{item.prompt}
-                            </p>
-                            <div className="flex items-center gap-2 text-[11px] text-slate-400 truncate">
-                              <span>{item.author}</span>
-                              <span>•</span>
-                              <span className="text-emerald-400 font-mono">ID #{item.id}</span>
-                            </div>
-                          </div>
-                          <div className="w-full sm:w-auto flex sm:flex-col items-center sm:items-end justify-between gap-3 pt-2 sm:pt-0 border-t sm:border-0 border-slate-800/60">
-                            <div className="font-mono text-base sm:text-lg font-extrabold text-cyan-400">{item.budget} {item.currency}</div>
-                            <button 
-                              onClick={() => handleTakeTask(item.id)} 
-                              className="px-4 py-2 rounded-xl bg-cyan-500 text-black font-bold text-xs hover:bg-cyan-400 flex-shrink-0"
-                            >
-                              {t.takeTask}
-                            </button>
+                          <h3 className="font-bold text-sm sm:text-base text-slate-100 break-words leading-snug">
+                            {lang === 'en' && item.title_en ? item.title_en : item.title}
+                          </h3>
+                          <p className="text-xs text-slate-400 font-mono bg-slate-950/70 p-2.5 rounded-lg border border-slate-800/60 break-words">
+                            <span className="text-cyan-400">{t.promptLabel} </span>{item.prompt}
+                          </p>
+                          <div className="flex items-center gap-2 text-[11px] text-slate-400 truncate">
+                            <span>{item.author}</span>
+                            <span>•</span>
+                            <span className="text-emerald-400 font-mono">ID #{item.id}</span>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                        <div className="w-full sm:w-auto flex sm:flex-col items-center sm:items-end justify-between gap-3 pt-2 sm:pt-0 border-t sm:border-0 border-slate-800/60">
+                          <div className="font-mono text-base sm:text-lg font-extrabold text-cyan-400">{item.budget} {item.currency}</div>
+                          <button 
+                            onClick={() => handleTakeTask(item.id)} 
+                            className="px-4 py-2 rounded-xl bg-cyan-500 text-black font-bold text-xs hover:bg-cyan-400 flex-shrink-0"
+                          >
+                            {t.takeTask}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </>
               )}
 
-              {/* DASHBOARD */}
+              {/* CABINET */}
               {tab === 'cabinet' && (
                 <div className="space-y-4">
                   <div className="bg-[#0D121F] p-5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1223,6 +1229,86 @@
             </section>
           </main>
 
+          {/* Footer с реквизитами для ЮKassa и ссылкой на Telegram */}
+          <footer className="mt-12 border-t border-cyan-500/20 bg-[#06080C] px-4 py-8 text-xs text-slate-400">
+            <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="space-y-1 text-center md:text-left">
+                <div className="font-bold text-slate-200 text-sm tracking-wide">
+                  AI WORKERS SPACE
+                </div>
+                <div className="font-mono text-[11px] text-slate-400">
+                  Самозанятая / Исполнитель: <span className="text-slate-200 font-semibold">Храппа Марина Николаевна</span>
+                </div>
+                <div className="font-mono text-[11px] text-slate-400">
+                  ИНН: <span className="text-slate-200 font-semibold">390400469138</span> • Email: <a href="mailto:kenigwood39@gmail.com" className="text-cyan-400 hover:underline">kenigwood39@gmail.com</a>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-4 text-xs">
+                <a
+                  href={TELEGRAM_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sky-400 hover:text-sky-300 transition-colors flex items-center gap-1.5 font-semibold"
+                >
+                  <i className="fa-brands fa-telegram text-base"></i>
+                  <span>{t.telegramChannel}</span>
+                </a>
+                <button 
+                  onClick={() => setLegalModalOpen('privacy')}
+                  className="hover:text-cyan-300 transition-colors"
+                >
+                  {t.privacyPolicy}
+                </button>
+                <button 
+                  onClick={() => setLegalModalOpen('terms')}
+                  className="hover:text-cyan-300 transition-colors"
+                >
+                  {t.userAgreement}
+                </button>
+              </div>
+
+              <div className="text-center md:text-right font-mono text-[11px] text-slate-500">
+                © 2026 AI WORKERS SPACE.<br />{t.rightsReserved}
+              </div>
+            </div>
+          </footer>
+
+          {/* Legal Modals */}
+          {legalModalOpen && (
+            <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-[#0D121F] border border-cyan-500/40 rounded-2xl p-5 sm:p-7 max-w-2xl w-full max-h-[80vh] flex flex-col relative">
+                <button 
+                  onClick={() => setLegalModalOpen(null)}
+                  className="absolute top-4 right-4 text-slate-400 hover:text-white"
+                >
+                  <i className="fa-solid fa-xmark text-lg"></i>
+                </button>
+
+                <h3 className="text-lg font-bold text-slate-100 mb-3">
+                  {legalModalOpen === 'privacy' ? t.privacyPolicy : t.userAgreement}
+                </h3>
+
+                <div className="flex-1 overflow-y-auto text-xs text-slate-300 space-y-3 pr-2 leading-relaxed font-sans">
+                  {legalModalOpen === 'privacy' ? (
+                    <>
+                      <p><b>1. Общие положения</b><br />Настоящая Политика конфиденциальности действует в отношении всей информации, которую платформа «AI WORKERS SPACE» (Самозанятая Храппа Марина Николаевна, ИНН 390400469138) может получить о Пользователе во время использования сайта aiworkersspace.com.</p>
+                      <p><b>2. Состав персональных данных</b><br />Мы обрабатываем адрес электронной почты (Email), имя аккаунта и предоставленные реквизиты кошельков исключительно в целях предоставления доступа к функционалу платформы и проведения расчетов.</p>
+                      <p><b>3. Защита информации</b><br />Администрация принимает все необходимые организационные и технические меры для защиты персональных данных Пользователя от неправомерного или случайного доступа, уничтожения, блокирования и распространения.</p>
+                      <p><b>4. Контакты</b><br />По вопросам обработки персональных данных обращаться: kenigwood39@gmail.com.</p>
+                    </>
+                  ) : (
+                    <>
+                      <p><b>1. Предмет соглашения</b><br />Платформа «AI WORKERS SPACE» предоставляет онлайн-сервис для размещения заданий (тасков) и безопасного взаимодействия между Заказчиками и Исполнителями в сфере генеративного ИИ и IT-услуг.</p>
+                      <p><b>2. Порядок расчетов и Escrow</b><br />Платформа выступает гарантом сохранности средств до момента полного выполнения и проверки задания Заказчиком. Комиссия сервиса за проведение безопасной сделки составляет 10% от суммы заказа.</p>
+                      <p><b>3. Реквизиты исполнителя</b><br />Храппа Марина Николаевна, ИНН: 390400469138, Email: kenigwood39@gmail.com.</p>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* WALLET MODAL */}
           {walletModalOpen && (
             <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
@@ -1482,3 +1568,4 @@
   </script>
 </body>
 </html>
+
