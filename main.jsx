@@ -9,6 +9,7 @@ import {
   Sparkles, 
   Coins, 
   Send, 
+  SlidersHorizontal,
   Bot, 
   Zap, 
   RefreshCw, 
@@ -59,7 +60,36 @@ function App() {
     setLoading(true);
     try {
       const { data } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-      if (data) setTasks(data);
+      if (data && data.length > 0) {
+        setTasks(data);
+      } else {
+        setTasks([
+          {
+            id: 1,
+            title: 'Генерация реалистичного фуд-арта для сети ресторанов',
+            prompt: 'Hyper-realistic gourmet burger photoshoot, cinematic warm lighting, 8k resolution, photorealistic studio shot --ar 16:9 --v 6.0',
+            tools: ['Midjourney v6', 'Photoshop AI'],
+            budget: 450,
+            currency: 'AWS',
+            author: 'RestoGroup',
+            role: 'Заказчик',
+            status: 'open',
+            preview_url: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80'
+          },
+          {
+            id: 2,
+            title: 'Анимация персонажа для трейлера инди-игры',
+            prompt: 'Cyberpunk nomad warrior standing in the neon rain, smooth movement, cinematic camera rotation --motion 5',
+            tools: ['Runway Gen-3', 'FLUX.1'],
+            budget: 800,
+            currency: 'AWS',
+            author: 'CyberIndie Studio',
+            role: 'Заказчик',
+            status: 'open',
+            preview_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'
+          }
+        ]);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -104,16 +134,18 @@ function App() {
       preview_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80'
     };
 
-    const { error } = await supabase.from('tasks').insert([newTask]);
-    setIsSubmitting(false);
-
-    if (!error) {
-      setNewTitle('');
-      setNewPrompt('');
-      setNewBudget('');
-      setActiveTab('feed');
-      fetchTasks();
+    try {
+      await supabase.from('tasks').insert([newTask]);
+    } catch (err) {
+      console.error(err);
     }
+    
+    setIsSubmitting(false);
+    setNewTitle('');
+    setNewPrompt('');
+    setNewBudget('');
+    setActiveTab('feed');
+    fetchTasks();
   };
 
   const handleSendMessage = async (e) => {
@@ -121,7 +153,11 @@ function App() {
     if (!chatInput.trim()) return;
 
     const newMessage = { sender: 'Вы', text: chatInput, is_me: true };
-    await supabase.from('messages').insert([newMessage]);
+    try {
+      await supabase.from('messages').insert([newMessage]);
+    } catch (err) {
+      console.error(err);
+    }
     setChatInput('');
     fetchMessages();
   };
@@ -220,7 +256,7 @@ function App() {
             <>
               <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
                 <div className="flex items-center gap-2 overflow-x-auto py-1">
-                  {['All', 'Midjourney', 'Stable Diffusion', 'FLUX'].map((tool) => (
+                  {['All', 'Midjourney', 'FLUX', 'Runway'].map((tool) => (
                     <button
                       key={tool}
                       onClick={() => setFilterTool(tool)}
@@ -294,7 +330,7 @@ function App() {
                   >
                     <option value="Midjourney v6">Midjourney v6</option>
                     <option value="FLUX.1">FLUX.1</option>
-                    <option value="Stable Diffusion XL">Stable Diffusion XL</option>
+                    <option value="Runway Gen-3">Runway Gen-3</option>
                   </select>
                   <input
                     type="number"
