@@ -61,17 +61,24 @@
     // Алгоритм экстремального сжатия фото (решает проблему с переполнением памяти)
     const compressImage = (file) => {
       return new Promise((resolve) => {
-
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (e) => {
+          const img = new Image();
+          img.src = e.target.result;
+          img.onload = () => {
             const canvas = document.createElement('canvas');
             const MAX_WIDTH = 500; // Сжимаем ширину до 500px
             const scaleSize = MAX_WIDTH / img.width;
-            canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize;
+            canvas.width = MAX_WIDTH;
+            canvas.height = img.height * scaleSize;
             canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
             resolve(canvas.toDataURL('image/jpeg', 0.6)); // Качество 60%
           };
         };
       });
     };
+
 
     const calculateResponseFee = (b) => { b = Number(b) || 0; if (b <= 2000) return 100; if (b <= 5000) return Math.max(100, Math.round(b * 0.05)); return Math.round(250 + ((b - 5000) / 95000) * 950); };
     const CRYPTO_RATES = { usdt: { rate: 1.0, symbol: 'USDT', net: 'TRC-20' }, ton: { rate: 0.18, symbol: 'TON', net: 'TON' }, trx: { rate: 6.8, symbol: 'TRX', net: 'TRON' }, rub: { rate: 92.5, symbol: 'RUB', net: 'Карта' } };
