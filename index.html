@@ -46,9 +46,10 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-        const TELEGRAM_LINK = "https://t.me/aiworkersspace";
+    const TELEGRAM_LINK = "https://t.me/aiworkersspace";
     const ADMIN_EMAIL = "kenigwood39@gmail.com";
 
+    // КЛЮЧИ FIREBASE ПРИЛОЖЕНИЯ
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyBi6K0YuwV6jAHvUg2x8Y2dX-FuTLfDgd0",
       authDomain: "ai-workers-space.firebaseapp.com",
@@ -58,27 +59,23 @@
       appId: "1:6761091660:web:8628d352b4a8804c2edae9"
     };
 
-    // Алгоритм экстремального сжатия фото (решает проблему с переполнением памяти)
+    // Алгоритм экстремального сжатия фото
     const compressImage = (file) => {
       return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
+        const reader = new FileReader(); reader.readAsDataURL(file);
         reader.onload = (e) => {
-          const img = new Image();
-          img.src = e.target.result;
+          const img = new Image(); img.src = e.target.result;
           img.onload = () => {
             const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 500; // Сжимаем ширину до 500px
+            const MAX_WIDTH = 500;
             const scaleSize = MAX_WIDTH / img.width;
-            canvas.width = MAX_WIDTH;
-            canvas.height = img.height * scaleSize;
+            canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize;
             canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL('image/jpeg', 0.6)); // Качество 60%
+            resolve(canvas.toDataURL('image/jpeg', 0.6));
           };
         };
       });
     };
-
 
     const calculateResponseFee = (b) => { b = Number(b) || 0; if (b <= 2000) return 100; if (b <= 5000) return Math.max(100, Math.round(b * 0.05)); return Math.round(250 + ((b - 5000) / 95000) * 950); };
     const CRYPTO_RATES = { usdt: { rate: 1.0, symbol: 'USDT', net: 'TRC-20' }, ton: { rate: 0.18, symbol: 'TON', net: 'TON' }, trx: { rate: 6.8, symbol: 'TRX', net: 'TRON' }, rub: { rate: 92.5, symbol: 'RUB', net: 'Карта' } };
@@ -94,7 +91,6 @@
     const TASK_CARD_FRAMES = [ { id: 'c0', name: 'Стандарт', class: 'card-frame-default', price: 0 }, { id: 'c1', name: 'Неон Cyan', class: 'card-frame-neon', price: 1000 }, { id: 'c4', name: 'Fire Ultra 🔥', class: 'card-frame-fire-ultra', price: 10000 } ];
 
     function App() {
-      // Инициализация облака и состояния
       const [db, setDb] = useState(null);
       const [auth, setAuth] = useState(null);
       const [appId] = useState('aws-platform-v1');
@@ -110,11 +106,9 @@
       const [inventory, setInventory] = useState({ avatars: [], frames: [], cardFrames: [] });
       const [paidUnlocks, setPaidUnlocks] = useState([]);
       const [supportTickets, setSupportTickets] = useState([]);
-      const [platformStats, setPlatformStats] = useState({ visits: 1421, purchasedAWS: 420000, clientsCount: 84, creatorsCount: 142 });
 
       const isAdmin = user && user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
-      // Локальные UI состояния
       const [toasts, setToasts] = useState([]);
       const [selectedCat, setSelectedCat] = useState('All');
       const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -135,7 +129,6 @@
       const [taskPhotos, setTaskPhotos] = useState([]);
       const [mainPhotoIndex, setMainPhotoIndex] = useState(0);
 
-      const [editingTask, setEditingTask] = useState(null);
       const [viewingTask, setViewingTask] = useState(null);
       const [currentPhotoSlide, setCurrentPhotoSlide] = useState(0);
       const [selectedTaskForChat, setSelectedTaskForChat] = useState(null);
@@ -148,18 +141,11 @@
       const [aiResultVideo, setAiResultVideo] = useState(null);
       const [aiLoading, setAiLoading] = useState(false);
 
-      const [userTicketMsg, setUserTicketMsg] = useState('');
-      const [adminReplyTexts, setAdminReplyTexts] = useState({});
-
       const showToast = (message, type = 'success') => { const id = Date.now(); setToasts(p => [...p, { id, message, type }]); setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 3000); };
 
-      // ==========================================
-      // ПОДКЛЮЧЕНИЕ ГЛОБАЛЬНОЙ БАЗЫ ДАННЫХ
-      // ==========================================
       useEffect(() => {
         const initCloud = () => {
           if (!window.Firebase) return;
-          
           if (FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey.length > 5) {
             try {
               const app = window.Firebase.initializeApp(FIREBASE_CONFIG);
@@ -168,18 +154,15 @@
               
               setDb(firestoreDb); setAuth(firebaseAuth); setIsGlobalMode(true);
 
-              // Подписка на глобальную ленту заказов в реальном времени
               window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'artifacts', appId, 'public', 'tasks'), (snap) => {
                 const loaded = snap.docs.map(d => d.data());
                 setTasks(loaded.sort((a, b) => b.id - a.id));
               });
 
-              // Подписка на тикеты поддержки
               window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'artifacts', appId, 'public', 'tickets'), (snap) => {
                 setSupportTickets(snap.docs.map(d => d.data()).sort((a,b) => b.id - a.id));
               });
 
-              // Слушатель состояния авторизации
               window.Firebase.onAuthStateChanged(firebaseAuth, async (u) => {
                 if (u) {
                   const profSnap = await window.Firebase.getDoc(window.Firebase.doc(firestoreDb, 'artifacts', appId, 'users', u.uid));
@@ -209,7 +192,6 @@
         setTimeout(initCloud, 500);
       }, []);
 
-      // Синхронизация профиля в облако при изменениях
       useEffect(() => {
         if (isGlobalMode && db && user && auth?.currentUser) {
           window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'users', auth.currentUser.uid), {
@@ -221,22 +203,38 @@
         }
       }, [user, balance, inventory, paidUnlocks, tasks, isGlobalMode]);
 
-      // ==========================================
-      // НАСТОЯЩАЯ РЕГИСТРАЦИЯ И ВХОД
-      // ==========================================
-      const handleAuthSubmit = async (e) => {
+      const handleUploadAvatarFromFile = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          try {
+            const b64 = await compressImage(file);
+            setUser(prev => ({ ...prev, avatar: b64 }));
+            showToast('Аватар обновлен!');
+          } catch(err) {
+            showToast('Ошибка загрузки аватара', 'error');
+          }
+        }
+      };
+
+      const handleRemoveTaskPhoto = (e, idx) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setTaskPhotos(prev => prev.filter((_, i) => i !== idx));
+      };
+
+      const handleAuthSubmit = async (e, forcedMode = null) => {
         e.preventDefault(); setAuthError('');
+        const mode = forcedMode || authMode;
         const em = authEmail.trim().toLowerCase();
         
         if (!isGlobalMode) {
-           // Оффлайн режим (если нет ключей Firebase)
            if (authPassword.length < 6) return setAuthError('Пароль от 6 символов');
            const u = { id: 'u_'+Date.now(), email: em, name: em.split('@')[0], avatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&q=80', avatarFrame: 'frame-none', cardFrame: 'card-frame-default' };
            setUser(u); setBalance(em === ADMIN_EMAIL.toLowerCase() ? 25000 : 1000); setAuthModalOpen(false); showToast('Локальный вход выполнен'); return;
         }
 
         try {
-          if (authMode === 'register') {
+          if (mode === 'register') {
             if(authPassword.length < 6) return setAuthError('Пароль от 6 символов');
             const cred = await window.Firebase.createUserWithEmailAndPassword(auth, em, authPassword);
             const isM = em === ADMIN_EMAIL.toLowerCase();
@@ -251,7 +249,7 @@
             setAuthModalOpen(false); showToast('Вы успешно вошли в систему!');
           }
         } catch(err) {
-          setAuthError(authMode === 'login' ? 'Неверный email или пароль' : 'Ошибка регистрации (возможно email занят)');
+          setAuthError(mode === 'login' ? 'Неверный email или пароль' : 'Ошибка регистрации (возможно email занят)');
         }
       };
 
@@ -260,9 +258,6 @@
         setUser(null); localStorage.removeItem('aws_local_user'); showToast('Вы вышли из аккаунта');
       };
 
-      // ==========================================
-      // ТАСКИ, ФОТО И ЧАТЫ В ОБЛАКЕ
-      // ==========================================
       const handleUploadTaskPhotos = async (e) => {
         const files = Array.from(e.target.files);
         for (let file of files) {
@@ -302,9 +297,6 @@
         setSelectedTaskForChat(updatedTask); setChatInput('');
       };
 
-      // ==========================================
-      // СТАБИЛЬНЫЙ AI ГЕНЕРАТОР
-      // ==========================================
       const handleGenerateAI = async (e) => {
         e.preventDefault(); if (!aiPrompt.trim()) return;
         const fee = aiMode === 'video' ? 150 : aiMode === 'text' ? 20 : 50;
@@ -315,12 +307,10 @@
         try {
           if (aiMode === 'image') {
             const isRu = /[а-яА-ЯЁё]/.test(aiPrompt); let engP = aiPrompt;
-            // Переводчик для нейросети (чтобы она понимала русский)
             if(isRu) { try { const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=ru&tl=en&dt=t&q=${encodeURIComponent(aiPrompt)}`); const d = await r.json(); engP = d[0][0][0]; } catch(e){} }
             const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(engP+', 8k, cinematic masterpiece')}?width=1024&height=1024&seed=${Date.now()}&nologo=true`;
             const img = new Image(); img.src = url; img.onload = () => { setAiResultImg(url); setAiLoading(false); }; img.onerror = () => { setAiLoading(false); showToast('Ошибка рендеринга', 'error'); };
           } else if (aiMode === 'text') {
-            // Эмуляция ответа текста, чтобы избежать ошибки 402 Payment Required от бесплатных API
             setTimeout(() => { setAiResultText(`[Claude 3.5 Sonnet]:\nАнализ запроса: "${aiPrompt}"\n\nЯ обработал ваш запрос. В полной версии платформы здесь будет сгенерирован готовый код, смарт-контракт или сценарий.\n\nСтатус системы: Готово к работе.`); setAiLoading(false); }, 1500);
           } else {
             setTimeout(() => { setAiResultVideo('https://assets.mixkit.co/videos/preview/mixkit-futuristic-city-with-flying-traffic-at-night-41549-large.mp4'); setAiLoading(false); }, 2500);
@@ -328,7 +318,6 @@
         } catch (err) { setAiLoading(false); showToast('Сбой API', 'error'); }
       };
 
-      // Магазин
       const handleBuy = (item, type) => {
         if (!user) { setAuthModalOpen(true); return; }
         const isOwned = item.price === 0 || inventory[type+'s']?.includes(item.id);
@@ -383,7 +372,7 @@
               </div>
 
               <div className="flex items-center gap-1 sm:gap-3 shrink-0">
-                <a href={TELEGRAM_LINK} target="_blank" className="w-7 h-7 sm:w-auto sm:px-2.5 sm:py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 flex items-center justify-center gap-1.5 hover:bg-sky-500/20 shrink-0"><i className="fa-brands fa-telegram text-sm"></i><span className="hidden md:inline text-[11px] font-bold">TG</span></a>
+                <a href={TELEGRAM_LINK} target="_blank" rel="noreferrer" className="w-7 h-7 sm:w-auto sm:px-2.5 sm:py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 flex items-center justify-center gap-1.5 hover:bg-sky-500/20 shrink-0"><i className="fa-brands fa-telegram text-sm"></i><span className="hidden md:inline text-[11px] font-bold">TG</span></a>
                 <button onClick={() => setWalletModalOpen(true)} className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-slate-900 border border-amber-500/40 hover:bg-slate-800 shrink-0"><i className="fa-solid fa-coins text-amber-400 text-[10px] sm:text-xs"></i><span className="text-cyan-300 font-bold text-[11px] sm:text-xs font-mono">{balance.toLocaleString()}</span><span className="hidden sm:inline text-[9px] text-slate-400 font-bold">AWS</span></button>
                 {isAdmin && <button onClick={() => setTab('admin')} className="px-2 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/50 text-amber-300 text-[10px] font-bold flex items-center gap-1 shrink-0"><i className="fa-solid fa-shield-halved"></i><span className="hidden sm:inline">Админ</span></button>}
                 {user ? (
@@ -470,7 +459,7 @@
                       {aiLoading ? <><i className="fa-solid fa-spinner fa-spin"></i> Обработка...</> : 'Сгенерировать'}
                     </button>
                   </form>
-                  {aiResultImg && <div className="p-4 bg-slate-950 rounded-2xl border border-fuchsia-500/40 text-center"><img src={aiResultImg} className="w-full h-auto object-cover rounded-xl" /><a href={aiResultImg} target="_blank" className="mt-3 inline-block px-4 py-2 bg-slate-900 border border-fuchsia-500/40 text-fuchsia-300 text-xs font-bold rounded-xl"><i className="fa-solid fa-download"></i> Скачать (8K)</a></div>}
+                  {aiResultImg && <div className="p-4 bg-slate-950 rounded-2xl border border-fuchsia-500/40 text-center"><img src={aiResultImg} className="w-full h-auto object-cover rounded-xl" /><a href={aiResultImg} target="_blank" rel="noreferrer" className="mt-3 inline-block px-4 py-2 bg-slate-900 border border-fuchsia-500/40 text-fuchsia-300 text-xs font-bold rounded-xl"><i className="fa-solid fa-download"></i> Скачать (8K)</a></div>}
                   {aiResultText && <div className="p-4 bg-slate-950 rounded-2xl border border-cyan-500/40 space-y-2"><pre className="text-xs text-slate-200 font-sans whitespace-pre-wrap">{aiResultText}</pre></div>}
                 </div>
               )}
@@ -584,7 +573,7 @@
                           {taskPhotos.map((photo, idx) => (
                             <div key={idx} className="relative w-full h-24 rounded-xl border border-slate-700 bg-slate-900 group overflow-hidden">
                               <img src={photo} className="w-full h-full object-cover" />
-                              <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleRemoveTaskPhoto(e, idx); }} className="absolute top-1 right-1 w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center text-sm shadow-xl hover:bg-red-600 z-[100] cursor-pointer">
+                              <button type="button" onClick={(e) => handleRemoveTaskPhoto(e, idx)} className="absolute top-1 right-1 w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center text-sm shadow-xl hover:bg-red-600 z-[100] cursor-pointer">
                                 <i className="fa-solid fa-xmark"></i>
                               </button>
                             </div>
