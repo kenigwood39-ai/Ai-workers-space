@@ -35,17 +35,23 @@
     .card-frame-cyber { border: 1.5px solid #d946ef; box-shadow: 0 0 18px rgba(217, 70, 239, 0.3); }
     .card-frame-gold { border: 1.5px solid #f59e0b; box-shadow: 0 0 20px rgba(245, 158, 11, 0.35); }
     .card-frame-fire { border: 1.5px solid #ef4444; box-shadow: 0 0 25px rgba(239, 68, 68, 0.4); }
+
+    /* Анимация Toast-уведомлений */
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    .toast-enter { animation: slideIn 0.3s ease-out forwards; }
   </style>
 </head>
 <body class="bg-[#07090E] min-h-screen text-slate-100 selection:bg-cyan-500 selection:text-black">
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useRef } = React;
 
     const TELEGRAM_LINK = "https://t.me/aiworkersspace";
     const ADMIN_EMAIL = "kenigwood39@gmail.com";
 
+    // Утилита расчета отклика
     const calculateResponseFee = (budget) => {
       const b = Number(budget) || 0;
       if (b <= 2000) return 100;
@@ -62,7 +68,34 @@
       rub: { rate: 92.5, symbol: 'RUB', net: 'Банковская карта' }
     };
 
-    const DEFAULT_SYSTEM_TASKS = [
+    const MINIMAL_AVATARS = [
+      { id: 'min_free_1', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80', name: 'Dark Sphere', price: 0 },
+      { id: 'min_free_2', url: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=300&q=80', name: 'Minimal Glow', price: 0 },
+      { id: 'min_500', url: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=300&q=80', name: 'Glass Wave', price: 500 },
+      { id: 'min_1000', url: 'https://images.unsplash.com/photo-1633167606207-d840b5070fc2?auto=format&fit=crop&w=300&q=80', name: 'Obsidian Cube', price: 1000 },
+      { id: 'min_2000', url: 'https://images.unsplash.com/photo-1614680376593-902f749f7ffc?auto=format&fit=crop&w=300&q=80', name: 'Cyber Minimal', price: 2000 },
+      { id: 'min_3000', url: 'https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?auto=format&fit=crop&w=300&q=80', name: 'Liquid Chrome', price: 3000 },
+      { id: 'min_5000', url: 'https://images.unsplash.com/photo-1634926878768-2a5b3c42f139?auto=format&fit=crop&w=300&q=80', name: 'Matte VIP Gold', price: 5000 }
+    ];
+
+    const AVATAR_FRAMES = [
+      { id: 'frame-none', name: 'Без рамки', class: 'frame-none', price: 0 },
+      { id: 'frame-cyan', name: 'Cyan Glow', class: 'frame-cyan', price: 500 },
+      { id: 'frame-fuchsia', name: 'Fuchsia Neon', class: 'frame-fuchsia', price: 1000 },
+      { id: 'frame-emerald', name: 'Emerald Edge', class: 'frame-emerald', price: 2000 },
+      { id: 'frame-amber', name: 'Gold Emperor', class: 'frame-amber', price: 3000 },
+      { id: 'frame-rainbow', name: 'Rainbow Mythic', class: 'frame-rainbow', price: 5000 }
+    ];
+
+    const TASK_CARD_FRAMES = [
+      { id: 'card-frame-default', name: 'Стандартная', class: 'card-frame-default', price: 0 },
+      { id: 'card-frame-neon', name: 'Неон Cyan', class: 'card-frame-neon', price: 1000 },
+      { id: 'card-frame-cyber', name: 'Кибер Fuchsia', class: 'card-frame-cyber', price: 2500 },
+      { id: 'card-frame-gold', name: 'Золотой VIP', class: 'card-frame-gold', price: 5000 },
+      { id: 'card-frame-fire', name: 'Fire Flame Ultra', class: 'card-frame-fire', price: 10000 }
+    ];
+
+    const SYSTEM_TASKS = [
       {
         id: 101,
         category: 'video',
@@ -81,8 +114,7 @@
         views: 480,
         mainPhotoIndex: 0,
         photos: [
-          'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80',
-          'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=800&q=80'
+          'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80'
         ]
       },
       {
@@ -105,80 +137,70 @@
         photos: [
           'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=80'
         ]
-      },
-      {
-        id: 103,
-        category: 'art',
-        title: 'Киберпанк-обложка для виниловой пластинки Synthwave альбома',
-        prompt: 'Futuristic Tokyo skyline at night, glowing neon kanji, retro synthwave 80s aesthetic --stylize 750',
-        tool: 'FLUX.1 Pro',
-        budget: 5000,
-        response_fee: 250,
-        currency: 'AWS',
-        author: 'NeonRecords NY',
-        author_id: 'client_demo_3',
-        card_frame: 'card-frame-default',
-        executor_id: null,
-        status: 'open',
-        hidden: false,
-        views: 220,
-        mainPhotoIndex: 0,
-        photos: [
-          'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=800&q=80'
-        ]
       }
     ];
 
     function App() {
-      const [tab, setTab] = useState('feed');
+      // Глобальные состояния
+      const [lang, setLang] = useState(() => localStorage.getItem('aws_lang') || 'ru');
+      const [tab, setTab] = useState('feed'); // 'feed' | 'cabinet' | 'create' | 'ai_studio' | 'admin' | 'support' | 'deal_chat'
       const [role, setRole] = useState('client');
+      const [cabinetSubTab, setCabinetSubTab] = useState('my-orders');
       
       const [user, setUser] = useState(() => {
-        const savedUser = localStorage.getItem('aws_active_user');
-        return savedUser ? JSON.parse(savedUser) : null;
+        const saved = localStorage.getItem('aws_active_user');
+        return saved ? JSON.parse(saved) : null;
       });
 
       const isAdmin = user && user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
-      // Безопасное сохранение тасков
+      // Данные платформы
       const [tasks, setTasks] = useState(() => {
-        const saved = localStorage.getItem('aws_persistent_tasks_v2');
-        if (saved) {
-          try { return JSON.parse(saved); } catch(e) {}
-        }
-        return DEFAULT_SYSTEM_TASKS;
+        const saved = localStorage.getItem('aws_db_tasks');
+        return saved ? JSON.parse(saved) : SYSTEM_TASKS;
       });
 
       const [balance, setBalance] = useState(() => {
-        const b = localStorage.getItem('aws_balance_master_v2');
+        const b = localStorage.getItem('aws_db_balance');
         if (b) return Number(b);
         return isAdmin ? 25000 : 1000;
       });
 
-      // AI Studio режимы
-      const [aiMode, setAiMode] = useState('image'); // 'image' | 'text' | 'video'
-      const [aiPrompt, setAiPrompt] = useState('');
-      const [aiResultImg, setAiResultImg] = useState(null);
-      const [aiResultText, setAiResultText] = useState('');
-      const [aiResultVideo, setAiResultVideo] = useState(null);
-      const [aiLoading, setAiLoading] = useState(false);
+      const [inventory, setInventory] = useState(() => {
+        const saved = localStorage.getItem('aws_db_inventory');
+        return saved ? JSON.parse(saved) : {};
+      });
 
+      const [paidUnlocks, setPaidUnlocks] = useState(() => {
+        const saved = localStorage.getItem('aws_db_unlocks');
+        return saved ? JSON.parse(saved) : {};
+      });
+
+      const [platformStats, setPlatformStats] = useState(() => {
+        const saved = localStorage.getItem('aws_db_stats');
+        return saved ? JSON.parse(saved) : { visits: 1421, purchasedAWS: 420000, clientsCount: 84, creatorsCount: 142 };
+      });
+
+      const [supportTickets, setSupportTickets] = useState(() => {
+        const saved = localStorage.getItem('aws_db_tickets');
+        return saved ? JSON.parse(saved) : [
+          { id: 1, userEmail: 'creator_demo@gmail.com', userName: 'Alex Prompt', text: 'Здравствуйте! Как работает вывод на TON?', reply: 'Здравствуйте! Выплаты обрабатываются автоматически через шлюз BlockBee.', status: 'answered', time: '10:15' }
+        ];
+      });
+
+      // Локальные состояния UI
+      const [toasts, setToasts] = useState([]);
       const [selectedCat, setSelectedCat] = useState('All');
-
-      // Модалки
       const [authModalOpen, setAuthModalOpen] = useState(false);
       const [authMode, setAuthMode] = useState('login');
       const [authEmail, setAuthEmail] = useState('');
       const [authPassword, setAuthPassword] = useState('');
       const [verificationCode, setVerificationCode] = useState('');
       const [generatedOtp, setGeneratedOtp] = useState('');
-
       const [walletModalOpen, setWalletModalOpen] = useState(false);
       const [selectedCurrency, setSelectedCurrency] = useState('usdt');
       const [depositAmountAWS, setDepositAmountAWS] = useState('1000');
-      const [depositSuccess, setDepositSuccess] = useState(false);
-
-      // Форма создания
+      
       const [newTitle, setNewTitle] = useState('');
       const [newCategory, setNewCategory] = useState('video');
       const [newPrompt, setNewPrompt] = useState('');
@@ -187,37 +209,66 @@
       const [taskPhotos, setTaskPhotos] = useState([]);
       const [mainPhotoIndex, setMainPhotoIndex] = useState(0);
 
+      const [editingTask, setEditingTask] = useState(null);
       const [viewingTask, setViewingTask] = useState(null);
       const [currentPhotoSlide, setCurrentPhotoSlide] = useState(0);
       const [selectedTaskForChat, setSelectedTaskForChat] = useState(null);
       const [dealMessages, setDealMessages] = useState({});
       const [chatInput, setChatInput] = useState('');
 
+      const [aiMode, setAiMode] = useState('image');
+      const [aiPrompt, setAiPrompt] = useState('');
+      const [aiResultImg, setAiResultImg] = useState(null);
+      const [aiLoading, setAiLoading] = useState(false);
+
+      const [userTicketMsg, setUserTicketMsg] = useState('');
+      const [adminReplyTexts, setAdminReplyTexts] = useState({});
+
+      // Сихнронизация Storage
+      useEffect(() => { localStorage.setItem('aws_lang', lang); }, [lang]);
+      useEffect(() => { localStorage.setItem('aws_db_tasks', JSON.stringify(tasks)); }, [tasks]);
+      useEffect(() => { localStorage.setItem('aws_db_balance', balance.toString()); }, [balance]);
+      useEffect(() => { localStorage.setItem('aws_db_inventory', JSON.stringify(inventory)); }, [inventory]);
+      useEffect(() => { localStorage.setItem('aws_db_unlocks', JSON.stringify(paidUnlocks)); }, [paidUnlocks]);
+      useEffect(() => { localStorage.setItem('aws_db_stats', JSON.stringify(platformStats)); }, [platformStats]);
+      useEffect(() => { localStorage.setItem('aws_db_tickets', JSON.stringify(supportTickets)); }, [supportTickets]);
+
       useEffect(() => {
-        try {
-          localStorage.setItem('aws_persistent_tasks_v2', JSON.stringify(tasks));
-        } catch(e) {
-          console.warn('Storage limit reached, saved in session memory');
+        if (!sessionStorage.getItem('aws_session_v1')) {
+          sessionStorage.setItem('aws_session_v1', 'true');
+          setPlatformStats(prev => ({ ...prev, visits: prev.visits + 1 }));
         }
-      }, [tasks]);
+      }, []);
 
-      useEffect(() => {
-        localStorage.setItem('aws_balance_master_v2', balance.toString());
-      }, [balance]);
-
-      // Просмотр со счетчиком
-      const openTaskModalWithViewCount = (task) => {
-        const updated = tasks.map(t => t.id === task.id ? { ...t, views: (t.views || 0) + 1 } : t);
-        setTasks(updated);
-        const target = updated.find(t => t.id === task.id);
-        setViewingTask(target);
-        setCurrentPhotoSlide(target.mainPhotoIndex || 0);
+      // Уведомления (Toasts)
+      const showToast = (message, type = 'success') => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message, type }]);
+        setTimeout(() => {
+          setToasts(prev => prev.filter(t => t.id !== id));
+        }, 3000);
       };
 
-      // Загрузка фото сжатым форматом
+      // Обработчики фото
+      const handleUploadAvatarFromFile = (e) => {
+        const file = e.target.files[0];
+        if (!file || !user) return;
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          try {
+            const updated = { ...user, avatar: reader.result };
+            setUser(updated);
+            localStorage.setItem('aws_active_user', JSON.stringify(updated));
+            showToast('Аватарка успешно обновлена!');
+          } catch(e) {
+            showToast('Файл слишком большой для локального хранилища.', 'error');
+          }
+        };
+        reader.readAsDataURL(file);
+      };
+
       const handleUploadTaskPhotos = (e) => {
         const files = Array.from(e.target.files);
-        if (!files.length) return;
         files.forEach((file) => {
           if (taskPhotos.length >= 5) return;
           const reader = new FileReader();
@@ -228,115 +279,246 @@
         });
       };
 
-      // Публикация таска без падений
+      // Магазин
+      const handleSelectAvatar = (item) => {
+        if (!user) { setAuthModalOpen(true); return; }
+        const userInv = inventory[user.id] || { avatars: [], frames: [], cardFrames: [] };
+
+        if (item.price === 0 || (userInv.avatars && userInv.avatars.includes(item.id))) {
+          const updated = { ...user, avatar: item.url };
+          setUser(updated);
+          localStorage.setItem('aws_active_user', JSON.stringify(updated));
+          showToast(`Аватар "${item.name}" установлен!`);
+        } else {
+          if (balance < item.price) {
+            setWalletModalOpen(true);
+            return;
+          }
+          setBalance(prev => prev - item.price);
+          setInventory({ ...inventory, [user.id]: { ...userInv, avatars: [...(userInv.avatars || []), item.id] } });
+          const updated = { ...user, avatar: item.url };
+          setUser(updated);
+          localStorage.setItem('aws_active_user', JSON.stringify(updated));
+          showToast(`Аватар куплен и установлен!`);
+        }
+      };
+
+      const handleSelectAvatarFrame = (frame) => {
+        if (!user) { setAuthModalOpen(true); return; }
+        const userInv = inventory[user.id] || { avatars: [], frames: [], cardFrames: [] };
+
+        if (frame.price === 0 || (userInv.frames && userInv.frames.includes(frame.id))) {
+          const updated = { ...user, avatarFrame: frame.class };
+          setUser(updated);
+          localStorage.setItem('aws_active_user', JSON.stringify(updated));
+          showToast(`Рамка применена!`);
+        } else {
+          if (balance < frame.price) { setWalletModalOpen(true); return; }
+          setBalance(prev => prev - frame.price);
+          setInventory({ ...inventory, [user.id]: { ...userInv, frames: [...(userInv.frames || []), frame.id] } });
+          const updated = { ...user, avatarFrame: frame.class };
+          setUser(updated);
+          localStorage.setItem('aws_active_user', JSON.stringify(updated));
+          showToast(`Неоновая рамка куплена!`);
+        }
+      };
+
+      const handleSelectCardFrame = (cf) => {
+        if (!user) { setAuthModalOpen(true); return; }
+        const userInv = inventory[user.id] || { avatars: [], frames: [], cardFrames: [] };
+
+        if (cf.price === 0 || (userInv.cardFrames && userInv.cardFrames.includes(cf.id))) {
+          const updated = { ...user, cardFrame: cf.class };
+          setUser(updated);
+          localStorage.setItem('aws_active_user', JSON.stringify(updated));
+          setTasks(tasks.map(t => t.author_id === user.id ? { ...t, card_frame: cf.class } : t));
+          showToast(`Рамка объявлений активна!`);
+        } else {
+          if (balance < cf.price) { setWalletModalOpen(true); return; }
+          setBalance(prev => prev - cf.price);
+          setInventory({ ...inventory, [user.id]: { ...userInv, cardFrames: [...(userInv.cardFrames || []), cf.id] } });
+          const updated = { ...user, cardFrame: cf.class };
+          setUser(updated);
+          localStorage.setItem('aws_active_user', JSON.stringify(updated));
+          setTasks(tasks.map(t => t.author_id === user.id ? { ...t, card_frame: cf.class } : t));
+          showToast(`Премиум рамка куплена!`);
+        }
+      };
+
+      // Управление Тасками
       const handleCreateTask = (e) => {
         e.preventDefault();
         if (!newTitle.trim()) return;
 
-        const authorName = user ? user.name : 'RestoGroup';
-        const authorId = user ? user.id : 'client_demo_1';
+        const authorName = user ? user.name : 'Guest Client';
+        const authorId = user ? user.id : 'guest_1';
         const budgetVal = Number(newBudget) || 150000;
 
-        const finalPhotos = taskPhotos.length > 0 ? taskPhotos : [
-          'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80',
-          'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=800&q=80'
-        ];
+        const finalPhotos = taskPhotos.length > 0 ? taskPhotos : ['https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80'];
 
         const taskObj = {
           id: Date.now(),
           category: newCategory,
           title: newTitle,
-          prompt: newPrompt || 'ТЗ и материалы предоставлены в чате сделки',
+          prompt: newPrompt || 'ТЗ обсуждается в чате',
           tool: newTool,
           budget: budgetVal,
           response_fee: calculateResponseFee(budgetVal),
           currency: 'AWS',
           author: authorName,
           author_id: authorId,
-          card_frame: 'card-frame-gold',
+          card_frame: user?.cardFrame || 'card-frame-default',
           executor_id: null,
           status: 'open',
           hidden: false,
-          views: 1,
+          views: 0,
           mainPhotoIndex: mainPhotoIndex < finalPhotos.length ? mainPhotoIndex : 0,
           photos: finalPhotos
         };
 
-        setTasks([taskObj, ...tasks]);
-        setNewTitle('');
-        setNewPrompt('');
-        setTaskPhotos([]);
-        setMainPhotoIndex(0);
-        setTab('feed');
+        try {
+          const newArr = [taskObj, ...tasks];
+          localStorage.setItem('aws_db_tasks', JSON.stringify(newArr)); // Test limit
+          setTasks(newArr);
+          showToast('Таск успешно опубликован!');
+          setNewTitle(''); setNewPrompt(''); setTaskPhotos([]); setMainPhotoIndex(0);
+          setTab('feed');
+        } catch(e) {
+          showToast('Слишком много тяжелых фото. Уменьшите их количество.', 'error');
+        }
       };
 
-      // Умная AI Генерация (FLUX.1 Pro, Claude 3.5, Runway)
-      const handleGenerateAI = async (e) => {
+      const handleSaveEditedTask = (e) => {
+        e.preventDefault();
+        const b = Number(editingTask.budget) || 1000;
+        setTasks(tasks.map(t => t.id === editingTask.id ? { ...editingTask, budget: b, response_fee: calculateResponseFee(b) } : t));
+        setEditingTask(null);
+        showToast('Изменения сохранены');
+      };
+
+      const handleToggleHideTask = (taskId) => {
+        setTasks(tasks.map(t => t.id === taskId ? { ...t, hidden: !t.hidden } : t));
+      };
+
+      const handleDeleteTask = (taskId) => {
+        if (confirm('Удалить этот таск безвозвратно?')) {
+          setTasks(tasks.filter(t => t.id !== taskId));
+          showToast('Таск удален');
+        }
+      };
+
+      const handleChangeTaskFrame = (taskId, frameClass) => {
+        setTasks(tasks.map(t => t.id === taskId ? { ...t, card_frame: frameClass } : t));
+      };
+
+      // Чаты и Escrow
+      const isChatUnlocked = (taskId, authorId) => {
+        if (!user) return true; // Демо-режим
+        if (user.id === authorId) return true;
+        return (paidUnlocks[user.id] || []).includes(taskId);
+      };
+
+      const handleUnlockAndEnterChat = (task) => {
+        if (!user) { setAuthModalOpen(true); return; }
+        const fee = task.response_fee || calculateResponseFee(task.budget);
+        if (balance < fee) { setWalletModalOpen(true); return; }
+
+        setBalance(prev => prev - fee);
+        setPaidUnlocks(prev => ({ ...prev, [user.id]: [...(prev[user.id] || []), task.id] }));
+        showToast(`Оплачен отклик: -${fee} AWS`);
+        openTaskChat(task);
+      };
+
+      const openTaskModalWithViewCount = (task) => {
+        const updated = tasks.map(t => t.id === task.id ? { ...t, views: (t.views || 0) + 1 } : t);
+        setTasks(updated);
+        const target = updated.find(t => t.id === task.id);
+        setViewingTask(target);
+        setCurrentPhotoSlide(target.mainPhotoIndex || 0);
+      };
+
+      const openTaskChat = (task) => {
+        setViewingTask(null);
+        setSelectedTaskForChat(task);
+        if (!dealMessages[task.id]) {
+          setDealMessages(prev => ({ ...prev, [task.id]: [{ id: 1, sender: task.author, text: `Привет! Заказ открыт. Бюджет: ${task.budget.toLocaleString()} AWS. Жду предложения!`, isMe: false }] }));
+        }
+        setTab('deal_chat');
+      };
+
+      const handleSendDealMessage = (e) => {
+        e.preventDefault();
+        if (!chatInput.trim() || !selectedTaskForChat) return;
+        const newMsg = { id: Date.now(), sender: user ? user.name : 'Вы', text: chatInput, isMe: true };
+        setDealMessages(prev => ({ ...prev, [selectedTaskForChat.id]: [...(prev[selectedTaskForChat.id] || []), newMsg] }));
+        setChatInput('');
+      };
+
+      const handleSubmitWork = () => {
+        setTasks(tasks.map(t => t.id === selectedTaskForChat.id ? { ...t, status: 'review' } : t));
+        setSelectedTaskForChat({ ...selectedTaskForChat, status: 'review' });
+        const sysMsg = { id: Date.now(), sender: 'System', text: '📤 Работа отправлена на проверку заказчику.', isMe: false };
+        setDealMessages(prev => ({ ...prev, [selectedTaskForChat.id]: [...(prev[selectedTaskForChat.id] || []), sysMsg] }));
+      };
+
+      const handleApproveWork = () => {
+        setTasks(tasks.map(t => t.id === selectedTaskForChat.id ? { ...t, status: 'completed' } : t));
+        setSelectedTaskForChat({ ...selectedTaskForChat, status: 'completed' });
+        const netPayout = Math.round(selectedTaskForChat.budget * 0.9);
+        const sysMsg = { id: Date.now(), sender: 'Escrow', text: `🎉 Сделка завершена! ${netPayout.toLocaleString()} AWS переведены исполнителю.`, isMe: false };
+        setDealMessages(prev => ({ ...prev, [selectedTaskForChat.id]: [...(prev[selectedTaskForChat.id] || []), sysMsg] }));
+      };
+
+      // AI Студия
+      const handleGenerateAI = (e) => {
         e.preventDefault();
         if (!aiPrompt.trim()) return;
-
-        const fee = aiMode === 'video' ? 150 : aiMode === 'text' ? 20 : 50;
-        if (balance < fee) {
-          alert(`Недостаточно AWS. Стоимость: ${fee} AWS.`);
-          setWalletModalOpen(true);
-          return;
-        }
+        const fee = 50;
+        if (balance < fee) { setWalletModalOpen(true); return; }
 
         setBalance(prev => prev - fee);
         setAiLoading(true);
         setAiResultImg(null);
-        setAiResultText('');
-        setAiResultVideo(null);
 
-        if (aiMode === 'image') {
-          const cleanSeed = Math.floor(Math.random() * 99999999);
-          // FLUX.1 Pro с кинематографическим энхансером
-          const enrichedPrompt = encodeURIComponent(`${aiPrompt.trim()}, masterpiece, 8k resolution, photorealistic, hyper-detailed cinematic lighting, octane render`);
-          const imageUrl = `https://image.pollinations.ai/prompt/${enrichedPrompt}?width=1280&height=720&seed=${cleanSeed}&model=flux&nologo=true`;
+        const cleanSeed = Math.floor(Math.random() * 99999999);
+        const encoded = encodeURIComponent(aiPrompt.trim());
+        const imageUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${cleanSeed}&nologo=true`;
 
-          const img = new Image();
-          img.src = imageUrl;
-          img.onload = () => {
-            setAiResultImg(imageUrl);
-            setAiLoading(false);
-          };
-          img.onerror = () => {
-            setAiLoading(false);
-            alert('Сбой рендеринга изображения. Попробуйте еще раз.');
-          };
-        } 
-        else if (aiMode === 'text') {
-          // Имитация высокоточного ответа Claude 3.5 Sonnet
-          setTimeout(() => {
-            const sampleResponses = [
-              `💡 [Claude 3.5 Sonnet Architecture Plan]:\n\nДля задачи «${aiPrompt.trim()}» рекомендуется следующий стек:\n1. Промпт-матрица: Master prompt с весами --stylize 850 --ar 16:9 --v 6.0.\n2. Архитектура пайплайна: ComfyUI + ControlNet IP-Adapter для сохранения консистентности.\n3. Смета проекта: 75,000 AWS (Escrow hold). Рекомендуемый срок сдачи: 48 часов.`,
-              `⚡ [Claude 3.5 Sonnet Code & Script]:\n\nАнализ ТЗ «${aiPrompt.trim()}» завершен:\n- Подготовлена логика автоматизации и Telegram-бот на FastAPI + LangChain.\n- Интегрированы векторные эмбеддинги для поиска контекста в базе знаний.\n- Готовность к развертыванию: 100%.`
-            ];
-            setAiResultText(sampleResponses[Math.floor(Math.random() * sampleResponses.length)]);
-            setAiLoading(false);
-          }, 1400);
-        }
-        else if (aiMode === 'video') {
-          // Генерация видео через Runway Gen-3
-          setTimeout(() => {
-            setAiResultVideo('https://assets.mixkit.co/videos/preview/mixkit-futuristic-city-with-flying-traffic-at-night-41549-large.mp4');
-            setAiLoading(false);
-          }, 2000);
-        }
+        const img = new Image();
+        img.src = imageUrl;
+        img.onload = () => { setAiResultImg(imageUrl); setAiLoading(false); };
+        img.onerror = () => { setAiLoading(false); showToast('Ошибка генерации', 'error'); };
+      };
+
+      // Служба поддержки
+      const handleSendSupportTicket = (e) => {
+        e.preventDefault();
+        if (!userTicketMsg.trim()) return;
+        const t = { id: Date.now(), userEmail: user?.email || 'guest', userName: user?.name || 'Guest', text: userTicketMsg.trim(), reply: null, status: 'pending', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+        setSupportTickets([t, ...supportTickets]);
+        setUserTicketMsg('');
+        showToast('Обращение отправлено администрации!');
+      };
+
+      const handleAdminReply = (ticketId) => {
+        const text = adminReplyTexts[ticketId];
+        if (!text || !text.trim()) return;
+        setSupportTickets(supportTickets.map(t => t.id === ticketId ? { ...t, reply: text.trim(), status: 'answered' } : t));
+        setAdminReplyTexts(prev => ({ ...prev, [ticketId]: '' }));
+        showToast('Ответ отправлен!');
       };
 
       // Авторизация
       const handleStartRegister = (e) => {
         e.preventDefault();
-        if (authPassword.length < 6) return;
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
-        setGeneratedOtp(code);
+        if (authPassword.length < 6) { setAuthError('Минимум 6 символов'); return; }
+        setGeneratedOtp(Math.floor(100000 + Math.random() * 900000).toString());
         setAuthMode('verify_email');
       };
 
       const handleVerifyEmail = (e) => {
         e.preventDefault();
-        if (verificationCode.trim() !== generatedOtp) return;
+        if (verificationCode.trim() !== generatedOtp) { setAuthError('Неверный код!'); return; }
         const cleanEmail = authEmail.trim().toLowerCase();
         const isMaster = cleanEmail === ADMIN_EMAIL.toLowerCase();
 
@@ -353,7 +535,10 @@
         setBalance(isMaster ? 25000 : 1000);
         setUser(newUser);
         localStorage.setItem('aws_active_user', JSON.stringify(newUser));
+        
+        setPlatformStats(prev => ({ ...prev, clientsCount: prev.clientsCount + 1 }));
         setAuthModalOpen(false);
+        showToast('Регистрация успешна! +1000 AWS на счет');
       };
 
       const handleLogin = (e) => {
@@ -365,9 +550,9 @@
           id: 'user_' + btoa(cleanEmail).substring(0, 10),
           email: cleanEmail,
           name: cleanEmail.split('@')[0],
-          avatar: user?.avatar || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80',
-          avatarFrame: user?.avatarFrame || 'frame-none',
-          cardFrame: user?.cardFrame || 'card-frame-default',
+          avatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80',
+          avatarFrame: 'frame-none',
+          cardFrame: 'card-frame-default',
           verified: true
         };
 
@@ -375,153 +560,110 @@
         setUser(loggedUser);
         localStorage.setItem('aws_active_user', JSON.stringify(loggedUser));
         setAuthModalOpen(false);
-      };
-
-      const handleLogout = () => {
-        setUser(null);
-        localStorage.removeItem('aws_active_user');
-      };
-
-      const openTaskChat = (task) => {
-        setViewingTask(null);
-        setSelectedTaskForChat(task);
-        if (!dealMessages[task.id]) {
-          setDealMessages(prev => ({
-            ...prev,
-            [task.id]: [{ id: 1, sender: task.author, text: `Здравствуйте! Таск #${task.id} открыт. Бюджет: ${task.budget.toLocaleString()} AWS. Жду предложения!`, isMe: false }]
-          }));
-        }
-        setTab('deal_chat');
-      };
-
-      const handleSendDealMessage = (e) => {
-        e.preventDefault();
-        if (!chatInput.trim() || !selectedTaskForChat) return;
-        const newMsg = { id: Date.now(), sender: user ? user.name : 'Вы', text: chatInput, isMe: true };
-        setDealMessages(prev => ({ ...prev, [selectedTaskForChat.id]: [...(prev[selectedTaskForChat.id] || []), newMsg] }));
-        setChatInput('');
+        showToast('Вы успешно вошли!');
       };
 
       const feedTasks = tasks.filter(t => !t.hidden && (selectedCat === 'All' || t.category === selectedCat));
       const myClientTasks = tasks.filter(t => user && t.author_id === user.id);
 
       return (
-        <div className="min-h-screen flex flex-col w-full max-w-full overflow-x-hidden">
-          {/* Хедер */}
-          <header className="sticky top-0 z-40 bg-[#07090E]/95 backdrop-blur-md border-b border-cyan-500/20 px-2 sm:px-8 py-2.5">
-            <div className="max-w-6xl mx-auto flex items-center justify-between gap-1.5 sm:gap-4">
+        <div className="min-h-screen flex flex-col w-full max-w-full overflow-x-hidden relative">
+          
+          {/* TOAST NOTIFICATIONS */}
+          <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+            {toasts.map(t => (
+              <div key={t.id} className={`toast-enter px-4 py-3 rounded-xl backdrop-blur-md border shadow-lg flex items-center gap-2 ${
+                t.type === 'error' ? 'bg-red-500/20 border-red-500/50 text-red-100' : 'bg-emerald-500/20 border-emerald-500/50 text-emerald-100'
+              }`}>
+                <i className={`fa-solid ${t.type === 'error' ? 'fa-circle-xmark text-red-400' : 'fa-circle-check text-emerald-400'}`}></i>
+                <span className="text-sm font-semibold">{t.message}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* HEADER */}
+          <header className="sticky top-0 z-40 bg-[#07090E]/90 backdrop-blur-lg border-b border-cyan-500/20 px-3 sm:px-6 py-2.5">
+            <div className="max-w-6xl mx-auto flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 cursor-pointer min-w-0 flex-shrink-0" onClick={() => setTab('feed')}>
                 <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-fuchsia-500 p-[1px] flex-shrink-0">
                   <div className="w-full h-full bg-[#0B0F19] rounded-[11px] flex items-center justify-center text-cyan-400">
                     <i className="fa-solid fa-robot text-sm sm:text-base"></i>
                   </div>
                 </div>
-                <span className="font-extrabold text-xs sm:text-lg tracking-wide bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent truncate hidden xs:inline">
-                  AI WORKERS SPACE
+                <span className="font-extrabold text-[15px] sm:text-lg tracking-wide bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent truncate hidden xs:inline">
+                  AI WORKERS
                 </span>
               </div>
 
-              <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
-                <a
-                  href={TELEGRAM_LINK}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-7 h-7 sm:w-auto sm:px-2.5 sm:py-1 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-semibold hover:bg-sky-500/20 transition-colors flex items-center justify-center gap-1 flex-shrink-0"
-                >
+              <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+                <a href={TELEGRAM_LINK} target="_blank" rel="noreferrer" className="w-8 h-8 sm:w-auto sm:px-2.5 sm:py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 flex items-center justify-center gap-1.5 hover:bg-sky-500/20">
                   <i className="fa-brands fa-telegram text-sm"></i>
-                  <span className="hidden md:inline text-[11px]">TG</span>
+                  <span className="hidden md:inline text-[11px] font-bold">TG</span>
                 </a>
 
-                <button
-                  onClick={() => setWalletModalOpen(true)}
-                  className="flex items-center gap-1 px-2 py-1 rounded-xl bg-slate-900 border border-amber-500/40 text-[11px] font-mono hover:bg-slate-800 transition-colors flex-shrink-0"
-                >
+                <button onClick={() => setWalletModalOpen(true)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-900 border border-amber-500/40 hover:bg-slate-800">
                   <i className="fa-solid fa-coins text-amber-400 text-xs"></i>
-                  <span className="text-cyan-300 font-bold">{balance.toLocaleString()}</span>
-                  <span className="text-[10px] text-slate-400">AWS</span>
+                  <span className="text-cyan-300 font-bold text-xs font-mono">{balance.toLocaleString()}</span>
+                  <span className="text-[9px] text-slate-400 font-bold">AWS</span>
                 </button>
+
+                {isAdmin && (
+                  <button onClick={() => setTab('admin')} className="px-2.5 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/50 text-amber-300 text-[10px] font-bold flex items-center gap-1">
+                    <i className="fa-solid fa-shield-halved"></i>
+                    <span className="hidden sm:inline">Админ</span>
+                  </button>
+                )}
 
                 {user ? (
                   <div className="flex items-center gap-1.5">
-                    <div 
-                      onClick={() => setTab('cabinet')}
-                      className="flex items-center gap-1.5 cursor-pointer bg-slate-900 p-0.5 pr-2 rounded-xl border border-slate-800 hover:border-cyan-500/50"
-                    >
-                      <div className={`w-6 h-6 rounded-lg overflow-hidden ${user.avatarFrame || 'frame-none'}`}>
+                    <div onClick={() => setTab('cabinet')} className="flex items-center gap-1.5 cursor-pointer bg-slate-900 p-0.5 pr-2 rounded-xl border border-slate-800 hover:border-cyan-500/50">
+                      <div className={`w-7 h-7 rounded-lg overflow-hidden ${user.avatarFrame || 'frame-none'}`}>
                         <img src={user.avatar} className="w-full h-full object-cover" />
                       </div>
                       <span className="hidden sm:inline text-xs font-bold text-slate-200">{user.name}</span>
                     </div>
-
-                    <button 
-                      onClick={handleLogout}
-                      title="Выйти"
-                      className="px-2 py-1 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold"
-                    >
+                    <button onClick={() => { setUser(null); localStorage.removeItem('aws_active_user'); }} className="px-2 py-1.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
                       <i className="fa-solid fa-right-from-bracket"></i>
                     </button>
                   </div>
                 ) : (
-                  <button 
-                    onClick={() => { setAuthMode('login'); setAuthModalOpen(true); }}
-                    className="px-2.5 py-1 rounded-xl bg-cyan-500 text-black text-xs font-bold hover:bg-cyan-400 flex items-center gap-1"
-                  >
-                    <i className="fa-solid fa-user-lock"></i>
-                    <span>Вход</span>
+                  <button onClick={() => { setAuthMode('login'); setAuthModalOpen(true); }} className="px-3 py-1.5 rounded-xl bg-cyan-500 text-black text-xs font-bold hover:bg-cyan-400">
+                    <i className="fa-solid fa-user"></i>
+                    <span className="ml-1 hidden sm:inline">Вход</span>
                   </button>
                 )}
               </div>
             </div>
           </header>
 
-          {/* Лейаут */}
-          <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-8 py-4 sm:py-6 grid grid-cols-1 lg:grid-cols-12 gap-5 pb-20">
-            <aside className="lg:col-span-3 flex lg:flex-col gap-2 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
-              <button
-                onClick={() => setTab('feed')}
-                className={`flex-shrink-0 lg:flex-none flex items-center gap-2.5 px-3.5 py-2.5 sm:py-3 rounded-xl border font-medium text-xs sm:text-sm transition-all ${
-                  tab === 'feed' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' : 'bg-slate-900/60 border-slate-800 text-slate-400'
-                }`}
-              >
+          <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 grid grid-cols-1 lg:grid-cols-12 gap-5 pb-20">
+            {/* STICKY SIDEBAR ON DESKTOP */}
+            <aside className="lg:col-span-3 flex lg:flex-col gap-2 overflow-x-auto no-scrollbar pb-1 lg:pb-0 lg:sticky lg:top-20 h-fit">
+              <button onClick={() => setTab('feed')} className={`flex-shrink-0 lg:flex-none flex items-center gap-2.5 px-3.5 py-2.5 sm:py-3 rounded-xl border font-medium text-xs sm:text-sm transition-all ${tab === 'feed' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white'}`}>
                 <i className="fa-solid fa-wand-magic-sparkles text-cyan-400"></i>
                 <span>Лента заказов</span>
               </button>
-
-              <button
-                onClick={() => setTab('ai_studio')}
-                className={`flex-shrink-0 lg:flex-none flex items-center gap-2.5 px-3.5 py-2.5 sm:py-3 rounded-xl border font-medium text-xs sm:text-sm transition-all ${
-                  tab === 'ai_studio' ? 'bg-fuchsia-500/20 border-fuchsia-500 text-fuchsia-300' : 'bg-slate-900/60 border-slate-800 text-slate-400'
-                }`}
-              >
+              <button onClick={() => setTab('ai_studio')} className={`flex-shrink-0 lg:flex-none flex items-center gap-2.5 px-3.5 py-2.5 sm:py-3 rounded-xl border font-medium text-xs sm:text-sm transition-all ${tab === 'ai_studio' ? 'bg-fuchsia-500/20 border-fuchsia-500 text-fuchsia-300' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white'}`}>
                 <i className="fa-solid fa-brain text-fuchsia-400"></i>
-                <span>AI Студия (Pro) ✨</span>
+                <span>AI Песочница ✨</span>
               </button>
-
-              <button
-                onClick={() => { if (!user) setAuthModalOpen(true); else setTab('cabinet'); }}
-                className={`flex-shrink-0 lg:flex-none flex items-center gap-2.5 px-3.5 py-2.5 sm:py-3 rounded-xl border font-medium text-xs sm:text-sm transition-all ${
-                  tab === 'cabinet' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300' : 'bg-slate-900/60 border-slate-800 text-slate-400'
-                }`}
-              >
+              <button onClick={() => { if (!user) setAuthModalOpen(true); else setTab('cabinet'); }} className={`flex-shrink-0 lg:flex-none flex items-center gap-2.5 px-3.5 py-2.5 sm:py-3 rounded-xl border font-medium text-xs sm:text-sm transition-all ${tab === 'cabinet' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white'}`}>
                 <i className="fa-solid fa-user-gear text-emerald-400"></i>
                 <span>Личный кабинет</span>
               </button>
-
-              <button
-                onClick={() => setTab('create')}
-                className={`flex-shrink-0 lg:flex-none flex items-center gap-2.5 px-3.5 py-2.5 sm:py-3 rounded-xl border font-medium text-xs sm:text-sm transition-all ${
-                  tab === 'create' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' : 'bg-slate-900/60 border-slate-800 text-slate-400'
-                }`}
-              >
+              <button onClick={() => { if (!user) setAuthModalOpen(true); else setTab('create'); }} className={`flex-shrink-0 lg:flex-none flex items-center gap-2.5 px-3.5 py-2.5 sm:py-3 rounded-xl border font-medium text-xs sm:text-sm transition-all ${tab === 'create' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white'}`}>
                 <i className="fa-solid fa-circle-plus text-cyan-400"></i>
                 <span>Разместить таск</span>
               </button>
+              <button onClick={() => setTab('support')} className={`flex-shrink-0 lg:flex-none flex items-center gap-2.5 px-3.5 py-2.5 sm:py-3 rounded-xl border font-medium text-xs sm:text-sm transition-all ${tab === 'support' ? 'bg-sky-500/20 border-sky-500 text-sky-300' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white'}`}>
+                <i className="fa-solid fa-headset text-sky-400"></i>
+                <span>Служба поддержки</span>
+              </button>
             </aside>
 
-            {/* Центральная часть */}
             <section className="lg:col-span-9 space-y-4 min-w-0">
               
-              {/* 1. ЛЕНТА ЗАКАЗОВ */}
+              {/* FEED */}
               {tab === 'feed' && (
                 <>
                   <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0E1726] via-[#111C35] to-[#0A101D] border border-cyan-500/30 p-5 sm:p-7 shadow-xl">
@@ -532,422 +674,379 @@
                       <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
                         Нанимайте лучших <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent">AI-креаторов</span>
                       </h1>
-                      <p className="text-xs sm:text-sm text-slate-300">
-                        От кинематографичных видео до системной автоматизации бизнеса. Все сделки под защитой Escrow.
-                      </p>
+                      <p className="text-xs sm:text-sm text-slate-300">От кинематографичных видео до системной автоматизации. Все сделки под защитой Escrow.</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 overflow-x-auto no-scrollbar bg-slate-900/60 p-2 rounded-2xl border border-slate-800">
-                    {[
-                      { id: 'All', name: '🔥 Все заказы' },
-                      { id: 'video', name: '🎬 AI-Видео' },
-                      { id: 'art', name: '🎨 Арт и Графика' },
-                      { id: 'arch', name: '🏛️ Архитектура' },
-                      { id: 'music', name: '🎵 Музыка' },
-                      { id: 'web', name: '💻 Web / Кодинг' },
-                      { id: 'biz', name: '⚡ Автоматизация' }
-                    ].map((cat) => (
-                      <button
-                        key={cat.id}
-                        onClick={() => setSelectedCat(cat.id)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                          selectedCat === cat.id ? 'bg-cyan-500 text-black font-bold shadow-lg shadow-cyan-500/20' : 'bg-slate-950 text-slate-400 border border-slate-800/80 hover:text-slate-200'
-                        }`}
-                      >
+                    {[{ id: 'All', name: '🔥 Все' }, { id: 'video', name: '🎬 Видео' }, { id: 'art', name: '🎨 Арт' }, { id: 'arch', name: '🏛️ Архитектура' }, { id: 'music', name: '🎵 Звук' }, { id: 'web', name: '💻 Код' }, { id: 'biz', name: '⚡ Боты' }].map((cat) => (
+                      <button key={cat.id} onClick={() => setSelectedCat(cat.id)} className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${selectedCat === cat.id ? 'bg-cyan-500 text-black font-bold' : 'bg-slate-950 text-slate-400 border border-slate-800/80 hover:text-slate-200'}`}>
                         {cat.name}
                       </button>
                     ))}
                   </div>
 
                   <div className="grid grid-cols-1 gap-4">
-                    {feedTasks.map((item) => {
-                      const coverPhoto = (item.photos && item.photos[item.mainPhotoIndex || 0]) || item.photos?.[0] || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe';
-                      return (
-                        <div key={item.id} className={`bg-[#0D121F] p-4 sm:p-5 rounded-2xl ${item.card_frame || 'card-frame-default'} flex flex-col sm:flex-row gap-4 sm:items-center transition-all min-w-0 relative`}>
-                          <div 
-                            onClick={() => openTaskModalWithViewCount(item)}
-                            className="w-full sm:w-36 h-44 sm:h-32 rounded-xl overflow-hidden border border-cyan-500/20 bg-slate-950 flex-shrink-0 relative cursor-pointer group"
-                          >
-                            <img src={coverPhoto} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                            {item.photos && item.photos.length > 1 && (
-                              <span className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-mono text-slate-200">
-                                <i className="fa-solid fa-images mr-1"></i>{item.photos.length}
-                              </span>
-                            )}
-                          </div>
+                    {feedTasks.length === 0 && <div className="text-center py-10 text-slate-500 text-sm">В этой категории пока нет тасков.</div>}
+                    {feedTasks.map((item) => (
+                      <div key={item.id} className={`bg-[#0D121F] p-4 sm:p-5 rounded-2xl ${item.card_frame || 'card-frame-default'} flex flex-col sm:flex-row gap-4 sm:items-center transition-all min-w-0 relative`}>
+                        <div onClick={() => openTaskModalWithViewCount(item)} className="w-full sm:w-40 h-48 sm:h-32 rounded-xl overflow-hidden border border-cyan-500/20 bg-slate-950 flex-shrink-0 relative cursor-pointer group">
+                          <img src={item.photos[item.mainPhotoIndex || 0] || item.photos[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          {item.photos.length > 1 && <span className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-mono text-slate-200"><i className="fa-solid fa-images mr-1"></i>{item.photos.length}</span>}
+                        </div>
 
-                          <div className="flex-1 min-w-0 space-y-2">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-[10px] bg-cyan-950 text-cyan-400 border border-cyan-800/40 px-2 py-0.5 rounded font-mono font-bold">{item.tool}</span>
-                              <span className="text-[11px] text-slate-400 font-mono flex items-center gap-1">
-                                <i className="fa-solid fa-eye text-cyan-400"></i> {item.views || 0} просм.
-                              </span>
-                              <span className="text-[11px] text-emerald-400 font-bold">● Открыт</span>
-                            </div>
-                            <h3 
-                              onClick={() => openTaskModalWithViewCount(item)}
-                              className="font-bold text-sm sm:text-base text-slate-100 break-words leading-snug cursor-pointer hover:text-cyan-300 transition-colors"
-                            >
-                              {item.title}
-                            </h3>
-                            <p className="text-xs text-slate-400 font-mono bg-slate-950/70 p-2.5 rounded-lg border border-slate-800/60 break-words">
-                              <span className="text-cyan-400">Prompt: </span>{item.prompt}
-                            </p>
-                            <div className="flex items-center gap-2 text-[11px] text-slate-400 truncate">
-                              <span>{item.author}</span>
-                              <span>•</span>
-                              <span className="text-emerald-400 font-mono">ID #{item.id}</span>
-                            </div>
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[10px] bg-cyan-950 text-cyan-400 border border-cyan-800/40 px-2 py-0.5 rounded font-mono font-bold">{item.tool}</span>
+                            <span className="text-[11px] text-slate-400 font-mono"><i className="fa-solid fa-eye text-cyan-400"></i> {item.views || 0}</span>
+                            <span className="text-[11px] text-emerald-400 font-bold">● Открыт</span>
                           </div>
-
-                          <div className="w-full sm:w-auto flex sm:flex-col items-center sm:items-end justify-between gap-2.5 pt-2 sm:pt-0 border-t sm:border-0 border-slate-800/60">
-                            <div className="text-left sm:text-right">
-                              <div className="text-[10px] text-slate-400 uppercase font-mono">Бюджет сделки</div>
-                              <div className="font-mono text-base sm:text-lg font-extrabold text-cyan-400">{item.budget.toLocaleString()} AWS</div>
-                              <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                                Отклик: <span className="text-amber-400 font-semibold">{item.response_fee || 100} AWS</span>
-                              </div>
-                            </div>
-                            <button 
-                              onClick={() => openTaskModalWithViewCount(item)} 
-                              className="px-4 py-2 rounded-xl font-bold text-xs flex-shrink-0 transition-colors flex items-center gap-1.5 bg-cyan-500 text-black hover:bg-cyan-400"
-                            >
-                              <i className="fa-solid fa-eye"></i>
-                              <span>Открыть таск</span>
-                            </button>
+                          <h3 onClick={() => openTaskModalWithViewCount(item)} className="font-bold text-sm sm:text-base text-slate-100 break-words leading-snug cursor-pointer hover:text-cyan-300 transition-colors">{item.title}</h3>
+                          <div className="flex items-center gap-2 text-[11px] text-slate-400 truncate">
+                            <span>{item.author}</span> • <span className="text-emerald-400 font-mono">ID #{item.id}</span>
                           </div>
                         </div>
-                      );
-                    })}
+
+                        <div className="w-full sm:w-auto flex sm:flex-col items-center sm:items-end justify-between gap-2.5 pt-3 sm:pt-0 border-t sm:border-0 border-slate-800/60">
+                          <div className="text-left sm:text-right">
+                            <div className="text-[10px] text-slate-400 uppercase font-mono">Бюджет сделки</div>
+                            <div className="font-mono text-lg font-extrabold text-cyan-400">{item.budget.toLocaleString()} AWS</div>
+                            <div className="text-[10px] text-amber-400 font-mono mt-0.5">Отклик: {item.response_fee || 100} AWS</div>
+                          </div>
+                          <button onClick={() => openTaskModalWithViewCount(item)} className="px-4 py-2 rounded-xl font-bold text-xs bg-cyan-500 text-black hover:bg-cyan-400 flex items-center gap-1.5 flex-shrink-0">
+                            <i className="fa-solid fa-eye"></i> Осмотреть
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </>
               )}
 
-              {/* 2. ПРОФЕССИОНАЛЬНАЯ AI СТУДИЯ 3-В-1 (FLUX.1 / CLAUDE / RUNWAY) */}
-              {tab === 'ai_studio' && (
-                <div className="bg-[#0D121F] p-5 sm:p-7 rounded-2xl border border-fuchsia-500/30 space-y-5">
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                    <div>
-                      <h2 className="text-lg sm:text-xl font-bold text-fuchsia-400">AI Студия (FLUX.1 Pro • Claude 3.5 • Runway)</h2>
-                      <p className="text-xs text-slate-400">Генерация фотореалистичных артов, видео и диалогов с топовыми моделями.</p>
+              {/* ADMIN PANEL (Only kenigwood) */}
+              {tab === 'admin' && isAdmin && (
+                <div className="space-y-5">
+                  <div className="bg-[#0D121F] p-5 rounded-2xl border border-amber-500/40">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-lg font-bold text-amber-400 flex items-center gap-2">
+                        <i className="fa-solid fa-crown"></i> Панель Управления Платформой
+                      </h2>
+                      <span className="text-[10px] font-mono bg-amber-500/20 text-amber-300 px-2.5 py-1 rounded-lg">SuperAdmin Active</span>
                     </div>
-                    <span className="text-xs font-mono bg-fuchsia-950 text-fuchsia-300 px-3 py-1.5 rounded-xl border border-fuchsia-800/50 self-start sm:self-auto">
-                      Баланс: {balance.toLocaleString()} AWS
-                    </span>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center sm:text-left">
+                        <div className="text-[10px] text-slate-400 uppercase font-bold">Визитов</div>
+                        <div className="text-xl sm:text-2xl font-extrabold text-cyan-400 font-mono mt-1">{platformStats.visits.toLocaleString()}</div>
+                      </div>
+                      <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center sm:text-left">
+                        <div className="text-[10px] text-slate-400 uppercase font-bold">Заказчиков</div>
+                        <div className="text-xl sm:text-2xl font-extrabold text-emerald-400 font-mono mt-1">{platformStats.clientsCount}</div>
+                      </div>
+                      <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center sm:text-left">
+                        <div className="text-[10px] text-slate-400 uppercase font-bold">Креаторов</div>
+                        <div className="text-xl sm:text-2xl font-extrabold text-fuchsia-400 font-mono mt-1">{platformStats.creatorsCount}</div>
+                      </div>
+                      <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center sm:text-left">
+                        <div className="text-[10px] text-slate-400 uppercase font-bold">Оборот AWS</div>
+                        <div className="text-xl sm:text-2xl font-extrabold text-amber-400 font-mono mt-1">{platformStats.purchasedAWS.toLocaleString()}</div>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Переключатель режимов AI */}
-                  <div className="flex gap-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
-                    <button
-                      onClick={() => setAiMode('image')}
-                      className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                        aiMode === 'image' ? 'bg-fuchsia-500 text-white' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      <i className="fa-solid fa-palette"></i>
-                      <span>FLUX.1 Pro (50 AWS)</span>
-                    </button>
-
-                    <button
-                      onClick={() => setAiMode('text')}
-                      className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                        aiMode === 'text' ? 'bg-cyan-500 text-black' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      <i className="fa-solid fa-brain"></i>
-                      <span>Claude 3.5 (20 AWS)</span>
-                    </button>
-
-                    <button
-                      onClick={() => setAiMode('video')}
-                      className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                        aiMode === 'video' ? 'bg-amber-500 text-black' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      <i className="fa-solid fa-video"></i>
-                      <span>Runway Video (150 AWS)</span>
-                    </button>
+                  <div className="bg-[#0D121F] p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                      <i className="fa-solid fa-headset text-sky-400"></i> Тикеты Поддержки ({supportTickets.length})
+                    </h3>
+                    <div className="space-y-3">
+                      {supportTickets.map((t) => (
+                        <div key={t.id} className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2.5">
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="font-bold text-slate-200">{t.userName} <span className="text-slate-500 font-normal">({t.userEmail})</span></span>
+                            <span className="font-mono text-slate-500">{t.time}</span>
+                          </div>
+                          <p className="text-xs text-slate-300 bg-slate-900 p-2.5 rounded-lg border border-slate-800">{t.text}</p>
+                          {t.reply ? (
+                            <div className="text-xs text-emerald-300 bg-emerald-950/30 p-2.5 rounded-lg border border-emerald-800/40">
+                              <b>Ответ отправлен:</b> {t.reply}
+                            </div>
+                          ) : (
+                            <div className="flex gap-2 pt-1">
+                              <input type="text" placeholder="Написать ответ..." value={adminReplyTexts[t.id] || ''} onChange={(e) => setAdminReplyTexts({ ...adminReplyTexts, [t.id]: e.target.value })} className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs outline-none focus:border-amber-500" />
+                              <button onClick={() => handleAdminReply(t.id)} className="px-4 py-1.5 bg-amber-500 text-black font-bold text-xs rounded-xl hover:bg-amber-400">Ответить</button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-
-                  <form onSubmit={handleGenerateAI} className="space-y-3">
-                    <textarea
-                      rows="3"
-                      required
-                      placeholder={
-                        aiMode === 'image' ? 'Опишите изображение (например: Космический корабль на песчаном пляже, на небе парит гигантский кит, закат, 8k, photorealistic)...' :
-                        aiMode === 'text' ? 'Напишите задачу для Claude 3.5 (сценарий, анализ ТЗ, системный промпт или код)...' :
-                        'Опишите динамику сцены для видео-генератора Runway Gen-3...'
-                      }
-                      value={aiPrompt}
-                      onChange={(e) => setAiPrompt(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs sm:text-sm outline-none focus:border-fuchsia-500 text-slate-200"
-                    ></textarea>
-
-                    <button
-                      type="submit"
-                      disabled={aiLoading}
-                      className="w-full py-3.5 rounded-xl bg-gradient-to-r from-fuchsia-500 via-pink-500 to-cyan-500 text-white font-bold text-sm hover:opacity-95 flex items-center justify-center gap-2"
-                    >
-                      {aiLoading ? (
-                        <>
-                          <i className="fa-solid fa-spinner fa-spin"></i>
-                          <span>Нейросеть генерирует результат...</span>
-                        </>
-                      ) : (
-                        <>
-                          <i className="fa-solid fa-wand-magic-sparkles"></i>
-                          <span>Запустить генерацию ({aiMode === 'video' ? '150' : aiMode === 'text' ? '20' : '50'} AWS)</span>
-                        </>
-                      )}
-                    </button>
-                  </form>
-
-                  {/* РЕЗУЛЬТАТЫ */}
-                  {aiResultImg && (
-                    <div className="p-4 bg-slate-950 rounded-2xl border border-fuchsia-500/40 text-center space-y-3">
-                      <div className="max-w-2xl mx-auto rounded-xl overflow-hidden shadow-2xl border border-slate-800">
-                        <img src={aiResultImg} className="w-full h-auto object-cover" />
-                      </div>
-                      <a
-                        href={aiResultImg}
-                        target="_blank"
-                        download="flux_pro_generation.png"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 border border-fuchsia-500/40 text-fuchsia-300 text-xs font-bold rounded-xl hover:bg-slate-800"
-                      >
-                        <i className="fa-solid fa-download"></i>
-                        <span>Скачать в максимальном разрешении (8K)</span>
-                      </a>
-                    </div>
-                  )}
-
-                  {aiResultText && (
-                    <div className="p-4 bg-slate-950 rounded-2xl border border-cyan-500/40 space-y-2">
-                      <div className="text-xs font-mono text-cyan-400 font-bold">Ответ Claude 3.5 Sonnet:</div>
-                      <pre className="text-xs text-slate-200 font-sans whitespace-pre-wrap leading-relaxed bg-slate-900 p-3 rounded-xl border border-slate-800">
-                        {aiResultText}
-                      </pre>
-                    </div>
-                  )}
-
-                  {aiResultVideo && (
-                    <div className="p-4 bg-slate-950 rounded-2xl border border-amber-500/40 text-center space-y-3">
-                      <div className="max-w-2xl mx-auto rounded-xl overflow-hidden shadow-2xl border border-slate-800">
-                        <video src={aiResultVideo} autoPlay loop muted playsInline className="w-full h-auto object-cover rounded-xl"></video>
-                      </div>
-                      <span className="text-xs text-amber-300 font-mono block">✓ Рендеринг видео Runway Gen-3 успешно завершен</span>
-                    </div>
-                  )}
                 </div>
               )}
 
-              {/* 3. ЛИЧНЫЙ КАБИНЕТ */}
-              {tab === 'cabinet' && (
-                <div className="space-y-4">
-                  <div className="bg-[#0D121F] p-5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-14 h-14 rounded-2xl overflow-hidden frame-none flex-shrink-0">
-                        <img src={user?.avatar || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80'} className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <h2 className="text-base sm:text-lg font-bold text-slate-100">{user?.name || 'Пользователь'}</h2>
-                        <p className="text-xs text-slate-400 font-mono">{user?.email || 'kenigwood39@gmail.com'}</p>
-                      </div>
-                    </div>
-                    <button 
-                      onClick={() => setWalletModalOpen(true)}
-                      className="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-black font-bold text-xs rounded-xl flex items-center gap-1.5 self-start sm:self-auto"
-                    >
-                      <i className="fa-solid fa-wallet"></i>
-                      <span>Пополнить баланс</span>
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-3">
-                    {myClientTasks.map(item => (
-                      <div key={item.id} className="bg-[#0D121F] p-4 rounded-2xl border border-cyan-500/30 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                        <div>
-                          <h4 className="font-bold text-sm text-slate-100">{item.title}</h4>
-                          <span className="text-xs text-slate-400 font-mono">
-                            Бюджет: {item.budget.toLocaleString()} AWS • Просмотров: {item.views || 0}
-                          </span>
-                        </div>
-                        <button onClick={() => openTaskChat(item)} className="px-3.5 py-1.5 bg-slate-900 border border-cyan-500/40 text-cyan-300 text-xs font-semibold rounded-xl self-start sm:self-auto">
-                          Чат сделки
-                        </button>
+              {/* SUPPORT DESK */}
+              {tab === 'support' && (
+                <div className="bg-[#0D121F] p-5 sm:p-7 rounded-2xl border border-sky-500/30 space-y-4">
+                  <h2 className="text-lg font-bold text-sky-400">Служба Поддержки</h2>
+                  <p className="text-xs text-slate-400">Задайте любой вопрос. Администратор ответит вам здесь.</p>
+                  <form onSubmit={handleSendSupportTicket} className="space-y-3">
+                    <textarea rows="3" required placeholder="Ваш вопрос..." value={userTicketMsg} onChange={(e) => setUserTicketMsg(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm outline-none focus:border-sky-500"></textarea>
+                    <button type="submit" className="w-full py-3 bg-sky-500 text-black font-bold text-sm rounded-xl hover:bg-sky-400">Отправить</button>
+                  </form>
+                  <div className="space-y-3 pt-4 border-t border-slate-800">
+                    <h3 className="text-xs font-bold text-slate-300">Мои обращения:</h3>
+                    {supportTickets.filter(t => t.userEmail === (user?.email || 'guest')).map((t) => (
+                      <div key={t.id} className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-xs space-y-2">
+                        <div className="flex justify-between text-slate-400"><span className="font-bold">Мой вопрос:</span><span className="font-mono">{t.time}</span></div>
+                        <p className="text-slate-200">{t.text}</p>
+                        {t.reply && <div className="p-2.5 bg-sky-950/40 border border-sky-500/30 rounded-lg text-sky-300"><b>Ответ Админа:</b> {t.reply}</div>}
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* 4. СОЗДАТЬ ТАСК */}
+              {/* AI STUDIO */}
+              {tab === 'ai_studio' && (
+                <div className="bg-[#0D121F] p-5 sm:p-7 rounded-2xl border border-fuchsia-500/30 space-y-5">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                    <div>
+                      <h2 className="text-lg sm:text-xl font-bold text-fuchsia-400">AI Песочница ✨</h2>
+                      <p className="text-xs text-slate-400">Генерация фотореалистичных артов (50 AWS).</p>
+                    </div>
+                    <span className="text-xs font-mono bg-fuchsia-950 text-fuchsia-300 px-3 py-1.5 rounded-xl border border-fuchsia-800/50">Баланс: {balance.toLocaleString()} AWS</span>
+                  </div>
+                  <form onSubmit={handleGenerateAI} className="space-y-3">
+                    <textarea rows="3" required placeholder="Опишите желаемое изображение на любом языке..." value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-sm outline-none focus:border-fuchsia-500"></textarea>
+                    <button type="submit" disabled={aiLoading} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-fuchsia-500 via-pink-500 to-cyan-500 text-white font-bold text-sm hover:opacity-95 flex items-center justify-center gap-2">
+                      {aiLoading ? <><i className="fa-solid fa-spinner fa-spin"></i><span>Генерация нейросетью...</span></> : <><i className="fa-solid fa-wand-magic-sparkles"></i><span>Сгенерировать (50 AWS)</span></>}
+                    </button>
+                  </form>
+                  {aiResultImg && (
+                    <div className="p-4 bg-slate-950 rounded-2xl border border-fuchsia-500/40 text-center space-y-3">
+                      <img src={aiResultImg} className="max-w-md w-full mx-auto rounded-xl shadow-2xl border border-slate-800" />
+                      <a href={aiResultImg} target="_blank" download="generation.png" className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 border border-fuchsia-500/40 text-fuchsia-300 text-xs font-bold rounded-xl hover:bg-slate-800"><i className="fa-solid fa-download"></i> Скачать</a>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* CABINET */}
+              {tab === 'cabinet' && (
+                <div className="space-y-4">
+                  <div className="bg-[#0D121F] p-5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className={`w-14 h-14 rounded-2xl overflow-hidden ${user?.avatarFrame || 'frame-none'} relative group`}>
+                        <img src={user?.avatar || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80'} className="w-full h-full object-cover" />
+                        <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
+                          <i className="fa-solid fa-camera text-white"></i><input type="file" accept="image/*" className="hidden" onChange={handleUploadAvatarFromFile} />
+                        </label>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-base sm:text-lg font-bold text-slate-100">{user?.name || 'Гость'}</h2>
+                          <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-mono">✓ Проверен</span>
+                        </div>
+                        <p className="text-xs text-slate-400 font-mono">{user?.email}</p>
+                      </div>
+                    </div>
+                    <button onClick={() => setWalletModalOpen(true)} className="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-black font-bold text-xs rounded-xl flex items-center gap-1.5 w-fit">
+                      <i className="fa-solid fa-wallet"></i> Пополнить AWS
+                    </button>
+                  </div>
+
+                  <div className="flex gap-2 border-b border-slate-800 pb-2 overflow-x-auto no-scrollbar">
+                    <button onClick={() => setCabinetSubTab('my-orders')} className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${cabinetSubTab === 'my-orders' ? 'bg-cyan-500 text-black' : 'bg-slate-900 text-slate-400 hover:text-white'}`}>Мои таски ({myClientTasks.length})</button>
+                    <button onClick={() => setCabinetSubTab('shop')} className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${cabinetSubTab === 'shop' ? 'bg-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/20' : 'bg-slate-900 text-slate-400 hover:text-white'}`}>Магазин Кастомизации 🛍️</button>
+                  </div>
+
+                  {cabinetSubTab === 'my-orders' && (
+                    myClientTasks.length === 0 ? (
+                      <div className="text-center py-10 bg-[#0D121F] rounded-2xl border border-slate-800 text-slate-400 text-sm">Нет созданных тасков</div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-3">
+                        {myClientTasks.map(item => (
+                          <div key={item.id} className={`bg-[#0D121F] p-4 rounded-2xl ${item.card_frame || 'card-frame-default'} flex flex-col gap-3 min-w-0`}>
+                            <div className="flex justify-between items-start gap-2">
+                              <div>
+                                <h4 className="font-bold text-sm text-slate-100">{item.title}</h4>
+                                <div className="text-xs text-slate-400 font-mono mt-1">Бюджет: {item.budget.toLocaleString()} AWS</div>
+                              </div>
+                              <button onClick={() => openTaskChat(item)} className="px-3 py-1.5 bg-slate-900 border border-cyan-500/40 text-cyan-300 text-xs font-semibold rounded-lg shrink-0">Чат сделки</button>
+                            </div>
+                            <div className="pt-3 border-t border-slate-800/80 flex flex-wrap items-center gap-2 text-xs">
+                              <button onClick={() => setEditingTask(item)} className="px-3 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 hover:border-cyan-500"><i className="fa-solid fa-pen mr-1"></i> Редакт.</button>
+                              <button onClick={() => handleToggleHideTask(item.id)} className={`px-3 py-1 rounded-lg border ${item.hidden ? 'bg-amber-500/10 border-amber-500/40 text-amber-300' : 'bg-slate-900 border-slate-700 text-slate-300'}`}><i className={item.hidden ? "fa-solid fa-eye" : "fa-solid fa-eye-slash"}></i> {item.hidden ? 'Показать' : 'Скрыть'}</button>
+                              <select value={item.card_frame || 'card-frame-default'} onChange={(e) => handleChangeTaskFrame(item.id, e.target.value)} className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-cyan-300 outline-none">
+                                {TASK_CARD_FRAMES.map(f => <option key={f.id} value={f.class}>{f.name}</option>)}
+                              </select>
+                              <button onClick={() => handleDeleteTask(item.id)} className="px-2 py-1 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 ml-auto"><i className="fa-solid fa-trash-can"></i></button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  )}
+
+                  {cabinetSubTab === 'shop' && (
+                    <div className="space-y-5">
+                      <div className="bg-[#0D121F] p-4 rounded-2xl border border-slate-800">
+                        <h3 className="text-sm font-bold text-slate-100 mb-3"><i className="fa-solid fa-gem text-fuchsia-400 mr-2"></i>Минималистичные аватары</h3>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+                          {MINIMAL_AVATARS.map((item) => {
+                            const isOwned = item.price === 0 || (inventory[user?.id]?.avatars || []).includes(item.id);
+                            const isEquipped = user?.avatar === item.url;
+                            return (
+                              <div key={item.id} className="bg-slate-950 p-2 rounded-xl border border-slate-800 flex flex-col items-center text-center">
+                                <div className="w-12 h-12 rounded-xl overflow-hidden mb-2"><img src={item.url} className="w-full h-full object-cover" /></div>
+                                <div className="text-[10px] font-bold text-slate-200 w-full truncate">{item.name}</div>
+                                <div className="text-[9px] text-cyan-400 font-mono mb-2">{item.price === 0 ? 'Free' : `${item.price} AWS`}</div>
+                                <button onClick={() => handleSelectAvatar(item)} className={`w-full py-1 rounded-lg text-[9px] font-bold ${isEquipped ? 'bg-emerald-500 text-black' : isOwned ? 'bg-slate-800 text-cyan-300' : 'bg-fuchsia-600 text-white'}`}>{isEquipped ? 'Надето' : isOwned ? 'Выбрать' : 'Купить'}</button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="bg-[#0D121F] p-4 rounded-2xl border border-slate-800">
+                        <h3 className="text-sm font-bold text-slate-100 mb-3"><i className="fa-solid fa-circle-notch text-amber-400 mr-2"></i>Неоновые рамки профиля</h3>
+                        <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
+                          {AVATAR_FRAMES.map((f) => {
+                            const isOwned = f.price === 0 || (inventory[user?.id]?.frames || []).includes(f.id);
+                            const isEquipped = user?.avatarFrame === f.class;
+                            return (
+                              <div key={f.id} className="bg-slate-950 p-2 rounded-xl border border-slate-800 flex flex-col items-center text-center">
+                                <div className={`w-10 h-10 rounded-xl overflow-hidden mb-2 ${f.class}`}><img src={user?.avatar} className="w-full h-full object-cover" /></div>
+                                <div className="text-[10px] font-bold text-slate-200">{f.name}</div>
+                                <div className="text-[9px] text-amber-400 font-mono mb-2">{f.price === 0 ? 'Free' : `${f.price} AWS`}</div>
+                                <button onClick={() => handleSelectAvatarFrame(f)} className={`w-full py-1 rounded-lg text-[9px] font-bold ${isEquipped ? 'bg-emerald-500 text-black' : isOwned ? 'bg-slate-800 text-cyan-300' : 'bg-amber-500 text-black'}`}>{isEquipped ? 'Надето' : isOwned ? 'Выбрать' : 'Купить'}</button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* CREATE TASK */}
               {tab === 'create' && (
                 <div className="bg-[#0D121F] p-5 sm:p-7 rounded-2xl border border-cyan-500/30">
-                  <h2 className="text-lg sm:text-xl font-bold text-cyan-400 mb-1">Создать задание</h2>
-                  <p className="text-xs text-slate-400 mb-5">Заполните поля, прикрепите фото и таск мгновенно появится в ленте.</p>
-                  
+                  <h2 className="text-lg font-bold text-cyan-400 mb-4">Создать задание в ленту</h2>
                   <form onSubmit={handleCreateTask} className="space-y-4">
-                    <input
-                      type="text"
-                      required
-                      placeholder="Название проекта"
-                      value={newTitle}
-                      onChange={(e) => setNewTitle(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:border-cyan-500 outline-none"
-                    />
-
+                    <input type="text" required placeholder="Название проекта" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:border-cyan-500 outline-none" />
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <select
-                        value={newCategory}
-                        onChange={(e) => setNewCategory(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-sm outline-none text-slate-200"
-                      >
-                        <option value="video">🎬 AI-Видео</option>
-                        <option value="art">🎨 Арт и Графика</option>
-                        <option value="arch">🏛️ Архитектура</option>
-                        <option value="music">🎵 Музыка</option>
-                        <option value="web">💻 Web / Кодинг</option>
-                        <option value="biz">⚡ Автоматизация</option>
+                      <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-sm outline-none">
+                        <option value="video">🎬 AI-Видео</option><option value="art">🎨 Арт</option><option value="arch">🏛️ Архитектура</option><option value="biz">⚡ Боты</option>
                       </select>
-
-                      <select
-                        value={newTool}
-                        onChange={(e) => setNewTool(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-sm outline-none text-slate-200"
-                      >
-                        <option value="ComfyUI">ComfyUI</option>
-                        <option value="Runway Gen-3">Runway Gen-3</option>
-                        <option value="Midjourney v6">Midjourney v6</option>
-                        <option value="FLUX.1 Pro">FLUX.1 Pro</option>
-                        <option value="Suno AI v3.5">Suno AI v3.5</option>
+                      <select value={newTool} onChange={(e) => setNewTool(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-sm outline-none">
+                        <option value="ComfyUI">ComfyUI</option><option value="Runway Gen-3">Runway Gen-3</option><option value="Midjourney v6">Midjourney v6</option><option value="Claude 3.5">Claude 3.5</option>
                       </select>
-
-                      <input
-                        type="number"
-                        required
-                        placeholder="Бюджет (AWS)"
-                        value={newBudget}
-                        onChange={(e) => setNewBudget(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-mono text-cyan-300 outline-none focus:border-cyan-500"
-                      />
+                      <input type="number" required placeholder="Бюджет (AWS)" value={newBudget} onChange={(e) => setNewBudget(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-mono text-cyan-300 outline-none focus:border-cyan-500" />
                     </div>
-
                     <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
                       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                        <label className="text-xs font-semibold text-slate-200">
-                          <i className="fa-solid fa-images text-cyan-400 mr-1.5"></i>
-                          Прикрепленные фото ({taskPhotos.length}/5)
-                        </label>
-                        
+                        <label className="text-xs font-semibold text-slate-200"><i className="fa-solid fa-images text-cyan-400 mr-1.5"></i> Прикрепленные фото ({taskPhotos.length}/5)</label>
                         {taskPhotos.length < 5 && (
-                          <label className="px-3.5 py-1.5 bg-cyan-500 text-black font-bold text-xs rounded-xl cursor-pointer hover:bg-cyan-400 self-start sm:self-auto flex items-center gap-1.5">
-                            <i className="fa-solid fa-plus"></i>
-                            <span>Загрузить фото с устройства</span>
+                          <label className="px-3.5 py-1.5 bg-cyan-500 text-black font-bold text-xs rounded-xl cursor-pointer hover:bg-cyan-400 flex items-center gap-1.5 w-fit">
+                            <i className="fa-solid fa-upload"></i> Выбрать с устройства
                             <input type="file" accept="image/*" multiple className="hidden" onChange={handleUploadTaskPhotos} />
                           </label>
                         )}
                       </div>
-
                       {taskPhotos.length > 0 && (
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
                           {taskPhotos.map((photo, idx) => (
-                            <div key={idx} className="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-900 h-28 flex flex-col justify-between p-1.5">
-                              <img src={photo} className="w-full h-full object-cover rounded-lg absolute inset-0 -z-0" />
-                              <button
-                                type="button"
-                                onClick={() => setMainPhotoIndex(idx)}
-                                className={`relative z-10 px-2 py-0.5 rounded-full text-[10px] font-bold backdrop-blur-md self-start ${
-                                  mainPhotoIndex === idx ? 'bg-amber-500 text-black' : 'bg-black/60 text-slate-300'
-                                }`}
-                              >
-                                {mainPhotoIndex === idx ? '★ Главное' : 'Сделать главным'}
-                              </button>
+                            <div key={idx} className="relative rounded-xl overflow-hidden h-24 border border-slate-800">
+                              <img src={photo} className="w-full h-full object-cover" />
+                              <button type="button" onClick={() => setMainPhotoIndex(idx)} className={`absolute top-1 left-1 px-2 py-0.5 rounded text-[9px] font-bold backdrop-blur-md ${mainPhotoIndex === idx ? 'bg-amber-500 text-black' : 'bg-black/60 text-white'}`}>{mainPhotoIndex === idx ? '★ Главное' : 'Сделать главным'}</button>
+                              <button type="button" onClick={() => handleRemoveTaskPhoto(idx)} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500/80 text-white flex items-center justify-center text-xs"><i className="fa-solid fa-xmark"></i></button>
                             </div>
                           ))}
                         </div>
                       )}
                     </div>
-
-                    <textarea
-                      rows="4"
-                      placeholder="Подробное ТЗ или промпт..."
-                      value={newPrompt}
-                      onChange={(e) => setNewPrompt(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-sm outline-none"
-                    ></textarea>
-
-                    <button
-                      type="submit"
-                      className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-400 to-fuchsia-500 text-black font-extrabold text-sm hover:opacity-90 shadow-lg shadow-cyan-500/20"
-                    >
-                      Опубликовать в ленту
-                    </button>
+                    <textarea rows="3" placeholder="Подробное ТЗ..." value={newPrompt} onChange={(e) => setNewPrompt(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-sm outline-none"></textarea>
+                    <button type="submit" className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-fuchsia-500 text-black font-extrabold text-sm shadow-lg shadow-cyan-500/20">Опубликовать в ленту (Escrow)</button>
                   </form>
                 </div>
               )}
 
-              {/* 5. ЧАТ СДЕЛКИ */}
+              {/* DEAL CHAT */}
               {tab === 'deal_chat' && selectedTaskForChat && (
-                <div className="bg-[#0D121F] rounded-2xl border border-cyan-500/30 overflow-hidden flex flex-col h-[560px]">
-                  <div className="bg-slate-950 px-4 py-3 border-b border-slate-800 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => setTab('feed')} className="text-xs text-slate-400 hover:text-cyan-300 mr-1">
-                        <i className="fa-solid fa-arrow-left"></i>
-                      </button>
-                      <span className="text-xs sm:text-sm font-bold text-slate-200 truncate">Таск #{selectedTaskForChat.id}: {selectedTaskForChat.title}</span>
+                <div className="bg-[#0D121F] rounded-2xl border border-cyan-500/30 overflow-hidden flex flex-col h-[600px]">
+                  <div className="bg-slate-950 px-4 py-3 border-b border-slate-800 flex justify-between items-center shrink-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <button onClick={() => setTab('feed')} className="text-xs text-slate-400 hover:text-cyan-300 mr-1"><i className="fa-solid fa-arrow-left"></i></button>
+                      <span className="text-xs sm:text-sm font-bold text-slate-200 truncate">Сделка #{selectedTaskForChat.id}</span>
                     </div>
-                    <span className="text-[11px] text-teal-400 font-mono bg-teal-950/80 px-2 py-0.5 rounded border border-teal-800/50">
-                      🔒 Escrow: {selectedTaskForChat.budget.toLocaleString()} AWS
-                    </span>
+                    <span className="text-[10px] text-teal-400 font-mono bg-teal-950/80 px-2 py-0.5 rounded border border-teal-800/50 shrink-0">🔒 Escrow: {selectedTaskForChat.budget.toLocaleString()} AWS</span>
                   </div>
 
-                  <div className="flex-1 p-3 sm:p-4 overflow-y-auto space-y-3">
+                  <div className="bg-slate-900/90 border-b border-slate-800 px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
+                    <span className="font-mono text-cyan-300">Статус: {selectedTaskForChat.status === 'completed' ? '✓ Завершена' : 'В работе'}</span>
+                    <div className="flex gap-2">
+                      {selectedTaskForChat.status === 'in_progress' && <button onClick={handleSubmitWork} className="px-3 py-1 bg-fuchsia-500 text-white font-bold rounded">Сдать работу</button>}
+                      {selectedTaskForChat.status !== 'completed' && <button onClick={handleApproveWork} className="px-3 py-1 bg-emerald-500 text-black font-bold rounded">Принять и Оплатить</button>}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 p-4 overflow-y-auto space-y-3">
                     {(dealMessages[selectedTaskForChat.id] || []).map((m) => (
                       <div key={m.id} className={`flex flex-col ${m.isMe ? 'items-end' : 'items-start'}`}>
-                        <span className="text-[10px] text-slate-500 mb-0.5">{m.sender}</span>
-                        <div className={`max-w-[85%] rounded-xl px-3.5 py-2 text-xs sm:text-sm break-words ${m.isMe ? 'bg-cyan-600 text-white' : 'bg-slate-900 border border-slate-800 text-slate-200'}`}>
-                          <p>{m.text}</p>
-                        </div>
+                        <span className="text-[9px] text-slate-500 mb-0.5">{m.sender}</span>
+                        <div className={`max-w-[85%] rounded-xl px-3.5 py-2 text-sm break-words ${m.isMe ? 'bg-cyan-600 text-white' : 'bg-slate-900 border border-slate-800 text-slate-200'}`}>{m.text}</div>
                       </div>
                     ))}
                   </div>
 
-                  <form onSubmit={handleSendDealMessage} className="p-2.5 bg-slate-950 border-t border-slate-800 flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Сообщение..."
-                      value={chatInput}
-                      onChange={(e) => setChatInput(e.target.value)}
-                      className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs sm:text-sm outline-none"
-                    />
-                    <button type="submit" className="p-2 px-3.5 bg-cyan-500 text-black rounded-xl font-bold">
-                      <i className="fa-solid fa-paper-plane text-xs"></i>
-                    </button>
-                  </form>
+                  {isChatUnlocked(selectedTaskForChat.id, selectedTaskForChat.author_id) ? (
+                    <form onSubmit={handleSendDealMessage} className="p-3 bg-slate-950 border-t border-slate-800 flex gap-2 shrink-0">
+                      <input type="text" placeholder="Сообщение..." value={chatInput} onChange={(e) => setChatInput(e.target.value)} className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm outline-none" />
+                      <button type="submit" className="px-4 py-2 bg-cyan-500 text-black rounded-xl font-bold"><i className="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                  ) : (
+                    <div className="p-3 bg-slate-950 border-t border-amber-500/40 flex items-center justify-between shrink-0">
+                      <span className="text-xs text-amber-400 font-mono">Оплатите отклик для чата</span>
+                      <button onClick={() => handleUnlockAndEnterChat(selectedTaskForChat)} className="px-4 py-2 rounded-xl bg-amber-500 text-black font-bold text-xs">Оплатить {selectedTaskForChat.response_fee} AWS</button>
+                    </div>
+                  )}
                 </div>
               )}
             </section>
           </main>
 
-          {/* МОДАЛЬНЫЙ ПРОСМОТР ТАСКА С ГАЛЕРЕЕЙ И УЧЕТОМ ПРОСМОТРОВ */}
+          {/* EDIT TASK MODAL */}
+          {editingTask && (
+            <div className="fixed inset-0 z-[60] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-[#0D121F] border border-cyan-500/40 rounded-2xl p-5 sm:p-7 max-w-xl w-full max-h-[90vh] flex flex-col relative overflow-y-auto">
+                <button onClick={() => setEditingTask(null)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><i className="fa-solid fa-xmark text-lg"></i></button>
+                <h3 className="text-lg font-bold text-slate-100 mb-4">Редактировать объявление</h3>
+                <form onSubmit={handleSaveEditedTask} className="space-y-4">
+                  <input type="text" value={editingTask.title} onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm outline-none" />
+                  <input type="number" value={editingTask.budget} onChange={(e) => setEditingTask({ ...editingTask, budget: e.target.value })} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-cyan-300 outline-none" placeholder="Бюджет" />
+                  <textarea rows="4" value={editingTask.prompt} onChange={(e) => setEditingTask({ ...editingTask, prompt: e.target.value })} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm outline-none"></textarea>
+                  <button type="submit" className="w-full py-3 bg-cyan-500 text-black font-bold text-sm rounded-xl hover:bg-cyan-400">Сохранить</button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* TASK VIEW MODAL WITH GALLERY */}
           {viewingTask && (
             <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
               <div className="bg-[#0D121F] border border-cyan-500/40 rounded-2xl p-5 sm:p-7 max-w-2xl w-full max-h-[90vh] flex flex-col relative overflow-y-auto">
-                <button onClick={() => setViewingTask(null)} className="absolute top-4 right-4 text-slate-400 hover:text-white z-10">
-                  <i className="fa-solid fa-xmark text-lg"></i>
-                </button>
+                <button onClick={() => setViewingTask(null)} className="absolute top-4 right-4 text-slate-400 hover:text-white z-10 bg-black/50 w-8 h-8 rounded-full"><i className="fa-solid fa-xmark"></i></button>
 
-                <div className="relative w-full h-64 sm:h-80 rounded-xl overflow-hidden bg-slate-950 mb-4 border border-cyan-500/20">
-                  <img src={viewingTask.photos[currentPhotoSlide] || viewingTask.photos[0]} className="w-full h-full object-cover" />
+                <div className="relative w-full h-64 sm:h-80 rounded-xl overflow-hidden bg-slate-950 mb-4 border border-slate-800">
+                  <img src={viewingTask.photos[currentPhotoSlide] || viewingTask.photos[0]} className="w-full h-full object-contain" />
                   {viewingTask.photos.length > 1 && (
                     <>
-                      <button onClick={() => setCurrentPhotoSlide(prev => prev > 0 ? prev - 1 : viewingTask.photos.length - 1)} className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/70 text-white flex items-center justify-center">
-                        <i className="fa-solid fa-chevron-left"></i>
-                      </button>
-                      <button onClick={() => setCurrentPhotoSlide(prev => prev < viewingTask.photos.length - 1 ? prev + 1 : 0)} className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/70 text-white flex items-center justify-center">
-                        <i className="fa-solid fa-chevron-right"></i>
-                      </button>
+                      <button onClick={() => setCurrentPhotoSlide(prev => prev > 0 ? prev - 1 : viewingTask.photos.length - 1)} className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/70 text-white hover:bg-black"><i className="fa-solid fa-chevron-left"></i></button>
+                      <button onClick={() => setCurrentPhotoSlide(prev => prev < viewingTask.photos.length - 1 ? prev + 1 : 0)} className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/70 text-white hover:bg-black"><i className="fa-solid fa-chevron-right"></i></button>
+                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/60 px-3 py-1 rounded-full backdrop-blur-md">
+                        {viewingTask.photos.map((_, i) => <div key={i} className={`w-2 h-2 rounded-full ${currentPhotoSlide === i ? 'bg-cyan-400' : 'bg-slate-600'}`} />)}
+                      </div>
                     </>
                   )}
                 </div>
@@ -958,165 +1057,82 @@
                     <div className="font-mono text-xl font-extrabold text-cyan-400">{viewingTask.budget.toLocaleString()} AWS</div>
                   </div>
                   <h2 className="text-lg font-bold text-slate-100">{viewingTask.title}</h2>
-                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-mono text-slate-300">
-                    <span className="text-cyan-400 block mb-1">Prompt / ТЗ:</span>
-                    {viewingTask.prompt}
-                  </div>
+                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-mono text-slate-300 whitespace-pre-wrap"><span className="text-cyan-400">ТЗ:</span> {viewingTask.prompt}</div>
 
-                  <button onClick={() => openTaskChat(viewingTask)} className="w-full py-3.5 rounded-xl bg-cyan-500 text-black font-bold text-sm hover:bg-cyan-400">
-                    Перейти в чат сделки
-                  </button>
+                  {isChatUnlocked(viewingTask.id, viewingTask.author_id) ? (
+                    <button onClick={() => openTaskChat(viewingTask)} className="w-full py-3.5 rounded-xl bg-cyan-500 text-black font-bold text-sm hover:bg-cyan-400">Перейти в чат сделки</button>
+                  ) : (
+                    <button onClick={() => handleUnlockAndEnterChat(viewingTask)} className="w-full py-3.5 rounded-xl bg-amber-500 text-black font-bold text-sm hover:bg-amber-400">Оплатить отклик ({viewingTask.response_fee} AWS)</button>
+                  )}
                 </div>
               </div>
             </div>
           )}
 
-          {/* КАССА */}
+          {/* WALLET / CASHIER */}
           {walletModalOpen && (
             <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-              <div className="bg-[#0D121F] border border-cyan-500/40 rounded-2xl p-5 sm:p-7 max-w-md w-full relative">
-                <button onClick={() => setWalletModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white">
-                  <i className="fa-solid fa-xmark text-lg"></i>
-                </button>
-
-                <h3 className="text-lg font-bold text-slate-100 mb-1">Касса платформы</h3>
-                <p className="text-xs text-slate-400 mb-4">100 AWS = 100 USDT</p>
-
-                <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-2">
-                    {Object.entries(CRYPTO_RATES).map(([key, item]) => (
-                      <button
-                        key={key}
-                        onClick={() => setSelectedCurrency(key)}
-                        className={`p-2 rounded-xl border text-center ${selectedCurrency === key ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-slate-950 border-slate-800 text-slate-400'}`}
-                      >
-                        <div className="text-xs font-bold">{item.symbol}</div>
-                        <div className="text-[9px] opacity-70">{item.net}</div>
-                      </button>
-                    ))}
-                  </div>
-
-                  <input
-                    type="number"
-                    value={depositAmountAWS}
-                    onChange={(e) => setDepositAmountAWS(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm font-mono text-cyan-300 outline-none"
-                    placeholder="Сумма в AWS"
-                  />
-
-                  <div className="p-2.5 rounded-lg bg-cyan-950/40 border border-cyan-500/30 text-xs flex justify-between">
-                    <span>К оплате:</span>
-                    <span className="font-mono font-bold text-cyan-400">
-                      {(Number(depositAmountAWS) * CRYPTO_RATES[selectedCurrency].rate).toFixed(2)} {CRYPTO_RATES[selectedCurrency].symbol}
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      const added = Number(depositAmountAWS);
-                      setBalance(prev => prev + added);
-                      setDepositSuccess(true);
-                      setTimeout(() => { setDepositSuccess(false); setWalletModalOpen(false); }, 1200);
-                    }}
-                    className="w-full py-3 rounded-xl bg-cyan-500 text-black font-bold text-sm"
-                  >
-                    {depositSuccess ? '✓ Успешно пополнено!' : 'Оплатить'}
-                  </button>
+              <div className="bg-[#0D121F] border border-cyan-500/40 rounded-2xl p-5 sm:p-7 max-w-sm w-full relative">
+                <button onClick={() => setWalletModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><i className="fa-solid fa-xmark text-lg"></i></button>
+                <h3 className="text-lg font-bold text-slate-100 mb-1">Касса (100 AWS = 100 USDT)</h3>
+                
+                <div className="grid grid-cols-3 gap-2 mt-4 mb-3">
+                  {Object.entries(CRYPTO_RATES).map(([key, item]) => (
+                    <button key={key} onClick={() => setSelectedCurrency(key)} className={`p-2 rounded-xl border text-center ${selectedCurrency === key ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-slate-950 border-slate-800 text-slate-400'}`}>
+                      <div className="text-xs font-bold">{item.symbol}</div>
+                    </button>
+                  ))}
                 </div>
+
+                <input type="number" value={depositAmountAWS} onChange={(e) => setDepositAmountAWS(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-cyan-300 outline-none mb-3" placeholder="Сумма в AWS" />
+                <div className="p-3 bg-cyan-950/40 border border-cyan-500/30 rounded-xl text-xs flex justify-between mb-4">
+                  <span>К оплате:</span>
+                  <span className="font-mono font-bold text-cyan-400">{(Number(depositAmountAWS) * CRYPTO_RATES[selectedCurrency].rate).toFixed(2)} {CRYPTO_RATES[selectedCurrency].symbol}</span>
+                </div>
+
+                <button onClick={() => { 
+                  const added = Number(depositAmountAWS); 
+                  setBalance(prev => prev + added); 
+                  setPlatformStats(prev => ({...prev, purchasedAWS: prev.purchasedAWS + added}));
+                  showToast(`Баланс пополнен на ${added} AWS!`); 
+                  setWalletModalOpen(false); 
+                }} className="w-full py-3 rounded-xl bg-cyan-500 text-black font-bold text-sm">Подтвердить оплату</button>
               </div>
             </div>
           )}
 
-          {/* АВТОРИЗАЦИЯ */}
+          {/* AUTH */}
           {authModalOpen && (
             <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
               <div className="bg-[#0D121F] border border-cyan-500/40 rounded-2xl p-5 sm:p-7 max-w-sm w-full relative">
-                <button onClick={() => setAuthModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white">
-                  <i className="fa-solid fa-xmark text-lg"></i>
-                </button>
+                <button onClick={() => setAuthModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><i className="fa-solid fa-xmark text-lg"></i></button>
 
-                {authMode === 'login' && (
+                {authMode === 'login' ? (
                   <>
-                    <h3 className="text-lg font-bold text-slate-100 mb-1">Вход в аккаунт</h3>
-                    <form onSubmit={handleLogin} className="space-y-3 mt-3">
-                      <input
-                        type="email"
-                        required
-                        placeholder="Email"
-                        value={authEmail}
-                        onChange={(e) => setAuthEmail(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm outline-none"
-                      />
-                      <input
-                        type="password"
-                        required
-                        placeholder="Пароль"
-                        value={authPassword}
-                        onChange={(e) => setAuthPassword(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm outline-none"
-                      />
-                      <button type="submit" className="w-full py-3 rounded-xl bg-cyan-500 text-black font-bold text-sm">
-                        Войти
-                      </button>
+                    <h3 className="text-lg font-bold text-slate-100 mb-4">Вход в аккаунт</h3>
+                    <form onSubmit={handleLogin} className="space-y-3">
+                      <input type="email" required placeholder="Email" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm outline-none" />
+                      <input type="password" required placeholder="Пароль" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm outline-none" />
+                      <button type="submit" className="w-full py-3 rounded-xl bg-cyan-500 text-black font-bold text-sm">Войти</button>
                     </form>
-                    <div className="mt-3 text-center text-xs text-slate-400">
-                      Нет аккаунта?{' '}
-                      <button onClick={() => setAuthMode('register')} className="text-cyan-400 font-semibold underline">
-                        Регистрация (+1000 AWS)
-                      </button>
-                    </div>
+                    <button onClick={() => setAuthMode('register')} className="mt-4 text-xs text-cyan-400 underline w-full text-center">Регистрация (+1000 AWS)</button>
                   </>
-                )}
-
-                {authMode === 'register' && (
+                ) : authMode === 'register' ? (
                   <>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-lg font-bold text-slate-100">Регистрация</h3>
-                      <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-mono font-bold">+1000 AWS</span>
-                    </div>
-                    <form onSubmit={handleStartRegister} className="space-y-3 mt-3">
-                      <input
-                        type="email"
-                        required
-                        placeholder="Email"
-                        value={authEmail}
-                        onChange={(e) => setAuthEmail(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm outline-none"
-                      />
-                      <input
-                        type="password"
-                        required
-                        placeholder="Пароль (от 6 символов)"
-                        value={authPassword}
-                        onChange={(e) => setAuthPassword(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm outline-none"
-                      />
-                      <button type="submit" className="w-full py-3 rounded-xl bg-cyan-500 text-black font-bold text-sm">
-                        Получить код на Email
-                      </button>
+                    <h3 className="text-lg font-bold text-slate-100 mb-4">Регистрация <span className="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full ml-2">+1000 AWS</span></h3>
+                    <form onSubmit={handleStartRegister} className="space-y-3">
+                      <input type="email" required placeholder="Email" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm outline-none" />
+                      <input type="password" required placeholder="Пароль" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm outline-none" />
+                      <button type="submit" className="w-full py-3 rounded-xl bg-cyan-500 text-black font-bold text-sm">Получить код</button>
                     </form>
                   </>
-                )}
-
-                {authMode === 'verify_email' && (
+                ) : (
                   <>
-                    <h3 className="text-lg font-bold text-slate-100 mb-1">Код подтверждения</h3>
-                    <div className="p-2.5 mb-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-mono text-center">
-                      OTP: <b>{generatedOtp}</b>
-                    </div>
+                    <h3 className="text-lg font-bold text-slate-100 mb-4">Ввод OTP-кода</h3>
+                    <div className="text-center font-mono text-cyan-400 bg-cyan-950/30 p-2 rounded mb-3 border border-cyan-500/20">Ваш код: {generatedOtp}</div>
                     <form onSubmit={handleVerifyEmail} className="space-y-3">
-                      <input
-                        type="text"
-                        required
-                        maxLength="6"
-                        placeholder="6-значный код"
-                        value={verificationCode}
-                        onChange={(e) => setVerificationCode(e.target.value)}
-                        className="w-full bg-slate-950 border border-cyan-500 text-center text-lg font-mono rounded-xl px-3.5 py-2.5 text-cyan-300 outline-none"
-                      />
-                      <button type="submit" className="w-full py-3 rounded-xl bg-emerald-500 text-black font-bold text-sm">
-                        Забрать +1000 AWS и войти
-                      </button>
+                      <input type="text" required maxLength="6" placeholder="Код" value={verificationCode} onChange={(e) => setVerificationCode(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-center tracking-widest text-lg font-mono outline-none focus:border-cyan-500" />
+                      <button type="submit" className="w-full py-3 rounded-xl bg-emerald-500 text-black font-bold text-sm">Подтвердить</button>
                     </form>
                   </>
                 )}
@@ -1125,15 +1141,13 @@
           )}
 
           {/* Футер */}
-          <footer className="mt-12 border-t border-cyan-500/20 bg-[#06080C] px-4 py-8 text-xs text-slate-400">
-            <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="space-y-1 text-center md:text-left">
+          <footer className="mt-auto border-t border-cyan-500/20 bg-[#06080C] px-4 py-8 text-xs text-slate-400">
+            <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="text-center md:text-left">
                 <div className="font-bold text-slate-200 text-sm">AI WORKERS SPACE</div>
-                <div className="font-mono text-[11px]">Самозанятая: Храппа Марина Николаевна • ИНН: 390400469138</div>
+                <div className="font-mono text-[10px]">Самозанятая: Храппа М.Н. • ИНН: 390400469138</div>
               </div>
-              <div className="text-center md:text-right font-mono text-[11px] text-slate-500">
-                © 2026 AI WORKERS SPACE. Все права защищены.
-              </div>
+              <div className="text-center md:text-right font-mono text-[10px] text-slate-500">© 2026 AI WORKERS SPACE. Все права защищены.</div>
             </div>
           </footer>
         </div>
