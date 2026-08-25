@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-  <title>AI WORKERS SPACE — Биржа AI Креаторов</title>
+  <title>AI WORKERS SPACE — Global AI Freelance</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -15,14 +15,12 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     
-    /* Рамки аватаров */
     .frame-none { border: 2px solid transparent; }
     .frame-cyan { border: 2px solid #06b6d4; box-shadow: 0 0 10px rgba(6, 182, 212, 0.7); }
     .frame-emerald { border: 2px solid #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.8); }
     @keyframes rainbow-pulsate { 0% { border-color: #ec4899; box-shadow: 0 0 15px rgba(236, 72, 153, 0.8); } 50% { border-color: #f59e0b; box-shadow: 0 0 25px rgba(245, 158, 11, 1); } 100% { border-color: #ec4899; box-shadow: 0 0 15px rgba(236, 72, 153, 0.8); } }
     .frame-rainbow-mythic { border: 2.5px solid #ec4899; animation: rainbow-pulsate 2.5s infinite ease-in-out; }
     
-    /* Рамки карточек */
     .card-frame-default { border: 1px solid rgba(30, 41, 59, 0.8); }
     .card-frame-neon { border: 1.5px solid #06b6d4; box-shadow: 0 0 20px rgba(6, 182, 212, 0.15); }
     .card-frame-cyber { border: 1.5px solid #d946ef; box-shadow: 0 0 20px rgba(217, 70, 239, 0.15); }
@@ -38,7 +36,6 @@
 <body>
   <div id="root"></div>
 
-  <!-- FIREBASE CLOUD MODULES -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
     import { getAuth, signInAnonymously, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
@@ -53,7 +50,6 @@
     const TELEGRAM_LINK = "https://t.me/aiworkersspace";
     const ADMIN_EMAIL = "kenigwood39@gmail.com";
 
-    // ИСПРАВЛЕННЫЙ КЛЮЧ FIREBASE ПРИЛОЖЕНИЯ
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyBI6K0YuwV6jAHvUg2x8Y2dX-FuTLfDgd0",
       authDomain: "ai-workers-space.firebaseapp.com",
@@ -64,7 +60,68 @@
       measurementId: "G-VFM3W6YCBQ"
     };
 
-    // Сжатие фото перед загрузкой
+    // Dictionary for Localization
+    const DICTIONARY = {
+      ru: {
+        appTitle: "AWS SPACE", offlineMode: "Оффлайн режим (Firebase отключен)", login: "Войти",
+        feed: "Лента заказов", aiStudio: "AI Студия ✨", profile: "Профиль", newTask: "Новый таск",
+        globalPlatform: "✨ ГЛОБАЛЬНАЯ ФРИЛАНС-ПЛАТФОРМА",
+        heroTitle1: "Нанимайте лучших", heroTitle2: "AI-инженеров и креаторов",
+        heroDesc: "Единая экосистема для делегирования задач нейросетям со всего мира: от генерации артов до написания сложного кода.",
+        all: "🔥 Все", video: "🎬 Видео", art: "🎨 Арт", arch: "🏛️ Архитектура", bots: "⚡ Код/Боты",
+        emptyCategory: "В этой категории пока нет заказов.",
+        statusOpen: "Открыт", statusWork: "В работе", customer: "Заказчик:", budget: "Бюджет", applyFee: "Отклик:", details: "Подробнее",
+        aiStudioTitle: "ИИ-Песочница", aiStudioDesc: "Тестируйте промпты прямо на бирже перед взятием заказа.",
+        genImg: "Генератор Изображений", genText: "Генератор Текста",
+        promptImg: "Опишите сцену, атмосферу, стиль (Gemini Imagen 4.0)...", promptText: "Задайте вопрос, попросите написать код или текст (Gemini 2.5 Flash)...",
+        launchAI: "Запустить нейросеть", processing: "Синтез данных...", aiReply: "Ответ ИИ:", saveOrig: "Сохранить оригинал",
+        balance: "Баланс", topUp: "Пополнить", myOrders: "Мои заказы", activeDeals: "Активные сделки", shop: "Магазин Экипировки 🛍️",
+        noOrders: "Вы еще не создали ни одного заказа.", openChat: "Открыть чат", edit: "Редактировать", delete: "Удалить",
+        cardStyle: "Стиль карточки:", noDeals: "Вы еще не откликались на заказы.", payment: "Оплата", jumpToChat: "Ворваться в чат",
+        avatars: "Аватары", frames: "Рамки аватаров", cardFrames: "Стили карточек заказов", select: "Выбрать",
+        pubSmartOrder: "Опубликовать смарт-заказ", editSmartOrder: "Редактировать смарт-заказ", shortTitle: "Краткое название",
+        catVideo: "🎬 Видео-генерация", catArt: "🎨 2D/3D Арт", catArch: "🏛️ Архитектура", catCode: "⚡ Код / Боты",
+        refs: "Референсы", addPhoto: "Добавить фото", taskDesc: "Подробное техническое задание...",
+        escrow: "Размещая заказ, вы замораживаете средства до принятия работы (Escrow).", publish: "Опубликовать", saveChanges: "Сохранить изменения",
+        dealStart: "Начало безопасной сделки. Все договоренности фиксируются.", finishDeal: "Завершить сделку",
+        enterMsg: "Введите сообщение...", payToReply: "Чтобы написать заказчику, оплатите отклик.", payFeeBtn: "Оплатить отклик",
+        views: "Просмотров", taskDescTitle: "Описание задачи", respondTask: "Откликнуться на заказ", applyCost: "Стоимость отклика:",
+        walletTitle: "Пополнение баланса", toPay: "К оплате:", payTest: "Оплатить (Тест)",
+        authTitleLogin: "Вход в систему", authTitleReg: "Создание аккаунта", email: "Электронная почта", pass: "Пароль (от 6 символов)",
+        noAcc: "Нет аккаунта? Создать", yesAcc: "Уже есть аккаунт? Войти", aiSuccessImg: "Генерация завершена", aiSuccessText: "Ответ получен", aiError: "Сбой API ИИ",
+        taskUpdated: "Заказ успешно обновлен"
+      },
+      en: {
+        appTitle: "AWS SPACE", offlineMode: "Offline Mode (Firebase disabled)", login: "Log in",
+        feed: "Orders Feed", aiStudio: "AI Studio ✨", profile: "Profile", newTask: "New Task",
+        globalPlatform: "✨ GLOBAL FREELANCE PLATFORM",
+        heroTitle1: "Hire the best", heroTitle2: "AI engineers & creators",
+        heroDesc: "A unified ecosystem for delegating tasks to neural networks worldwide: from art generation to complex coding.",
+        all: "🔥 All", video: "🎬 Video", art: "🎨 Art", arch: "🏛️ Architecture", bots: "⚡ Code/Bots",
+        emptyCategory: "No orders in this category yet.",
+        statusOpen: "Open", statusWork: "In Progress", customer: "Customer:", budget: "Budget", applyFee: "Apply Fee:", details: "Details",
+        aiStudioTitle: "AI Sandbox", aiStudioDesc: "Test prompts directly on the exchange before taking an order.",
+        genImg: "Image Generator", genText: "Text Generator",
+        promptImg: "Describe the scene, atmosphere, style (Gemini Imagen 4.0)...", promptText: "Ask a question, request code or text (Gemini 2.5 Flash)...",
+        launchAI: "Launch Neural Network", processing: "Synthesizing data...", aiReply: "AI Reply:", saveOrig: "Save Original",
+        balance: "Balance", topUp: "Top Up", myOrders: "My Orders", activeDeals: "Active Deals", shop: "Equipment Shop 🛍️",
+        noOrders: "You haven't created any orders yet.", openChat: "Open Chat", edit: "Edit", delete: "Delete",
+        cardStyle: "Card Style:", noDeals: "You haven't applied to any orders yet.", payment: "Payment", jumpToChat: "Jump to Chat",
+        avatars: "Avatars", frames: "Avatar Frames", cardFrames: "Order Card Styles", select: "Select",
+        pubSmartOrder: "Publish Smart Order", editSmartOrder: "Edit Smart Order", shortTitle: "Short Title",
+        catVideo: "🎬 Video Generation", catArt: "🎨 2D/3D Art", catArch: "🏛️ Architecture", catCode: "⚡ Code / Bots",
+        refs: "References", addPhoto: "Add Photo", taskDesc: "Detailed technical specifications...",
+        escrow: "By placing an order, funds are frozen until work is accepted (Escrow).", publish: "Publish", saveChanges: "Save Changes",
+        dealStart: "Start of a secure deal. All agreements are recorded.", finishDeal: "Finish Deal",
+        enterMsg: "Enter message...", payToReply: "To message the customer, pay the apply fee.", payFeeBtn: "Pay Apply Fee",
+        views: "Views", taskDescTitle: "Task Description", respondTask: "Apply for Order", applyCost: "Apply Cost:",
+        walletTitle: "Top Up Balance", toPay: "To Pay:", payTest: "Pay (Test)",
+        authTitleLogin: "Login", authTitleReg: "Create Account", email: "Email Address", pass: "Password (min 6 chars)",
+        noAcc: "No account? Create one", yesAcc: "Already have an account? Log in", aiSuccessImg: "Generation complete", aiSuccessText: "Response received", aiError: "AI API Failure",
+        taskUpdated: "Task successfully updated"
+      }
+    };
+
     const compressImage = (file) => {
       return new Promise((resolve) => {
         const reader = new FileReader(); reader.readAsDataURL(file);
@@ -82,16 +139,14 @@
       });
     };
 
-    // Экономика
     const calculateResponseFee = (b) => { b = Number(b) || 0; if (b <= 2000) return 100; if (b <= 5000) return Math.max(100, Math.round(b * 0.05)); return Math.round(250 + ((b - 5000) / 95000) * 950); };
     const CRYPTO_RATES = { usdt: { rate: 1.0, symbol: 'USDT' }, ton: { rate: 0.18, symbol: 'TON' }, trx: { rate: 6.8, symbol: 'TRX' }, rub: { rate: 92.5, symbol: 'RUB' } };
     
-    // Магазин
     const MINIMAL_AVATARS = [
-      { id: 'm1', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&q=80', name: 'Dark Sphere', price: 0 },
-      { id: 'm2', url: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=300&q=80', name: 'Minimal Glow', price: 0 },
-      { id: 'm3', url: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=300&q=80', name: 'Glass Wave', price: 500 },
-      { id: 'm4', url: 'https://images.unsplash.com/photo-1634926878768-2a5b3c42f139?w=300&q=80', name: 'VIP Gold', price: 5000 }
+      { id: 'm1', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&q=80', price: 0 },
+      { id: 'm2', url: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=300&q=80', price: 0 },
+      { id: 'm3', url: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=300&q=80', price: 500 },
+      { id: 'm4', url: 'https://images.unsplash.com/photo-1634926878768-2a5b3c42f139?w=300&q=80', price: 5000 }
     ];
     const AVATAR_FRAMES = [ 
       { id: 'f0', name: 'Без рамки', class: 'frame-none', price: 0 }, 
@@ -99,13 +154,16 @@
       { id: 'f5', name: 'Rainbow Mythic ✨', class: 'frame-rainbow-mythic', price: 5000 } 
     ];
     const TASK_CARD_FRAMES = [ 
-      { id: 'c0', name: 'Стандарт', class: 'card-frame-default', price: 0 }, 
-      { id: 'c1', name: 'Неон Cyan', class: 'card-frame-neon', price: 1000 }, 
-      { id: 'c2', name: 'Кибер Маджента', class: 'card-frame-cyber', price: 2500 },
-      { id: 'c4', name: 'Fire Ultra 🔥', class: 'card-frame-fire-ultra', price: 10000 } 
+      { id: 'c0', name: 'Стандарт', class: 'card-frame-default', price: 0, dotColor: '#334155' }, 
+      { id: 'c1', name: 'Неон Cyan', class: 'card-frame-neon', price: 1000, dotColor: '#06b6d4' }, 
+      { id: 'c2', name: 'Кибер Маджента', class: 'card-frame-cyber', price: 2500, dotColor: '#d946ef' },
+      { id: 'c4', name: 'Fire Ultra 🔥', class: 'card-frame-fire-ultra', price: 10000, dotColor: '#ef4444' } 
     ];
 
     function App() {
+      const [lang, setLang] = useState('ru');
+      const t = (key) => DICTIONARY[lang][key] || key;
+
       const [db, setDb] = useState(null);
       const [auth, setAuth] = useState(null);
       const [appId] = useState('aws-platform-v1');
@@ -123,7 +181,6 @@
 
       const isAdmin = user && user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
-      // UI States
       const [toasts, setToasts] = useState([]);
       const [selectedCat, setSelectedCat] = useState('All');
       const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -137,22 +194,21 @@
       const [selectedCurrency, setSelectedCurrency] = useState('usdt');
       const [depositAmountAWS, setDepositAmountAWS] = useState('1000');
       
-      // Create Task States
+      // Task Creation & Editing States
       const [newTitle, setNewTitle] = useState('');
       const [newCategory, setNewCategory] = useState('video');
       const [newPrompt, setNewPrompt] = useState('');
       const [newBudget, setNewBudget] = useState('15000');
       const [newTool, setNewTool] = useState('ComfyUI');
       const [taskPhotos, setTaskPhotos] = useState([]);
+      const [editingTask, setEditingTask] = useState(null); // NULL if creating, Task Object if editing
 
-      // Viewing & Chat States
       const [viewingTask, setViewingTask] = useState(null);
       const [currentPhotoSlide, setCurrentPhotoSlide] = useState(0);
       const [selectedTaskForChat, setSelectedTaskForChat] = useState(null);
       const [chatInput, setChatInput] = useState('');
       const chatScrollRef = useRef(null);
 
-      // AI Studio States
       const [aiMode, setAiMode] = useState('image'); 
       const [aiPrompt, setAiPrompt] = useState('');
       const [aiResultImg, setAiResultImg] = useState(null);
@@ -168,52 +224,34 @@
       useEffect(() => {
         const initCloud = () => {
           if (!window.Firebase) return activateLocalFallback();
-          
           try {
             const app = window.Firebase.initializeApp(FIREBASE_CONFIG);
             const firestoreDb = window.Firebase.getFirestore(app);
             const firebaseAuth = window.Firebase.getAuth(app);
-            
-            setDb(firestoreDb); 
-            setAuth(firebaseAuth); 
-            setIsGlobalMode(true);
+            setDb(firestoreDb); setAuth(firebaseAuth); setIsGlobalMode(true);
 
-            // Чтение базы
             window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'artifacts', appId, 'tasks'), (snap) => {
               const loaded = snap.docs.map(d => d.data());
               setTasks(loaded.sort((a, b) => b.id - a.id));
-            }, (error) => {
-              console.error("Firestore Tasks Error:", error);
-              activateLocalFallback();
-            });
+            }, () => activateLocalFallback());
 
             window.Firebase.onAuthStateChanged(firebaseAuth, async (u) => {
               if (u) {
                 const profRef = window.Firebase.doc(firestoreDb, 'artifacts', appId, 'users', u.uid);
                 const profSnap = await window.Firebase.getDoc(profRef);
-                
                 if (profSnap.exists()) {
                   const data = profSnap.data();
-                  setUser(data.profile); 
-                  setBalance(data.balance || 0); 
-                  setInventory(data.inventory || {avatars:[],frames:[],cardFrames:[]}); 
-                  setPaidUnlocks(data.paidUnlocks || []);
+                  setUser(data.profile); setBalance(data.balance || 0); setInventory(data.inventory || {avatars:[],frames:[],cardFrames:[]}); setPaidUnlocks(data.paidUnlocks || []);
                 } else {
-                  // Создание профиля для нового юзера
                   const newProfile = { id: u.uid, email: u.email, name: u.email.split('@')[0], avatar: MINIMAL_AVATARS[0].url, avatarFrame: 'frame-none', cardFrame: 'card-frame-default' };
                   const isM = u.email === ADMIN_EMAIL.toLowerCase();
                   await window.Firebase.setDoc(profRef, { profile: newProfile, balance: isM ? 25000 : 1000, inventory: { avatars: [], frames: [], cardFrames: [] }, paidUnlocks: [] });
                   setUser(newProfile); setBalance(isM ? 25000 : 1000);
                 }
-              } else {
-                setUser(null);
-              }
+              } else { setUser(null); }
               setIsDbReady(true);
             });
-          } catch(e) { 
-            console.error("Firebase Init Error", e); 
-            activateLocalFallback(); 
-          }
+          } catch(e) { activateLocalFallback(); }
         };
 
         const activateLocalFallback = () => {
@@ -228,142 +266,94 @@
         setTimeout(initCloud, 300);
       }, []);
 
-      // Синхронизация данных пользователя
       useEffect(() => {
         if (isGlobalMode && db && user && auth?.currentUser) {
-          window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'users', auth.currentUser.uid), {
-            profile: user, balance, inventory, paidUnlocks
-          }, { merge: true });
+          window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'users', auth.currentUser.uid), { profile: user, balance, inventory, paidUnlocks }, { merge: true });
         } else if (!isGlobalMode && user) {
-          localStorage.setItem('aws_local_tasks', JSON.stringify(tasks)); 
-          localStorage.setItem('aws_local_user', JSON.stringify(user));
-          localStorage.setItem('aws_local_balance', balance.toString()); 
-          localStorage.setItem('aws_local_inv', JSON.stringify(inventory));
+          localStorage.setItem('aws_local_tasks', JSON.stringify(tasks)); localStorage.setItem('aws_local_user', JSON.stringify(user));
+          localStorage.setItem('aws_local_balance', balance.toString()); localStorage.setItem('aws_local_inv', JSON.stringify(inventory));
           localStorage.setItem('aws_local_paid', JSON.stringify(paidUnlocks));
         }
       }, [user, balance, inventory, paidUnlocks, tasks, isGlobalMode, db, auth, appId]);
 
-      // Авто-скролл чата
-      useEffect(() => {
-        if (chatScrollRef.current) {
-          chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
-        }
-      }, [selectedTaskForChat?.messages]);
+      useEffect(() => { if (chatScrollRef.current) chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight; }, [selectedTaskForChat?.messages]);
 
-
-      // ОБНОВЛЕННАЯ ФУНКЦИЯ АВТОРИЗАЦИИ
       const handleAuthSubmit = async (e) => {
-        e.preventDefault(); 
-        setAuthError(''); 
-        setAuthLoading(true);
+        e.preventDefault(); setAuthError(''); setAuthLoading(true);
         const em = authEmail.trim().toLowerCase();
-        
         if (!isGlobalMode) {
-           if (authPassword.length < 6) {
-               setAuthError('Пароль должен быть от 6 символов');
-               setAuthLoading(false);
-               return;
-           }
+           if (authPassword.length < 6) { setAuthError('Пароль должен быть от 6 символов'); setAuthLoading(false); return; }
            const u = { id: 'u_'+Date.now(), email: em, name: em.split('@')[0], avatar: MINIMAL_AVATARS[0].url, avatarFrame: 'frame-none', cardFrame: 'card-frame-default' };
-           setUser(u); setBalance(em === ADMIN_EMAIL.toLowerCase() ? 25000 : 1000); setAuthModalOpen(false); showToast('Локальный вход выполнен'); 
-           setAuthLoading(false);
-           return;
+           setUser(u); setBalance(em === ADMIN_EMAIL.toLowerCase() ? 25000 : 1000); setAuthModalOpen(false); showToast('Локальный вход выполнен'); setAuthLoading(false); return;
         }
-
         try {
           if (authMode === 'register') {
             if(authPassword.length < 6) throw { code: 'auth/weak-password' };
-            const cred = await window.Firebase.createUserWithEmailAndPassword(auth, em, authPassword);
-            setAuthModalOpen(false); 
-            showToast('Успешная регистрация! +1000 AWS');
+            await window.Firebase.createUserWithEmailAndPassword(auth, em, authPassword); setAuthModalOpen(false); showToast('Успешная регистрация! +1000 AWS');
           } else {
-            await window.Firebase.signInWithEmailAndPassword(auth, em, authPassword);
-            setAuthModalOpen(false); 
-            showToast('Вы успешно вошли в систему!');
+            await window.Firebase.signInWithEmailAndPassword(auth, em, authPassword); setAuthModalOpen(false); showToast('Вы успешно вошли в систему!');
           }
         } catch(err) {
-          console.error("Auth Error Code:", err.code, err.message);
-          
-          if (err.code === 'auth/api-key-not-valid') {
-             setAuthError('🚨 КРИТИЧЕСКАЯ ОШИБКА: API ключ Firebase недействителен. Разработчик, обновите apiKey в коде!');
-          } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-             setAuthError('Неверный email или пароль. Если у вас нет аккаунта, нажмите "Создать" ниже.');
-          } else if (err.code === 'auth/email-already-in-use') {
-             setAuthError('Этот email уже зарегистрирован. Пожалуйста, выполните вход.');
-          } else if (err.code === 'auth/weak-password') {
-             setAuthError('Пароль слишком простой (минимум 6 символов).');
-          } else if (err.code === 'auth/invalid-email') {
-             setAuthError('Некорректный формат email адреса.');
-          } else if (err.code === 'auth/operation-not-allowed') {
-             setAuthError('Авторизация по Email выключена! Включите её в консоли Firebase (Sign-in method).');
-          } else {
-             setAuthError(err.message || 'Произошла неизвестная ошибка авторизации.');
-          }
-        } finally {
-          setAuthLoading(false);
-        }
+          if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') setAuthError('Неверный email или пароль.');
+          else if (err.code === 'auth/email-already-in-use') setAuthError('Этот email уже зарегистрирован.');
+          else if (err.code === 'auth/weak-password') setAuthError('Пароль слишком простой (минимум 6 символов).');
+          else setAuthError(err.message || 'Ошибка авторизации.');
+        } finally { setAuthLoading(false); }
       };
 
-      const handleLogout = async () => {
-        if(isGlobalMode && auth) await window.Firebase.signOut(auth);
-        setUser(null); 
-        localStorage.removeItem('aws_local_user'); 
-        showToast('Вы вышли из аккаунта');
-      };
+      const handleLogout = async () => { if(isGlobalMode && auth) await window.Firebase.signOut(auth); setUser(null); localStorage.removeItem('aws_local_user'); showToast('Вы вышли из аккаунта'); };
 
       const handleUploadTaskPhotos = async (e) => {
         const files = Array.from(e.target.files);
         for (let file of files) {
           if (taskPhotos.length >= 5) break;
-          try { 
-            const b64 = await compressImage(file); 
-            setTaskPhotos(p => p.length >= 5 ? p : [...p, b64]); 
-          } catch(err) { showToast('Ошибка сжатия фото', 'error'); }
+          try { const b64 = await compressImage(file); setTaskPhotos(p => p.length >= 5 ? p : [...p, b64]); } catch(err) { showToast('Ошибка сжатия фото', 'error'); }
         }
       };
 
-      const handleCreateTask = async (e) => {
+      const handleCreateOrEditTask = async (e) => {
         e.preventDefault(); if (!newTitle.trim() || !user) return;
         const bVal = Number(newBudget) || 15000;
         const finalPhotos = taskPhotos.length > 0 ? taskPhotos : ['https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=800&q=80'];
         
-        const taskObj = { 
-          id: Date.now(), 
-          category: newCategory, 
-          title: newTitle, 
-          prompt: newPrompt || 'Подробности в чате сделки', 
-          tool: newTool, 
-          budget: bVal, 
-          response_fee: calculateResponseFee(bVal), 
-          currency: 'AWS', 
-          author: user.name, 
-          author_id: user.id, 
-          card_frame: user.cardFrame || 'card-frame-default', 
-          status: 'open', 
-          views: 0, 
-          messages: [], 
-          photos: finalPhotos, 
-          hidden: false 
-        };
-        
-        if(isGlobalMode && db) {
-          await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', taskObj.id.toString()), taskObj);
+        let taskObj;
+        if (editingTask) {
+           taskObj = { ...editingTask, category: newCategory, title: newTitle, prompt: newPrompt, tool: newTool, budget: bVal, response_fee: calculateResponseFee(bVal), photos: finalPhotos };
         } else {
-          setTasks([taskObj, ...tasks]);
+           taskObj = { id: Date.now(), category: newCategory, title: newTitle, prompt: newPrompt || 'Подробности в чате сделки', tool: newTool, budget: bVal, response_fee: calculateResponseFee(bVal), currency: 'AWS', author: user.name, author_id: user.id, card_frame: user.cardFrame || 'card-frame-default', status: 'open', views: 0, messages: [], photos: finalPhotos, hidden: false };
         }
         
-        showToast('Заказ опубликован в ленту!'); 
-        setNewTitle(''); setNewPrompt(''); setTaskPhotos([]); setTab('feed');
+        if(isGlobalMode && db) {
+          await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', taskObj.id.toString()), taskObj, { merge: true });
+        } else {
+          setTasks(editingTask ? tasks.map(t => t.id === taskObj.id ? taskObj : t) : [taskObj, ...tasks]);
+        }
+        
+        showToast(editingTask ? t('taskUpdated') : 'Заказ опубликован в ленту!'); 
+        setEditingTask(null); setNewTitle(''); setNewPrompt(''); setTaskPhotos([]); 
+        if(!editingTask) setTab('feed');
+      };
+
+      const startEditingTask = (task) => {
+          setEditingTask(task);
+          setNewTitle(task.title); setNewCategory(task.category); setNewPrompt(task.prompt);
+          setNewBudget(task.budget.toString()); setNewTool(task.tool); setTaskPhotos(task.photos);
+          setTab('create'); // Reuse the create tab for editing
+      };
+
+      const updateTaskSpecificFrame = async (taskId, newFrameClass) => {
+         const updatedTasks = tasks.map(t => t.id === taskId ? { ...t, card_frame: newFrameClass } : t);
+         setTasks(updatedTasks);
+         if (isGlobalMode && db) {
+            await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', taskId.toString()), { card_frame: newFrameClass }, { merge: true });
+         }
       };
 
       const openTaskModalWithViewCount = async (task) => {
         const nViews = (task.views || 0) + 1;
         const upd = { ...task, views: nViews };
-        if(isGlobalMode && db && task.author_id !== user?.id) { 
-          await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', task.id.toString()), {views: nViews}, { merge: true }); 
-        } else if(!isGlobalMode) {
-          setTasks(tasks.map(t => t.id === task.id ? upd : t));
-        }
+        if(isGlobalMode && db && task.author_id !== user?.id) { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', task.id.toString()), {views: nViews}, { merge: true }); }
+        else if(!isGlobalMode) { setTasks(tasks.map(t => t.id === task.id ? upd : t)); }
         setViewingTask(upd); setCurrentPhotoSlide(0);
       };
 
@@ -371,17 +361,12 @@
         e.preventDefault(); if (!chatInput.trim() || !selectedTaskForChat) return;
         const newMsg = { id: Date.now(), sender: user ? user.name : 'Guest', text: chatInput, isMe: user?.id === selectedTaskForChat.author_id };
         const updatedTask = { ...selectedTaskForChat, messages: [...(selectedTaskForChat.messages || []), newMsg] };
-        
-        if(isGlobalMode && db) {
-          await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', updatedTask.id.toString()), updatedTask, {merge: true});
-        } else {
-          setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t));
-        }
-        
+        if(isGlobalMode && db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', updatedTask.id.toString()), updatedTask, {merge: true});
+        else setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t));
         setSelectedTaskForChat(updatedTask); setChatInput('');
       };
 
-      // AI
+      // REAL AI WITH GEMINI
       const handleGenerateAI = async (e) => {
         e.preventDefault(); if (!aiPrompt.trim()) return;
         const fee = aiMode === 'text' ? 15 : 50;
@@ -390,32 +375,33 @@
         setBalance(p => p - fee); setAiLoading(true); setAiResultImg(null); setAiResultText('');
 
         try {
-          const isRu = /[а-яА-ЯЁё]/.test(aiPrompt); 
-          let engP = aiPrompt;
-          if(isRu) { 
-            try { 
-              const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=ru&tl=en&dt=t&q=${encodeURIComponent(aiPrompt)}`); 
-              const d = await r.json(); 
-              engP = d[0][0][0]; 
-            } catch(e){} 
-          }
-
+          const apiKey = ""; // Canvas proxy magically injects the API key at runtime
           if (aiMode === 'image') {
-            const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(engP+', highly detailed, 8k, cyberpunk, neon')}?width=1024&height=1024&seed=${Date.now()}&nologo=true`;
-            const img = new Image(); 
-            img.src = url; 
-            img.onload = () => { setAiResultImg(url); setAiLoading(false); showToast('-50 AWS за генерацию'); }; 
-            img.onerror = () => { setAiLoading(false); showToast('Ошибка рендеринга', 'error'); };
+             const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+             const payload = { instances: { prompt: aiPrompt }, parameters: { sampleCount: 1 } };
+             const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+             const data = await res.json();
+             if (data.error) throw new Error(data.error.message);
+             const base64 = data.predictions?.[0]?.bytesBase64Encoded;
+             if (!base64) throw new Error("No image data");
+             setAiResultImg(`data:image/png;base64,${base64}`);
+             showToast(t('aiSuccessImg'));
           } else if (aiMode === 'text') {
-            const url = `https://text.pollinations.ai/prompt/${encodeURIComponent(aiPrompt)}`;
-            const response = await fetch(url);
-            const textData = await response.text();
-            setAiResultText(textData);
-            setAiLoading(false);
-            showToast('-15 AWS за промпт');
+             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+             const payload = { contents: [{ parts: [{ text: aiPrompt }] }] };
+             const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+             const data = await res.json();
+             if (data.error) throw new Error(data.error.message);
+             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+             setAiResultText(text || "No response.");
+             showToast(t('aiSuccessText'));
           }
         } catch (err) { 
-          setAiLoading(false); showToast('Сбой API ИИ', 'error'); 
+          setAiResultText(`Error: ${err.message}`);
+          showToast(t('aiError'), 'error'); 
+          setBalance(p => p + fee); // Refund on error
+        } finally {
+          setAiLoading(false);
         }
       };
 
@@ -425,43 +411,25 @@
 
         if (isOwned) {
           let upd = { ...user };
-          if(type === 'avatar') upd.avatar = item.url; 
-          if(type === 'frame') upd.avatarFrame = item.class; 
-          if(type === 'cardFrame') upd.cardFrame = item.class;
-          
+          if(type === 'avatar') upd.avatar = item.url; if(type === 'frame') upd.avatarFrame = item.class; if(type === 'cardFrame') upd.cardFrame = item.class;
           setUser(upd); 
           if(type === 'cardFrame') {
              const updatedTasks = tasks.map(t => t.author_id === user.id ? { ...t, card_frame: item.class } : t);
              setTasks(updatedTasks);
-             if(isGlobalMode && db) {
-               updatedTasks.filter(t=>t.author_id===user.id).forEach(t => 
-                 window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', t.id.toString()), {card_frame: item.class}, {merge:true})
-               );
-             }
+             if(isGlobalMode && db) updatedTasks.filter(t=>t.author_id===user.id).forEach(t => window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', t.id.toString()), {card_frame: item.class}, {merge:true}));
           }
-          showToast('Экипировано!');
+          showToast(t('cardStyle') + ' Обновлен!');
         } else {
           if (balance < item.price) { setWalletModalOpen(true); return; }
           setBalance(p => p - item.price);
-          
-          let nInv = { ...inventory }; 
-          nInv[type+'s'] = [...(nInv[type+'s']||[]), item.id]; 
-          setInventory(nInv);
-          
+          let nInv = { ...inventory }; nInv[type+'s'] = [...(nInv[type+'s']||[]), item.id]; setInventory(nInv);
           let upd = { ...user };
-          if(type === 'avatar') upd.avatar = item.url; 
-          if(type === 'frame') upd.avatarFrame = item.class; 
-          if(type === 'cardFrame') upd.cardFrame = item.class;
-          
+          if(type === 'avatar') upd.avatar = item.url; if(type === 'frame') upd.avatarFrame = item.class; if(type === 'cardFrame') upd.cardFrame = item.class;
           setUser(upd); 
           if(type === 'cardFrame') {
              const updatedTasks = tasks.map(t => t.author_id === user.id ? { ...t, card_frame: item.class } : t);
              setTasks(updatedTasks);
-             if(isGlobalMode && db) {
-               updatedTasks.filter(t=>t.author_id===user.id).forEach(t => 
-                 window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', t.id.toString()), {card_frame: item.class}, {merge:true})
-               );
-             }
+             if(isGlobalMode && db) updatedTasks.filter(t=>t.author_id===user.id).forEach(t => window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', t.id.toString()), {card_frame: item.class}, {merge:true}));
           }
           showToast('Покупка успешна! ✨');
         }
@@ -473,52 +441,49 @@
 
       if (!isDbReady) return (
         <div className="min-h-screen bg-[#05070A] flex flex-col items-center justify-center text-cyan-400 font-mono gap-4">
-          <i className="fa-solid fa-circle-notch fa-spin text-4xl"></i>
-          <span className="animate-pulse">Подключение к матрице AWS...</span>
+          <i className="fa-solid fa-circle-notch fa-spin text-4xl"></i><span className="animate-pulse">Подключение к AWS...</span>
         </div>
       );
 
       return (
         <div className="min-h-screen flex flex-col w-full max-w-full overflow-x-hidden relative">
           
-          {/* Индикатор локального режима */}
           {!isGlobalMode && (
             <div className="bg-amber-500/20 text-amber-300 text-[10px] text-center py-1 font-mono tracking-wide border-b border-amber-500/30">
-              <i className="fa-solid fa-triangle-exclamation mr-1"></i> Оффлайн режим (Firebase отключен)
+              <i className="fa-solid fa-triangle-exclamation mr-1"></i> {t('offlineMode')}
             </div>
           )}
 
-          {/* Всплывающие уведомления */}
           <div className="fixed top-12 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
             {toasts.map(t => (
               <div key={t.id} className={`toast-enter px-4 py-3 rounded-xl backdrop-blur-md border shadow-lg flex items-center gap-2 ${t.type === 'error' ? 'bg-red-950/80 border-red-500/50 text-red-200' : 'bg-emerald-950/80 border-emerald-500/50 text-emerald-200'}`}>
-                <i className={`fa-solid ${t.type === 'error' ? 'fa-circle-xmark text-red-400' : 'fa-check text-emerald-400'}`}></i>
-                <span className="text-sm font-medium">{t.message}</span>
+                <i className={`fa-solid ${t.type === 'error' ? 'fa-circle-xmark text-red-400' : 'fa-check text-emerald-400'}`}></i><span className="text-sm font-medium">{t.message}</span>
               </div>
             ))}
           </div>
 
           <header className="sticky top-0 z-40 glass-panel px-2 sm:px-6 py-3 border-b border-cyan-500/20">
             <div className="max-w-6xl mx-auto flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2.5 cursor-pointer min-w-0 shrink-0 group" onClick={() => setTab('feed')}>
+              <div className="flex items-center gap-2.5 cursor-pointer min-w-0 shrink-0 group" onClick={() => { setTab('feed'); setEditingTask(null); }}>
                 <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-fuchsia-600 p-[1.5px] shrink-0 group-hover:shadow-[0_0_15px_rgba(6,182,212,0.5)] transition-all"><div className="w-full h-full bg-[#05070A] rounded-[10px] flex items-center justify-center text-cyan-400"><i className="fa-solid fa-robot"></i></div></div>
-                <span className="font-extrabold text-[15px] sm:text-xl tracking-wide bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent truncate hidden sm:inline">AWS SPACE</span>
+                <span className="font-extrabold text-[15px] sm:text-xl tracking-wide bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent truncate hidden sm:inline">{t('appTitle')}</span>
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                <button onClick={() => setLang(lang === 'ru' ? 'en' : 'ru')} className="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-bold text-slate-300 hover:text-white transition-colors">{lang.toUpperCase()}</button>
                 <a href={TELEGRAM_LINK} target="_blank" rel="noreferrer" className="w-8 h-8 sm:w-auto sm:px-3 sm:py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 flex items-center justify-center gap-1.5 hover:bg-sky-500/20 transition-colors"><i className="fa-brands fa-telegram"></i><span className="hidden md:inline text-xs font-bold">TG</span></a>
                 <button onClick={() => setWalletModalOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-amber-500/40 hover:bg-slate-800 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.1)]"><i className="fa-solid fa-coins text-amber-400 text-xs"></i><span className="text-cyan-300 font-bold text-xs font-mono">{balance.toLocaleString()}</span><span className="hidden sm:inline text-[10px] text-slate-500 font-bold">AWS</span></button>
                 
                 {user ? (
                   <div className="flex items-center gap-2 shrink-0">
-                    <div onClick={() => setTab('cabinet')} className="flex items-center gap-2 cursor-pointer bg-slate-900/50 p-1 pr-2 rounded-xl border border-slate-800 hover:border-cyan-500/50 transition-colors">
+                    <div onClick={() => { setTab('cabinet'); setEditingTask(null); }} className="flex items-center gap-2 cursor-pointer bg-slate-900/50 p-1 pr-2 rounded-xl border border-slate-800 hover:border-cyan-500/50 transition-colors">
                       <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg overflow-hidden ${user.avatarFrame}`}><img src={user.avatar} className="w-full h-full object-cover" /></div>
                       <span className="text-xs font-medium text-slate-300 hidden md:inline max-w-[80px] truncate">{user.name}</span>
                     </div>
                     <button onClick={handleLogout} className="w-8 h-8 sm:w-auto sm:px-2.5 sm:py-1.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 flex items-center justify-center hover:bg-red-500/20"><i className="fa-solid fa-right-from-bracket text-sm"></i></button>
                   </div>
                 ) : (
-                  <button onClick={() => { setAuthMode('login'); setAuthModalOpen(true); }} className="px-4 py-2 rounded-xl bg-cyan-500 text-black text-xs font-bold hover:bg-cyan-400 transition-colors shadow-[0_0_15px_rgba(6,182,212,0.3)]"><i className="fa-solid fa-user mr-1.5 hidden sm:inline"></i><span>Войти</span></button>
+                  <button onClick={() => { setAuthMode('login'); setAuthModalOpen(true); }} className="px-4 py-2 rounded-xl bg-cyan-500 text-black text-xs font-bold hover:bg-cyan-400 transition-colors shadow-[0_0_15px_rgba(6,182,212,0.3)]"><i className="fa-solid fa-user mr-1.5 hidden sm:inline"></i><span>{t('login')}</span></button>
                 )}
               </div>
             </div>
@@ -526,12 +491,11 @@
 
           <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 pb-24">
             
-            {/* Боковое меню */}
             <aside className="lg:col-span-3 flex lg:flex-col gap-2 overflow-x-auto no-scrollbar pb-2 lg:pb-0 lg:sticky lg:top-24 h-fit">
-              <button onClick={() => setTab('feed')} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'feed' ? 'bg-cyan-500/10 border-cyan-500 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}><i className="fa-solid fa-layer-group w-5 text-center text-cyan-400"></i><span>Лента заказов</span></button>
-              <button onClick={() => setTab('ai_studio')} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'ai_studio' ? 'bg-fuchsia-500/10 border-fuchsia-500 text-fuchsia-300 shadow-[0_0_15px_rgba(217,70,239,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}><i className="fa-solid fa-wand-magic-sparkles w-5 text-center text-fuchsia-400"></i><span>AI Студия ✨</span></button>
-              <button onClick={() => { if (!user) setAuthModalOpen(true); else setTab('cabinet'); }} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'cabinet' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}><i className="fa-regular fa-id-badge w-5 text-center text-emerald-400"></i><span>Профиль</span></button>
-              <button onClick={() => { if (!user) setAuthModalOpen(true); else setTab('create'); }} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'create' ? 'bg-amber-500/10 border-amber-500 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}><i className="fa-solid fa-circle-plus w-5 text-center text-amber-400"></i><span>Новый таск</span></button>
+              <button onClick={() => { setTab('feed'); setEditingTask(null); }} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'feed' ? 'bg-cyan-500/10 border-cyan-500 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}><i className="fa-solid fa-layer-group w-5 text-center text-cyan-400"></i><span>{t('feed')}</span></button>
+              <button onClick={() => { setTab('ai_studio'); setEditingTask(null); }} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'ai_studio' ? 'bg-fuchsia-500/10 border-fuchsia-500 text-fuchsia-300 shadow-[0_0_15px_rgba(217,70,239,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}><i className="fa-solid fa-wand-magic-sparkles w-5 text-center text-fuchsia-400"></i><span>{t('aiStudio')}</span></button>
+              <button onClick={() => { if (!user) setAuthModalOpen(true); else { setTab('cabinet'); setEditingTask(null); } }} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'cabinet' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}><i className="fa-regular fa-id-badge w-5 text-center text-emerald-400"></i><span>{t('profile')}</span></button>
+              <button onClick={() => { if (!user) setAuthModalOpen(true); else { setTab('create'); setEditingTask(null); setNewTitle(''); setNewPrompt(''); setTaskPhotos([]); } }} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'create' && !editingTask ? 'bg-amber-500/10 border-amber-500 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}><i className="fa-solid fa-circle-plus w-5 text-center text-amber-400"></i><span>{t('newTask')}</span></button>
             </aside>
 
             <section className="lg:col-span-9 space-y-5 min-w-0">
@@ -541,14 +505,14 @@
                   <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] border border-slate-700 p-6 sm:p-8 shadow-2xl group">
                     <div className="absolute inset-0 bg-cyan-500/5 group-hover:bg-cyan-500/10 transition-colors"></div>
                     <div className="relative z-10">
-                      <span className="text-[10px] sm:text-xs font-mono uppercase px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 font-bold mb-3 inline-block">✨ Фриланс нового поколения</span>
-                      <h1 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight mb-3">Нанимайте лучших <br/><span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent">AI-инженеров и креаторов</span></h1>
-                      <p className="text-slate-400 text-sm max-w-lg">Единая экосистема для делегирования задач нейросетям: от генерации артов до написания сложного кода.</p>
+                      <span className="text-[10px] sm:text-xs font-mono uppercase px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 font-bold mb-3 inline-block">{t('globalPlatform')}</span>
+                      <h1 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight mb-3">{t('heroTitle1')} <br/><span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent">{t('heroTitle2')}</span></h1>
+                      <p className="text-slate-400 text-sm max-w-lg">{t('heroDesc')}</p>
                     </div>
                   </div>
 
                   <div className="flex gap-2 overflow-x-auto no-scrollbar bg-slate-900/80 p-2 rounded-2xl border border-slate-800 backdrop-blur-sm">
-                    {[{ id: 'All', name: '🔥 Все' }, { id: 'video', name: '🎬 Видео' }, { id: 'art', name: '🎨 Арт' }, { id: 'arch', name: '🏛️ Архитектура' }, { id: 'biz', name: '⚡ Боты/Код' }].map(c => 
+                    {[{ id: 'All', name: t('all') }, { id: 'video', name: t('video') }, { id: 'art', name: t('art') }, { id: 'arch', name: t('arch') }, { id: 'biz', name: t('bots') }].map(c => 
                       <button key={c.id} onClick={() => setSelectedCat(c.id)} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${selectedCat===c.id?'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20':'bg-slate-950 text-slate-400 border border-slate-800 hover:text-slate-200'}`}>
                         {c.name}
                       </button>
@@ -556,7 +520,7 @@
                   </div>
 
                   <div className="grid grid-cols-1 gap-4">
-                    {feedTasks.length === 0 && <div className="text-center py-12 bg-slate-900/30 rounded-2xl border border-slate-800 border-dashed text-slate-500 text-sm">В этой категории пока нет заказов.</div>}
+                    {feedTasks.length === 0 && <div className="text-center py-12 bg-slate-900/30 rounded-2xl border border-slate-800 border-dashed text-slate-500 text-sm">{t('emptyCategory')}</div>}
                     {feedTasks.map((item) => (
                       <div key={item.id} className={`glass-panel p-4 sm:p-5 rounded-2xl ${item.card_frame || 'card-frame-default'} flex flex-col sm:flex-row gap-5 transition-all min-w-0 relative overflow-hidden group`}>
                         <div onClick={() => openTaskModalWithViewCount(item)} className="w-full sm:w-48 h-56 sm:h-36 rounded-xl overflow-hidden border border-slate-800 bg-slate-950 shrink-0 relative cursor-pointer">
@@ -568,23 +532,23 @@
                         <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
                           <div>
                             <div className="flex items-center gap-3 mb-2">
-                              <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${item.status === 'open' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>{item.status === 'open' ? 'Открыт' : 'В работе'}</span>
+                              <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${item.status === 'open' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>{item.status === 'open' ? t('statusOpen') : t('statusWork')}</span>
                               <span className="text-[11px] text-slate-500 font-mono"><i className="fa-solid fa-eye text-cyan-500/70 mr-1"></i>{item.views || 0}</span>
                             </div>
                             <h3 onClick={() => openTaskModalWithViewCount(item)} className="font-bold text-base sm:text-lg text-slate-100 break-words cursor-pointer hover:text-cyan-400 transition-colors">{item.title}</h3>
                             <div className="text-xs text-slate-400 mt-1 line-clamp-2">{item.prompt}</div>
                           </div>
                           <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-4">
-                            <i className="fa-solid fa-user-astronaut"></i> Заказчик: <span className="text-slate-300 font-medium">{item.author}</span>
+                            <i className="fa-solid fa-user-astronaut"></i> {t('customer')} <span className="text-slate-300 font-medium">{item.author}</span>
                           </div>
                         </div>
                         <div className="w-full sm:w-auto flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 pt-4 sm:pt-0 border-t sm:border-0 border-slate-800/80 shrink-0">
                           <div className="text-left sm:text-right">
-                            <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Бюджет</div>
+                            <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">{t('budget')}</div>
                             <div className="font-mono text-xl font-extrabold text-cyan-400">{item.budget.toLocaleString()} AWS</div>
-                            <div className="text-[10px] text-amber-400 font-mono mt-1">Отклик: {item.response_fee} AWS</div>
+                            <div className="text-[10px] text-amber-400 font-mono mt-1">{t('applyFee')} {item.response_fee} AWS</div>
                           </div>
-                          <button onClick={() => openTaskModalWithViewCount(item)} className="px-5 py-2.5 rounded-xl font-bold text-xs bg-slate-800 text-white hover:bg-cyan-500 hover:text-black border border-slate-700 hover:border-cyan-400 transition-all shadow-lg shrink-0">Подробнее</button>
+                          <button onClick={() => openTaskModalWithViewCount(item)} className="px-5 py-2.5 rounded-xl font-bold text-xs bg-slate-800 text-white hover:bg-cyan-500 hover:text-black border border-slate-700 hover:border-cyan-400 transition-all shadow-lg shrink-0">{t('details')}</button>
                         </div>
                       </div>
                     ))}
@@ -600,8 +564,8 @@
                   
                   <div className="relative z-10 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                     <div>
-                      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-1">ИИ-Песочница</h2>
-                      <p className="text-xs text-slate-400">Тестируйте промпты прямо на бирже перед взятием заказа.</p>
+                      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-1">{t('aiStudioTitle')}</h2>
+                      <p className="text-xs text-slate-400">{t('aiStudioDesc')}</p>
                     </div>
                     <div className="flex items-center gap-2 bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-800">
                       <i className="fa-solid fa-coins text-amber-400 text-xs"></i>
@@ -610,30 +574,28 @@
                   </div>
 
                   <div className="relative z-10 flex gap-2 p-1.5 bg-slate-900/60 rounded-2xl border border-slate-800 backdrop-blur-sm">
-                    <button onClick={() => setAiMode('image')} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${aiMode==='image'?'bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/25':'text-slate-400 hover:text-slate-200'}`}><i className="fa-solid fa-image mr-1.5"></i>Генератор Изображений (50)</button>
-                    <button onClick={() => setAiMode('text')} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${aiMode==='text'?'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-lg shadow-cyan-500/25':'text-slate-400 hover:text-slate-200'}`}><i className="fa-solid fa-align-left mr-1.5"></i>Генератор Текста (15)</button>
+                    <button onClick={() => setAiMode('image')} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${aiMode==='image'?'bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/25':'text-slate-400 hover:text-slate-200'}`}><i className="fa-solid fa-image mr-1.5"></i>{t('genImg')} (50)</button>
+                    <button onClick={() => setAiMode('text')} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${aiMode==='text'?'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-lg shadow-cyan-500/25':'text-slate-400 hover:text-slate-200'}`}><i className="fa-solid fa-align-left mr-1.5"></i>{t('genText')} (15)</button>
                   </div>
 
                   <form onSubmit={handleGenerateAI} className="relative z-10 space-y-4">
-                    <textarea rows="4" required placeholder={aiMode === 'image' ? "Опишите сцену, атмосферу, стиль (на любом языке)..." : "Задайте вопрос, попросите написать код или текст..."} value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl p-4 text-sm outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-slate-200 resize-none shadow-inner"></textarea>
+                    <textarea rows="4" required placeholder={aiMode === 'image' ? t('promptImg') : t('promptText')} value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl p-4 text-sm outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-slate-200 resize-none shadow-inner"></textarea>
                     <button type="submit" disabled={aiLoading} className="w-full py-4 rounded-2xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white font-extrabold text-sm hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(217,70,239,0.3)] flex items-center justify-center gap-2">
-                      {aiLoading ? <><i className="fa-solid fa-circle-notch fa-spin"></i> Синтез данных...</> : <><i className="fa-solid fa-bolt"></i> Запустить нейросеть</>}
+                      {aiLoading ? <><i className="fa-solid fa-circle-notch fa-spin"></i> {t('processing')}</> : <><i className="fa-solid fa-bolt"></i> {t('launchAI')}</>}
                     </button>
                   </form>
 
-                  {/* Результат Изображение */}
                   {aiResultImg && (
                     <div className="relative z-10 p-4 bg-slate-900/80 rounded-2xl border border-fuchsia-500/30 text-center animate-fade-in">
                       <img src={aiResultImg} className="w-full max-h-[500px] object-contain rounded-xl shadow-lg" alt="Generated AI" />
-                      <a href={aiResultImg} download="ai_art.jpg" target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-xs font-bold rounded-xl transition-colors"><i className="fa-solid fa-download"></i> Сохранить оригинал</a>
+                      <a href={aiResultImg} download="ai_art.png" target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-xs font-bold rounded-xl transition-colors"><i className="fa-solid fa-download"></i> {t('saveOrig')}</a>
                     </div>
                   )}
 
-                  {/* Результат Текст */}
                   {aiResultText && (
                     <div className="relative z-10 p-5 bg-slate-900/80 rounded-2xl border border-cyan-500/30 animate-fade-in">
                       <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-700">
-                        <i className="fa-solid fa-robot text-cyan-400"></i><span className="text-xs font-bold text-slate-300">Ответ ИИ:</span>
+                        <i className="fa-solid fa-robot text-cyan-400"></i><span className="text-xs font-bold text-slate-300">{t('aiReply')}</span>
                       </div>
                       <div className="text-sm text-slate-200 font-sans whitespace-pre-wrap leading-relaxed">{aiResultText}</div>
                     </div>
@@ -660,33 +622,57 @@
                     </div>
                     <div className="flex flex-col items-center sm:items-end gap-3 w-full sm:w-auto">
                       <div className="bg-slate-900/80 border border-amber-500/30 px-5 py-3 rounded-2xl text-center sm:text-right w-full sm:w-auto">
-                        <div className="text-[10px] text-slate-400 uppercase font-bold mb-1">Баланс</div>
+                        <div className="text-[10px] text-slate-400 uppercase font-bold mb-1">{t('balance')}</div>
                         <div className="text-2xl font-mono font-bold text-amber-400">{balance.toLocaleString()} <span className="text-sm">AWS</span></div>
                       </div>
-                      <button onClick={() => setWalletModalOpen(true)} className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 hover:shadow-[0_0_15px_rgba(245,158,11,0.4)] transition-all"><i className="fa-solid fa-wallet"></i> Пополнить</button>
+                      <button onClick={() => setWalletModalOpen(true)} className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 hover:shadow-[0_0_15px_rgba(245,158,11,0.4)] transition-all"><i className="fa-solid fa-wallet"></i> {t('topUp')}</button>
                     </div>
                   </div>
 
                   <div className="flex gap-2 border-b border-slate-800 pb-2 overflow-x-auto no-scrollbar">
-                    <button onClick={() => setCabinetSubTab('my-orders')} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${cabinetSubTab === 'my-orders' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50' : 'bg-slate-900/50 text-slate-400 hover:bg-slate-800'}`}>Мои заказы ({myCreatedTasks.length})</button>
-                    <button onClick={() => setCabinetSubTab('my-responses')} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${cabinetSubTab === 'my-responses' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50' : 'bg-slate-900/50 text-slate-400 hover:bg-slate-800'}`}>Активные сделки ({myRespondedTasks.length})</button>
-                    <button onClick={() => setCabinetSubTab('shop')} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${cabinetSubTab === 'shop' ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/50' : 'bg-slate-900/50 text-slate-400 hover:bg-slate-800'}`}>Магазин Экипировки 🛍️</button>
+                    <button onClick={() => setCabinetSubTab('my-orders')} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${cabinetSubTab === 'my-orders' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50' : 'bg-slate-900/50 text-slate-400 hover:bg-slate-800'}`}>{t('myOrders')} ({myCreatedTasks.length})</button>
+                    <button onClick={() => setCabinetSubTab('my-responses')} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${cabinetSubTab === 'my-responses' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50' : 'bg-slate-900/50 text-slate-400 hover:bg-slate-800'}`}>{t('activeDeals')} ({myRespondedTasks.length})</button>
+                    <button onClick={() => setCabinetSubTab('shop')} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${cabinetSubTab === 'shop' ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/50' : 'bg-slate-900/50 text-slate-400 hover:bg-slate-800'}`}>{t('shop')}</button>
                   </div>
 
                   {cabinetSubTab === 'my-orders' && (
                     <div className="grid grid-cols-1 gap-4">
-                      {myCreatedTasks.length === 0 && <div className="text-center py-12 glass-panel rounded-2xl border border-slate-800 border-dashed text-slate-500 text-sm">Вы еще не создали ни одного заказа.</div>}
+                      {myCreatedTasks.length === 0 && <div className="text-center py-12 glass-panel rounded-2xl border border-slate-800 border-dashed text-slate-500 text-sm">{t('noOrders')}</div>}
                       {myCreatedTasks.map(item => (
-                        <div key={item.id} className={`glass-panel p-5 rounded-2xl ${item.card_frame} flex flex-col gap-4 min-w-0`}>
+                        <div key={item.id} className={`glass-panel p-5 rounded-2xl flex flex-col gap-4 min-w-0 ${item.card_frame || 'card-frame-default'}`}>
                           <div className="flex justify-between items-start gap-4">
                             <div>
                               <h4 className="font-bold text-base text-slate-100">{item.title}</h4>
-                              <div className="text-xs text-cyan-400 font-mono mt-1">Бюджет: {item.budget.toLocaleString()} AWS</div>
+                              <div className="text-xs text-cyan-400 font-mono mt-1">{t('budget')}: {item.budget.toLocaleString()} AWS</div>
                             </div>
-                            <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase ${item.status === 'open' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>{item.status === 'open' ? 'Открыт' : 'В работе'}</span>
+                            <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase ${item.status === 'open' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>{item.status === 'open' ? t('statusOpen') : t('statusWork')}</span>
                           </div>
+                          
+                          {/* Выбор рамки для конкретного таска */}
+                          <div className="flex items-center gap-2 mt-1">
+                             <span className="text-[10px] text-slate-500">{t('cardStyle')}</span>
+                             <div className="flex gap-1.5">
+                               {TASK_CARD_FRAMES.map(f => {
+                                 const isOwned = f.price === 0 || inventory?.cardFrames?.includes(f.id);
+                                 if (!isOwned) return null;
+                                 return (
+                                   <button 
+                                     key={f.id} 
+                                     onClick={() => updateTaskSpecificFrame(item.id, f.class)}
+                                     title={f.name}
+                                     className={`w-4 h-4 rounded-full transition-all border ${item.card_frame === f.class ? 'border-white scale-110 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                                     style={{ backgroundColor: f.dotColor }}
+                                   ></button>
+                                 );
+                               })}
+                             </div>
+                          </div>
+
                           <div className="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
-                            <button onClick={() => { setSelectedTaskForChat(item); setTab('deal_chat'); }} className="px-4 py-2 bg-cyan-500/10 border border-cyan-500/40 text-cyan-300 font-bold rounded-xl hover:bg-cyan-500/20 transition-colors"><i className="fa-regular fa-comments mr-1.5"></i>Открыть чат</button>
+                            <div className="flex gap-2">
+                               <button onClick={() => { setSelectedTaskForChat(item); setTab('deal_chat'); }} className="px-4 py-2 bg-cyan-500/10 border border-cyan-500/40 text-cyan-300 font-bold rounded-xl hover:bg-cyan-500/20 transition-colors"><i className="fa-regular fa-comments mr-1.5"></i>{t('openChat')}</button>
+                               <button onClick={() => startEditingTask(item)} className="px-4 py-2 bg-slate-800 border border-slate-700 text-slate-300 font-bold rounded-xl hover:bg-slate-700 transition-colors"><i className="fa-solid fa-pen mr-1.5"></i>{t('edit')}</button>
+                            </div>
                             <button onClick={() => { 
                               if(isGlobalMode && db) window.Firebase.deleteDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', item.id.toString())); 
                               setTasks(tasks.filter(t=>t.id!==item.id)); 
@@ -699,20 +685,20 @@
 
                   {cabinetSubTab === 'my-responses' && (
                     <div className="grid grid-cols-1 gap-4">
-                      {myRespondedTasks.length === 0 && <div className="text-center py-12 glass-panel rounded-2xl border border-slate-800 border-dashed text-slate-500 text-sm">Вы еще не откликались на заказы.</div>}
+                      {myRespondedTasks.length === 0 && <div className="text-center py-12 glass-panel rounded-2xl border border-slate-800 border-dashed text-slate-500 text-sm">{t('noDeals')}</div>}
                       {myRespondedTasks.map(item => (
                         <div key={item.id} className="glass-panel p-5 rounded-2xl border border-slate-700 flex flex-col gap-4">
                           <div className="flex justify-between items-start gap-4">
                             <div>
-                              <div className="text-[10px] text-slate-400 mb-1">Заказчик: {item.author}</div>
+                              <div className="text-[10px] text-slate-400 mb-1">{t('customer')} {item.author}</div>
                               <h4 className="font-bold text-sm text-slate-100">{item.title}</h4>
                             </div>
                             <div className="text-right">
-                              <div className="text-[10px] text-slate-500 uppercase">Оплата</div>
+                              <div className="text-[10px] text-slate-500 uppercase">{t('payment')}</div>
                               <div className="text-sm text-amber-400 font-mono font-bold">{item.budget.toLocaleString()}</div>
                             </div>
                           </div>
-                          <button onClick={() => { setSelectedTaskForChat(item); setTab('deal_chat'); }} className="w-full py-2.5 bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 font-bold text-xs rounded-xl hover:bg-emerald-500/20 transition-colors"><i className="fa-solid fa-bolt mr-1.5"></i>Ворваться в чат</button>
+                          <button onClick={() => { setSelectedTaskForChat(item); setTab('deal_chat'); }} className="w-full py-2.5 bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 font-bold text-xs rounded-xl hover:bg-emerald-500/20 transition-colors"><i className="fa-solid fa-bolt mr-1.5"></i>{t('jumpToChat')}</button>
                         </div>
                       ))}
                     </div>
@@ -721,37 +707,37 @@
                   {cabinetSubTab === 'shop' && (
                     <div className="space-y-6">
                       <div className="glass-panel p-5 rounded-2xl border border-slate-800">
-                        <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center"><i className="fa-solid fa-gem text-fuchsia-400 mr-2"></i>Аватары</h3>
+                        <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center"><i className="fa-solid fa-gem text-fuchsia-400 mr-2"></i>{t('avatars')}</h3>
                         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
                           {MINIMAL_AVATARS.map((item) => (
                             <div key={item.id} className="bg-slate-900/50 p-3 rounded-xl border border-slate-700 flex flex-col items-center text-center">
                               <div className="w-16 h-16 rounded-xl overflow-hidden mb-3 border border-slate-600"><img src={item.url} className="w-full h-full object-cover" /></div>
-                              <button onClick={() => handleBuy(item, 'avatar')} className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-200 hover:bg-fuchsia-600 hover:text-white transition-colors">{item.price === 0 ? 'Выбрать' : `${item.price} AWS`}</button>
+                              <button onClick={() => handleBuy(item, 'avatar')} className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-200 hover:bg-fuchsia-600 hover:text-white transition-colors">{item.price === 0 ? t('select') : `${item.price} AWS`}</button>
                             </div>
                           ))}
                         </div>
                       </div>
                       
                       <div className="glass-panel p-5 rounded-2xl border border-slate-800">
-                        <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center"><i className="fa-solid fa-circle-notch text-amber-400 mr-2"></i>Рамки аватаров</h3>
+                        <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center"><i className="fa-solid fa-circle-notch text-amber-400 mr-2"></i>{t('frames')}</h3>
                         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
                           {AVATAR_FRAMES.map((f) => (
                             <div key={f.id} className="bg-slate-900/50 p-3 rounded-xl border border-slate-700 flex flex-col items-center text-center">
                               <div className={`w-14 h-14 rounded-xl overflow-hidden mb-3 ${f.class} bg-slate-800`}></div>
                               <div className="text-[10px] font-bold text-slate-300 mb-2 truncate w-full">{f.name}</div>
-                              <button onClick={() => handleBuy(f, 'frame')} className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-200 hover:bg-amber-500 hover:text-black transition-colors">{f.price === 0 ? 'Выбрать' : `${f.price} AWS`}</button>
+                              <button onClick={() => handleBuy(f, 'frame')} className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-200 hover:bg-amber-500 hover:text-black transition-colors">{f.price === 0 ? t('select') : `${f.price} AWS`}</button>
                             </div>
                           ))}
                         </div>
                       </div>
                       
                       <div className="glass-panel p-5 rounded-2xl border border-slate-800">
-                        <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center"><i className="fa-solid fa-layer-group text-emerald-400 mr-2"></i>Стили карточек заказов</h3>
+                        <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center"><i className="fa-solid fa-layer-group text-emerald-400 mr-2"></i>{t('cardFrames')}</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                           {TASK_CARD_FRAMES.map((cf) => (
                             <div key={cf.id} className={`bg-slate-900 p-4 rounded-xl flex flex-col justify-between ${cf.class} min-h-[100px]`}>
                               <div className="mb-3 text-sm font-extrabold text-slate-100">{cf.name}</div>
-                              <button onClick={() => handleBuy(cf, 'cardFrame')} className="w-full py-2 rounded-lg text-xs font-bold bg-slate-800 text-slate-200 hover:bg-emerald-500 hover:text-black transition-colors">{cf.price === 0 ? 'Выбрать' : `${cf.price} AWS`}</button>
+                              <button onClick={() => handleBuy(cf, 'cardFrame')} className="w-full py-2 rounded-lg text-xs font-bold bg-slate-800 text-slate-200 hover:bg-emerald-500 hover:text-black transition-colors">{cf.price === 0 ? t('select') : `${cf.price} AWS`}</button>
                             </div>
                           ))}
                         </div>
@@ -761,23 +747,23 @@
                 </div>
               )}
 
-              {/* СОЗДАНИЕ ТАСКА */}
+              {/* СОЗДАНИЕ ИЛИ РЕДАКТИРОВАНИЕ ТАСКА */}
               {tab === 'create' && (
                 <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-amber-500/30 relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none"><i className="fa-solid fa-file-contract text-9xl"></i></div>
-                  <h2 className="text-2xl font-bold text-amber-400 mb-6 relative z-10">Опубликовать смарт-заказ</h2>
-                  <form onSubmit={handleCreateTask} className="space-y-5 relative z-10">
-                    <input type="text" required placeholder="Краткое название (Например: Сгенерировать пак иконок)" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-5 py-4 text-sm focus:border-amber-500 outline-none transition-colors" />
+                  <h2 className="text-2xl font-bold text-amber-400 mb-6 relative z-10">{editingTask ? t('editSmartOrder') : t('pubSmartOrder')}</h2>
+                  <form onSubmit={handleCreateOrEditTask} className="space-y-5 relative z-10">
+                    <input type="text" required placeholder={t('shortTitle')} value={newTitle} onChange={(e) => setNewTitle(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-5 py-4 text-sm focus:border-amber-500 outline-none transition-colors text-white" />
                     
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm outline-none text-slate-300 appearance-none">
-                        <option value="video">🎬 Видео-генерация</option><option value="art">🎨 2D/3D Арт</option><option value="arch">🏛️ Архитектура</option><option value="biz">⚡ Код / Боты</option>
+                        <option value="video">{t('catVideo')}</option><option value="art">{t('catArt')}</option><option value="arch">{t('catArch')}</option><option value="biz">{t('catCode')}</option>
                       </select>
                       <select value={newTool} onChange={(e) => setNewTool(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm outline-none text-slate-300 appearance-none">
                         <option value="Midjourney">Midjourney v6</option><option value="ComfyUI">ComfyUI / StableD</option><option value="Runway Gen-3">Runway Gen-3</option><option value="Claude 3.5">Claude / GPT-4o</option>
                       </select>
                       <div className="relative">
-                        <input type="number" required placeholder="Бюджет" value={newBudget} onChange={(e) => setNewBudget(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm font-mono outline-none text-amber-300 focus:border-amber-500" />
+                        <input type="number" required placeholder={t('budget')} value={newBudget} onChange={(e) => setNewBudget(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm font-mono outline-none text-amber-300 focus:border-amber-500" />
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 pointer-events-none">AWS</span>
                       </div>
                     </div>
@@ -785,12 +771,11 @@
                     <div className="bg-slate-950/50 p-5 rounded-2xl border border-slate-700/50 space-y-4">
                       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
                         <div>
-                          <label className="text-sm font-bold text-slate-200"><i className="fa-solid fa-images text-cyan-400 mr-2"></i>Референсы ({taskPhotos.length}/5)</label>
-                          <div className="text-[10px] text-slate-500 mt-1">Загрузите примеры того, что хотите получить</div>
+                          <label className="text-sm font-bold text-slate-200"><i className="fa-solid fa-images text-cyan-400 mr-2"></i>{t('refs')} ({taskPhotos.length}/5)</label>
                         </div>
                         {taskPhotos.length < 5 && (
                           <label className="px-4 py-2 bg-slate-800 text-slate-200 border border-slate-600 font-bold text-xs rounded-xl cursor-pointer hover:bg-slate-700 transition-colors shrink-0">
-                            <i className="fa-solid fa-cloud-arrow-up mr-1.5"></i> Добавить фото
+                            <i className="fa-solid fa-cloud-arrow-up mr-1.5"></i> {t('addPhoto')}
                             <input type="file" accept="image/*" multiple className="hidden" onChange={handleUploadTaskPhotos} />
                           </label>
                         )}
@@ -809,11 +794,11 @@
                         </div>
                       )}
                     </div>
-                    <textarea rows="4" required placeholder="Подробное техническое задание... Что именно нужно сделать? Какие форматы на выходе?" value={newPrompt} onChange={(e) => setNewPrompt(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl p-4 text-sm outline-none focus:border-amber-500 text-slate-200 resize-none"></textarea>
+                    <textarea rows="4" required placeholder={t('taskDesc')} value={newPrompt} onChange={(e) => setNewPrompt(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl p-4 text-sm outline-none focus:border-amber-500 text-slate-200 resize-none"></textarea>
                     
                     <div className="flex items-center justify-between p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20">
-                       <span className="text-xs text-amber-200/70">Размещая заказ, вы замораживаете средства до принятия работы (Escrow).</span>
-                       <button type="submit" className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-extrabold text-sm shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:scale-[1.02] transition-transform">Опубликовать</button>
+                       <span className="text-xs text-amber-200/70 hidden sm:inline">{t('escrow')}</span>
+                       <button type="submit" className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-extrabold text-sm shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:scale-[1.02] transition-transform">{editingTask ? t('saveChanges') : t('publish')}</button>
                     </div>
                   </form>
                 </div>
@@ -827,16 +812,16 @@
                       <button onClick={() => setTab('feed')} className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"><i className="fa-solid fa-arrow-left"></i></button>
                       <div className="min-w-0">
                          <div className="text-sm font-bold text-slate-100 truncate">{selectedTaskForChat.title}</div>
-                         <div className="text-[10px] text-cyan-400 font-mono">Бюджет: {selectedTaskForChat.budget.toLocaleString()} AWS</div>
+                         <div className="text-[10px] text-cyan-400 font-mono">{t('budget')}: {selectedTaskForChat.budget.toLocaleString()} AWS</div>
                       </div>
                     </div>
                     {user?.id === selectedTaskForChat.author_id && (
-                       <button className="px-3 py-1.5 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold rounded-lg border border-emerald-500/30">Завершить сделку</button>
+                       <button className="px-3 py-1.5 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold rounded-lg border border-emerald-500/30">{t('finishDeal')}</button>
                     )}
                   </div>
                   
                   <div ref={chatScrollRef} className="flex-1 p-5 overflow-y-auto space-y-4 bg-[#05070A]/50">
-                    <div className="text-center text-[10px] text-slate-500 font-mono my-4 border-b border-slate-800/50 pb-2">Начало безопасной сделки. Все договоренности фиксируются.</div>
+                    <div className="text-center text-[10px] text-slate-500 font-mono my-4 border-b border-slate-800/50 pb-2">{t('dealStart')}</div>
                     
                     {(selectedTaskForChat.messages || []).map((m) => (
                       <div key={m.id} className={`flex flex-col ${m.isMe ? 'items-end' : 'items-start'} animate-fade-in`}>
@@ -850,12 +835,12 @@
                   
                   {(!user || user.id === selectedTaskForChat.author_id || paidUnlocks.includes(selectedTaskForChat.id)) ? (
                     <form onSubmit={handleSendDealMessage} className="p-4 bg-slate-900/90 border-t border-slate-700 flex gap-2 shrink-0 z-10">
-                      <input type="text" placeholder="Введите сообщение..." value={chatInput} onChange={(e) => setChatInput(e.target.value)} className="flex-1 bg-slate-950 border border-slate-600 rounded-xl px-4 py-3 text-sm outline-none focus:border-cyan-500 transition-colors" />
+                      <input type="text" placeholder={t('enterMsg')} value={chatInput} onChange={(e) => setChatInput(e.target.value)} className="flex-1 bg-slate-950 border border-slate-600 rounded-xl px-4 py-3 text-sm outline-none focus:border-cyan-500 transition-colors text-white" />
                       <button type="submit" className="px-5 py-3 bg-cyan-500 text-black rounded-xl font-bold hover:bg-cyan-400 transition-colors shadow-lg"><i className="fa-solid fa-paper-plane"></i></button>
                     </form>
                   ) : (
                     <div className="p-5 bg-slate-900/90 border-t border-amber-500/40 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 z-10">
-                      <div className="text-xs text-slate-300 text-center sm:text-left">Чтобы написать заказчику и предложить свои услуги, необходимо оплатить отклик.</div>
+                      <div className="text-xs text-slate-300 text-center sm:text-left">{t('payToReply')}</div>
                       <button onClick={() => { 
                         if(balance < selectedTaskForChat.response_fee) { 
                           setWalletModalOpen(true); 
@@ -865,7 +850,7 @@
                           showToast('Чат разблокирован!'); 
                         } 
                       }} className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-extrabold text-xs whitespace-nowrap shadow-[0_0_15px_rgba(245,158,11,0.3)] hover:scale-[1.02] transition-transform">
-                        Оплатить отклик ({selectedTaskForChat.response_fee} AWS)
+                        {t('payFeeBtn')} ({selectedTaskForChat.response_fee} AWS)
                       </button>
                     </div>
                   )}
@@ -898,24 +883,24 @@
                     <div>
                       <div className="flex gap-2 mb-2">
                         <span className="text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-2 py-1 rounded font-mono font-bold">{viewingTask.tool}</span>
-                        <span className="text-[10px] bg-slate-800 text-slate-300 border border-slate-700 px-2 py-1 rounded font-mono font-bold">Просмотров: {viewingTask.views || 0}</span>
+                        <span className="text-[10px] bg-slate-800 text-slate-300 border border-slate-700 px-2 py-1 rounded font-mono font-bold">{t('views')}: {viewingTask.views || 0}</span>
                       </div>
                       <h2 className="text-xl sm:text-2xl font-bold text-slate-100 leading-tight">{viewingTask.title}</h2>
                     </div>
                     <div className="text-right">
-                       <div className="text-[10px] text-slate-500 uppercase font-bold">Бюджет</div>
+                       <div className="text-[10px] text-slate-500 uppercase font-bold">{t('budget')}</div>
                        <div className="font-mono text-2xl font-extrabold text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]">{viewingTask.budget.toLocaleString()} AWS</div>
                     </div>
                   </div>
 
                   <div className="py-2">
-                    <div className="text-[10px] text-slate-500 uppercase font-bold mb-2">Описание задачи</div>
+                    <div className="text-[10px] text-slate-500 uppercase font-bold mb-2">{t('taskDescTitle')}</div>
                     <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800/80 text-sm font-sans text-slate-300 whitespace-pre-wrap leading-relaxed">{viewingTask.prompt}</div>
                   </div>
                   
                   <div className="pt-2">
                     {(!user || user.id === viewingTask.author_id || paidUnlocks.includes(viewingTask.id)) ? (
-                      <button onClick={() => { setViewingTask(null); setSelectedTaskForChat(viewingTask); setTab('deal_chat'); }} className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-600 to-cyan-500 text-white font-bold text-sm hover:opacity-90 shadow-lg shadow-cyan-500/20">Перейти в чат сделки</button>
+                      <button onClick={() => { setViewingTask(null); setSelectedTaskForChat(viewingTask); setTab('deal_chat'); }} className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-600 to-cyan-500 text-white font-bold text-sm hover:opacity-90 shadow-lg shadow-cyan-500/20">{t('openChat')}</button>
                     ) : (
                       <button onClick={() => { 
                         if(balance < viewingTask.response_fee) { 
@@ -929,8 +914,8 @@
                           showToast('Чат открыт!'); 
                         } 
                       }} className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-extrabold text-sm hover:opacity-90 shadow-lg shadow-amber-500/20 flex flex-col items-center">
-                        <span>Откликнуться на заказ</span>
-                        <span className="text-[10px] font-medium opacity-80">Стоимость отклика: {viewingTask.response_fee} AWS</span>
+                        <span>{t('respondTask')}</span>
+                        <span className="text-[10px] font-medium opacity-80">{t('applyCost')} {viewingTask.response_fee} AWS</span>
                       </button>
                     )}
                   </div>
@@ -946,7 +931,7 @@
                 <button onClick={() => setWalletModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-900 w-8 h-8 rounded-full flex items-center justify-center"><i className="fa-solid fa-xmark"></i></button>
                 <div className="text-center mb-6">
                   <div className="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-3 text-xl"><i className="fa-solid fa-wallet"></i></div>
-                  <h3 className="text-xl font-bold text-slate-100">Пополнение баланса</h3>
+                  <h3 className="text-xl font-bold text-slate-100">{t('walletTitle')}</h3>
                   <p className="text-[10px] text-slate-400 mt-1">100 AWS = 100 USDT</p>
                 </div>
                 
@@ -963,10 +948,10 @@
                 </div>
                 
                 <div className="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl text-sm flex justify-between items-center mb-6">
-                  <span className="text-slate-400">К оплате:</span>
+                  <span className="text-slate-400">{t('toPay')}</span>
                   <span className="font-mono font-bold text-white text-lg">{(Number(depositAmountAWS) * CRYPTO_RATES[selectedCurrency].rate).toFixed(2)} <span className="text-xs text-slate-500">{CRYPTO_RATES[selectedCurrency].symbol}</span></span>
                 </div>
-                <button onClick={() => { const a = Number(depositAmountAWS); setBalance(p => p + a); showToast(`Баланс пополнен на ${a} AWS!`); setWalletModalOpen(false); }} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold text-sm hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all">Оплатить (Тест)</button>
+                <button onClick={() => { const a = Number(depositAmountAWS); setBalance(p => p + a); showToast(`Баланс пополнен на ${a} AWS!`); setWalletModalOpen(false); }} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold text-sm hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all">{t('payTest')}</button>
               </div>
             </div>
           )}
@@ -978,25 +963,25 @@
                 <button onClick={() => setAuthModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-900 w-8 h-8 rounded-full flex items-center justify-center"><i className="fa-solid fa-xmark"></i></button>
                 <div className="text-center mb-6">
                   <div className="w-12 h-12 bg-cyan-500/20 text-cyan-400 rounded-2xl flex items-center justify-center mx-auto mb-3 text-xl rotate-12"><i className="fa-solid fa-robot -rotate-12"></i></div>
-                  <h3 className="text-xl font-bold text-slate-100">{authMode === 'login' ? 'Вход в систему' : 'Создание аккаунта'}</h3>
+                  <h3 className="text-xl font-bold text-slate-100">{authMode === 'login' ? t('authTitleLogin') : t('authTitleReg')}</h3>
                 </div>
 
                 <form onSubmit={handleAuthSubmit} className="space-y-4">
-                  <input type="email" required placeholder="Электронная почта" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-cyan-500 text-slate-200" />
-                  <input type="password" required placeholder="Пароль (от 6 символов)" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-cyan-500 text-slate-200" />
+                  <input type="email" required placeholder={t('email')} value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-cyan-500 text-slate-200" />
+                  <input type="password" required placeholder={t('pass')} value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-cyan-500 text-slate-200" />
                   
                   {authError && <div className="text-[11px] font-medium text-red-200 text-center bg-red-900/40 py-3 px-4 rounded-xl border border-red-500/50 leading-relaxed shadow-[0_0_15px_rgba(239,68,68,0.2)]">{authError}</div>}
                   
                   <button type="submit" disabled={authLoading} className={`w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-extrabold text-sm hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all mt-2 flex justify-center items-center gap-2 ${authLoading ? 'opacity-70 cursor-not-allowed' : ''}`}>
-                    {authLoading ? <><i className="fa-solid fa-spinner fa-spin"></i> Обработка...</> : (authMode === 'login' ? 'Войти' : 'Зарегистрироваться')}
+                    {authLoading ? <><i className="fa-solid fa-spinner fa-spin"></i> Синтез...</> : (authMode === 'login' ? t('login') : t('authTitleReg'))}
                   </button>
                 </form>
                 
                 <div className="mt-6 text-center border-t border-slate-800 pt-5">
                   {authMode === 'login' ? (
-                     <button type="button" onClick={() => { setAuthMode('register'); setAuthError(''); }} className="text-xs text-cyan-400 hover:text-cyan-300 font-medium">Нет аккаунта? Создать (+1000 AWS бонус)</button>
+                     <button type="button" onClick={() => { setAuthMode('register'); setAuthError(''); }} className="text-xs text-cyan-400 hover:text-cyan-300 font-medium">{t('noAcc')}</button>
                   ) : (
-                     <button type="button" onClick={() => { setAuthMode('login'); setAuthError(''); }} className="text-xs text-slate-400 hover:text-white font-medium">Уже есть аккаунт? Войти</button>
+                     <button type="button" onClick={() => { setAuthMode('login'); setAuthError(''); }} className="text-xs text-slate-400 hover:text-white font-medium">{t('yesAcc')}</button>
                   )}
                 </div>
               </div>
@@ -1006,7 +991,7 @@
           <footer className="mt-auto border-t border-slate-800/50 bg-[#020305] px-4 py-8 text-xs text-slate-500">
             <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="text-center md:text-left">
-                <div className="font-extrabold text-slate-400 text-sm tracking-widest mb-1">AI WORKERS SPACE</div>
+                <div className="font-extrabold text-slate-400 text-sm tracking-widest mb-1">{t('appTitle')}</div>
                 <div className="font-mono text-[9px] opacity-60">Храппа М.Н. • ИНН: 390400469138</div>
               </div>
               <div className="text-center md:text-right font-mono text-[10px]">
@@ -1023,5 +1008,3 @@
   </script>
 </body>
 </html>
-
-
