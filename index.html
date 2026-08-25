@@ -63,7 +63,7 @@
       appId: "1:6761091660:web:8628d352b4a8804c2edae9"
     };
 
-    // Сжатие фото перед загрузкой (чтобы не переполнять базу)
+    // Сжатие фото перед загрузкой
     const compressImage = (file) => {
       return new Promise((resolve) => {
         const reader = new FileReader(); reader.readAsDataURL(file);
@@ -130,6 +130,7 @@
       const [authEmail, setAuthEmail] = useState('');
       const [authPassword, setAuthPassword] = useState('');
       const [authError, setAuthError] = useState('');
+      const [authLoading, setAuthLoading] = useState(false);
       
       const [walletModalOpen, setWalletModalOpen] = useState(false);
       const [selectedCurrency, setSelectedCurrency] = useState('usdt');
@@ -176,7 +177,7 @@
             setAuth(firebaseAuth); 
             setIsGlobalMode(true);
 
-            // ИСПРАВЛЕНИЕ: Путь состоит из 3 сегментов
+            // Чтение базы (Коллекция - 3 сегмента)
             window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'artifacts', appId, 'tasks'), (snap) => {
               const loaded = snap.docs.map(d => d.data());
               setTasks(loaded.sort((a, b) => b.id - a.id));
@@ -187,7 +188,7 @@
 
             window.Firebase.onAuthStateChanged(firebaseAuth, async (u) => {
               if (u) {
-                // ИСПРАВЛЕНИЕ: Путь состоит из 4 сегментов
+                // Документ пользователя - 4 сегмента
                 const profRef = window.Firebase.doc(firestoreDb, 'artifacts', appId, 'users', u.uid);
                 const profSnap = await window.Firebase.getDoc(profRef);
                 
@@ -198,7 +199,7 @@
                   setInventory(data.inventory || {avatars:[],frames:[],cardFrames:[]}); 
                   setPaidUnlocks(data.paidUnlocks || []);
                 } else {
-                  // Создание профиля
+                  // Создание профиля для нового юзера
                   const newProfile = { id: u.uid, email: u.email, name: u.email.split('@')[0], avatar: MINIMAL_AVATARS[0].url, avatarFrame: 'frame-none', cardFrame: 'card-frame-default' };
                   const isM = u.email === ADMIN_EMAIL.toLowerCase();
                   await window.Firebase.setDoc(profRef, { profile: newProfile, balance: isM ? 25000 : 1000, inventory: { avatars: [], frames: [], cardFrames: [] }, paidUnlocks: [] });
@@ -227,7 +228,7 @@
         setTimeout(initCloud, 300);
       }, []);
 
-      // Синхронизация данных
+      // Синхронизация данных пользователя
       useEffect(() => {
         if (isGlobalMode && db && user && auth?.currentUser) {
           window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'users', auth.currentUser.uid), {
@@ -250,34 +251,56 @@
       }, [selectedTaskForChat?.messages]);
 
 
-      const handleAuthSubmit = async (e, forcedMode = null) => {
-        e.preventDefault(); setAuthError('');
-        const mode = forcedMode || authMode;
+      // ОБНОВЛЕННАЯ ФУНКЦИЯ АВТОРИЗАЦИИ
+      const handleAuthSubmit = async (e) => {
+        e.preventDefault(); 
+        setAuthError(''); 
+        setAuthLoading(true);
         const em = authEmail.trim().toLowerCase();
         
         if (!isGlobalMode) {
-           if (authPassword.length < 6) return setAuthError('Пароль от 6 символов');
+           if (authPassword.length < 6) {
+               setAuthError('Пароль должен быть от 6 символов');
+               setAuthLoading(false);
+               return;
+           }
            const u = { id: 'u_'+Date.now(), email: em, name: em.split('@')[0], avatar: MINIMAL_AVATARS[0].url, avatarFrame: 'frame-none', cardFrame: 'card-frame-default' };
-           setUser(u); setBalance(em === ADMIN_EMAIL.toLowerCase() ? 25000 : 1000); setAuthModalOpen(false); showToast('Локальный вход выполнен'); return;
+           setUser(u); setBalance(em === ADMIN_EMAIL.toLowerCase() ? 25000 : 1000); setAuthModalOpen(false); showToast('Локальный вход выполнен'); 
+           setAuthLoading(false);
+           return;
         }
 
         try {
-          if (mode === 'register') {
-            if(authPassword.length < 6) return setAuthError('Пароль от 6 символов');
+          if (authMode === 'register') {
+            if(authPassword.length < 6) throw { code: 'auth/weak-password' };
             const cred = await window.Firebase.createUserWithEmailAndPassword(auth, em, authPassword);
-            const isM = em === ADMIN_EMAIL.toLowerCase();
-            const u = { id: cred.user.uid, email: em, name: em.split('@')[0], avatar: MINIMAL_AVATARS[0].url, avatarFrame: 'frame-none', cardFrame: 'card-frame-default' };
-            
-            await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'users', cred.user.uid), {
-              profile: u, balance: isM ? 25000 : 1000, inventory: { avatars: [], frames: [], cardFrames: [] }, paidUnlocks: []
-            });
-            setUser(u); setBalance(isM ? 25000 : 1000); setAuthModalOpen(false); showToast('Успешная регистрация! +1000 AWS');
+            // База будет обновлена в onAuthStateChanged
+            setAuthModalOpen(false); 
+            showToast('Успешная регистрация! +1000 AWS');
           } else {
             await window.Firebase.signInWithEmailAndPassword(auth, em, authPassword);
-            setAuthModalOpen(false); showToast('Вы успешно вошли в систему!');
+            setAuthModalOpen(false); 
+            showToast('Вы успешно вошли в систему!');
           }
         } catch(err) {
-          setAuthError(mode === 'login' ? 'Неверный email или пароль' : 'Ошибка регистрации (возможно email занят)');
+          console.error("Auth Error Code:", err.code, err.message);
+          
+          // Точный перевод ошибок Firebase на русский
+          if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+             setAuthError('Неверный email или пароль. Если у вас нет аккаунта, нажмите "Создать" ниже.');
+          } else if (err.code === 'auth/email-already-in-use') {
+             setAuthError('Этот email уже зарегистрирован. Пожалуйста, выполните вход.');
+          } else if (err.code === 'auth/weak-password') {
+             setAuthError('Пароль слишком простой (минимум 6 символов).');
+          } else if (err.code === 'auth/invalid-email') {
+             setAuthError('Некорректный формат email адреса.');
+          } else if (err.code === 'auth/operation-not-allowed') {
+             setAuthError('ВНИМАНИЕ: Авторизация по Email выключена! Зайдите в консоль Firebase -> Authentication -> Sign-in method и включите Email/Password.');
+          } else {
+             setAuthError(err.message || 'Произошла неизвестная ошибка авторизации.');
+          }
+        } finally {
+          setAuthLoading(false);
         }
       };
 
@@ -958,21 +981,22 @@
                   <h3 className="text-xl font-bold text-slate-100">{authMode === 'login' ? 'Вход в систему' : 'Создание аккаунта'}</h3>
                 </div>
 
-                <form onSubmit={(e) => handleAuthSubmit(e, authMode)} className="space-y-4">
+                <form onSubmit={handleAuthSubmit} className="space-y-4">
                   <input type="email" required placeholder="Электронная почта" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-cyan-500 text-slate-200" />
                   <input type="password" required placeholder="Пароль (от 6 символов)" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-cyan-500 text-slate-200" />
-                  {authError && <div className="text-xs text-red-400 text-center bg-red-500/10 py-2 rounded-lg border border-red-500/20">{authError}</div>}
                   
-                  <button type="submit" className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-extrabold text-sm hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all mt-2">
-                    {authMode === 'login' ? 'Войти' : 'Зарегистрироваться'}
+                  {authError && <div className="text-xs text-red-400 text-center bg-red-500/10 py-2.5 px-3 rounded-lg border border-red-500/20">{authError}</div>}
+                  
+                  <button type="submit" disabled={authLoading} className={`w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-extrabold text-sm hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all mt-2 flex justify-center items-center gap-2 ${authLoading ? 'opacity-70 cursor-not-allowed' : ''}`}>
+                    {authLoading ? <><i className="fa-solid fa-spinner fa-spin"></i> Обработка...</> : (authMode === 'login' ? 'Войти' : 'Зарегистрироваться')}
                   </button>
                 </form>
                 
-                <div className="mt-6 text-center border-t border-slate-800 pt-4">
+                <div className="mt-6 text-center border-t border-slate-800 pt-5">
                   {authMode === 'login' ? (
-                     <button onClick={() => setAuthMode('register')} className="text-xs text-cyan-400 hover:text-cyan-300 font-medium">Нет аккаунта? Создать (+1000 AWS бонус)</button>
+                     <button type="button" onClick={() => { setAuthMode('register'); setAuthError(''); }} className="text-xs text-cyan-400 hover:text-cyan-300 font-medium">Нет аккаунта? Создать (+1000 AWS бонус)</button>
                   ) : (
-                     <button onClick={() => setAuthMode('login')} className="text-xs text-slate-400 hover:text-white font-medium">Уже есть аккаунт? Войти</button>
+                     <button type="button" onClick={() => { setAuthMode('login'); setAuthError(''); }} className="text-xs text-slate-400 hover:text-white font-medium">Уже есть аккаунт? Войти</button>
                   )}
                 </div>
               </div>
@@ -999,3 +1023,4 @@
   </script>
 </body>
 </html>
+
