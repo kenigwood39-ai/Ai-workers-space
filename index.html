@@ -46,35 +46,24 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    const TELEGRAM_LINK = "https://t.me/aiworkersspace";
+        const TELEGRAM_LINK = "https://t.me/aiworkersspace";
     const ADMIN_EMAIL = "kenigwood39@gmail.com";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBi6K0YuwV6jAHvUg2x8Y2dX-FuTLfDgd0",
-  authDomain: "ai-workers-space.firebaseapp.com",
-  projectId: "ai-workers-space",
-  storageBucket: "ai-workers-space.firebasestorage.app",
-  messagingSenderId: "6761091660",
-  appId: "1:6761091660:web:8628d352b4a8804c2edae9",
-  measurementId: "G-VFM3W6YCBQ"
-};
-
     const FIREBASE_CONFIG = {
-      apiKey: "",
-      authDomain: "",
-      projectId: "",
-      storageBucket: "",
-      messagingSenderId: "",
-      appId: ""
+      apiKey: "AIzaSyBi6K0YuwV6jAHvUg2x8Y2dX-FuTLfDgd0",
+      authDomain: "ai-workers-space.firebaseapp.com",
+      projectId: "ai-workers-space",
+      storageBucket: "ai-workers-space.firebasestorage.app",
+      messagingSenderId: "6761091660",
+      appId: "1:6761091660:web:8628d352b4a8804c2edae9"
     };
 
     // Алгоритм экстремального сжатия фото (решает проблему с переполнением памяти)
     const compressImage = (file) => {
       return new Promise((resolve) => {
-        const reader = new FileReader(); reader.readAsDataURL(file);
-        reader.onload = (e) => {
-          const img = new Image(); img.src = e.target.result;
-          img.onload = () => {
+
+};
+
             const canvas = document.createElement('canvas');
             const MAX_WIDTH = 500; // Сжимаем ширину до 500px
             const scaleSize = MAX_WIDTH / img.width;
