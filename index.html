@@ -213,7 +213,6 @@
       const [adminSupportList, setAdminSupportList] = useState([]);
       const [adminActiveSupportId, setAdminActiveSupportId] = useState(null);
 
-      // Admin states for enriched stats
       const [adminUsers, setAdminUsers] = useState([]);
 
       const showToast = (message, type = 'success') => { 
@@ -245,7 +244,7 @@
                 const profSnap = await window.Firebase.getDoc(profRef);
                 if (profSnap.exists()) {
                   const data = profSnap.data();
-                  setUser(data.profile); setBalance(data.balance || 0); setInventory(data.inventory || {avatars:[],frames:[],cardFrames:[]}); setPaidUnlocks(data.paidUnlocks || []);
+                  setUser(data.profile); setBalance(Number(data.balance) || 0); setInventory(data.inventory || {avatars:[],frames:[],cardFrames:[]}); setPaidUnlocks(data.paidUnlocks || []);
                 } else {
                   const newProfile = { id: u.uid, email: u.email, name: u.email.split('@')[0], avatar: MINIMAL_AVATARS[0].url, avatarFrame: 'frame-none', cardFrame: 'card-frame-default' };
                   const isM = u.email === ADMIN_EMAIL.toLowerCase();
@@ -276,11 +275,10 @@
 
       useEffect(() => {
         if (isGlobalMode && db && user && auth?.currentUser) {
-          window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'users', auth.currentUser.uid), { profile: user, balance, inventory, paidUnlocks }, { merge: true });
+          window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'users', auth.currentUser.uid), { profile: user, balance: Number(balance), inventory, paidUnlocks }, { merge: true });
         }
       }, [user, balance, inventory, paidUnlocks]);
 
-      // Admin User Stats & Support Fetch
       useEffect(() => {
          if (isAdmin && tab === 'admin' && isGlobalMode && db) {
              const unsub = window.Firebase.onSnapshot(window.Firebase.collection(db, 'artifacts', appId, 'support'), (snap) => {
@@ -333,7 +331,7 @@
          setCryptoChecking(true);
          setTimeout(() => {
             setCryptoChecking(false);
-            setBalance(p => p + Number(depositAmountAWS));
+            setBalance(p => Number(p) + Number(depositAmountAWS));
             showToast(`Успех! Баланс пополнен на ${depositAmountAWS} AWS.`);
             setWalletModalOpen(false);
             setCryptoStep(1);
@@ -347,7 +345,8 @@
         if (!newTitle.trim()) return;
 
         const bVal = Number(newBudget) || 15000;
-        const finalPhotos = (taskPhotos && taskPhotos.length > 0) ? taskPhotos : ['https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=800&q=80'];
+        const safePhotos = Array.isArray(taskPhotos) ? taskPhotos : [];
+        const finalPhotos = safePhotos.length > 0 ? safePhotos : ['https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=800&q=80'];
         
         let taskObj = editingTask ? 
            { ...editingTask, category: newCategory, title: newTitle, prompt: newPrompt, tool: newTool, budget: bVal, response_fee: calculateResponseFee(bVal), photos: finalPhotos } 
@@ -363,9 +362,13 @@
       };
 
       const startEditingTask = (task) => {
-          setEditingTask(task); setNewTitle(task.title || ''); setNewCategory(task.category || 'video'); setNewPrompt(task.prompt || '');
-          setNewBudget((task.budget || 15000).toString()); setNewTool(task.tool || 'ComfyUI'); 
-          setTaskPhotos(task.photos || []);
+          setEditingTask(task); 
+          setNewTitle(task.title || ''); 
+          setNewCategory(task.category || 'video'); 
+          setNewPrompt(task.prompt || '');
+          setNewBudget((task.budget || 15000).toString()); 
+          setNewTool(task.tool || 'ComfyUI'); 
+          setTaskPhotos(Array.isArray(task.photos) ? task.photos : []);
           setTab('create'); 
       };
 
@@ -406,11 +409,14 @@
         setSupportInput('');
       };
 
+      // ПРАВИЛЬНАЯ ЛОГИКА ЗАПРОСОВ К ИИ
       const handleGenerateAI = async (e) => {
         e.preventDefault(); if (!aiPrompt.trim()) return;
         const fee = aiMode === 'text' ? 15 : 50;
-        if (balance < fee) { setWalletModalOpen(true); return; }
-        setBalance(p => p - fee); setAiLoading(true); setAiResultImg(null); setAiResultText('');
+        if (Number(balance) < fee) { setWalletModalOpen(true); return; }
+        
+        setBalance(p => Number(p) - fee); 
+        setAiLoading(true); setAiResultImg(null); setAiResultText('');
         
         try {
           if (aiMode === 'image') {
@@ -423,37 +429,36 @@
                } catch(e){} 
              }
              
-             // ИСПРАВЛЕНИЕ: Pollinations работает нестабильно через new Image(), делаем безопасный обход
-             const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(engP+', highly detailed, 8k, cyberpunk')}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
+             const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(engP)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
              
-             const img = new Image(); 
-             img.onload = () => { 
-                if(aiLoading) { setAiResultImg(url); setAiLoading(false); showToast(t('aiSuccessImg')); }
-             }; 
-             img.onerror = () => { 
-                if(aiLoading) { setAiLoading(false); showToast("Не удалось сгенерировать изображение, попробуйте проще", 'error'); setBalance(p => p + fee); }
-             };
-             img.src = url;
-
-             // Защитный таймаут, если сервер Pollinations висит
-             setTimeout(() => {
-                 if(aiLoading) { setAiLoading(false); showToast("Таймаут генерации", "error"); setBalance(p => p + fee); }
-             }, 15000);
+             // ИСПОЛЬЗУЕМ FETCH ДЛЯ НАДЕЖНОЙ ЗАГРУЗКИ БЕЗ CORS И ЗАВИСАНИЙ
+             const res = await fetch(url);
+             if (!res.ok) throw new Error("Image API load failed");
+             const blob = await res.blob();
+             setAiResultImg(URL.createObjectURL(blob));
+             setAiLoading(false);
+             showToast(t('aiSuccessImg'));
 
           } else if (aiMode === 'text') {
              if (!GEMINI_API_KEY) {
-                setAiResultText("⚠️ Ошибка: API ключ Gemini не указан."); setAiLoading(false); setBalance(p => p + fee); return;
+                throw new Error("API ключ Gemini не указан.");
              }
-             // ИСПРАВЛЕНИЕ: Использована официальная модель 1.5-flash
              const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-             const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: aiPrompt }] }] }) });
+             const payload = { contents: [{ parts: [{ text: aiPrompt }] }] };
+             
+             const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
              const data = await res.json();
+             
              if (data.error) throw new Error(data.error.message);
              setAiResultText(data.candidates?.[0]?.content?.parts?.[0]?.text || "No response.");
-             setAiLoading(false); showToast(t('aiSuccessText'));
+             setAiLoading(false); 
+             showToast(t('aiSuccessText'));
           }
         } catch (err) { 
-          setAiResultText(`Ошибка API: ${err.message}`); showToast(t('aiError'), 'error'); setBalance(p => p + fee); setAiLoading(false);
+          setAiResultText(`Ошибка API: ${err.message}`); 
+          showToast(t('aiError'), 'error'); 
+          setBalance(p => Number(p) + fee); // Возврат средств
+          setAiLoading(false);
         }
       };
 
@@ -466,8 +471,8 @@
           if(type === 'cardFrame' && isGlobalMode && db) tasks.filter(t=>t.author_id===user.id).forEach(t => window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', t.id.toString()), {card_frame: item.class}, {merge:true}));
           showToast('Обновлено!');
         } else {
-          if (balance < item.price) return setWalletModalOpen(true);
-          setBalance(p => p - item.price);
+          if (Number(balance) < item.price) return setWalletModalOpen(true);
+          setBalance(p => Number(p) - item.price);
           let nInv = { ...inventory }; nInv[type+'s'] = [...(nInv[type+'s']||[]), item.id]; setInventory(nInv);
           let upd = { ...user }; if(type === 'avatar') upd.avatar = item.url; if(type === 'frame') upd.avatarFrame = item.class; if(type === 'cardFrame') upd.cardFrame = item.class;
           setUser(upd); 
@@ -486,11 +491,13 @@
         </div>
       );
 
-      // Advanced Admin Stats
-      const totalSystemViews = tasks.reduce((sum, t) => sum + (t.views || 0), 0);
-      const totalSystemAWS = adminUsers.length > 0 ? adminUsers.reduce((sum, u) => sum + (u.balance || 0), 0) : 0;
+      // Advanced Admin Stats Logic (Safely handled with optional chaining and Number())
+      const totalSystemViews = tasks.reduce((sum, t) => sum + Number(t.views || 0), 0);
+      const totalSystemAWS = adminUsers.length > 0 ? adminUsers.reduce((sum, u) => sum + Number(u.balance || 0), 0) : 0;
       const totalSystemUsers = adminUsers.length > 0 ? adminUsers.length : (isGlobalMode ? "..." : "Локально");
-      const activeDealsCount = tasks.filter(t => t.messages && t.messages.length > 0).length;
+      const activeDealsCount = tasks.filter(t => Array.isArray(t.messages) && t.messages.length > 0).length;
+      const paidUnlocksCount = adminUsers.reduce((sum, u) => sum + (Array.isArray(u.paidUnlocks) ? u.paidUnlocks.length : 0), 0);
+      const totalMessagesCount = tasks.reduce((sum, t) => sum + (Array.isArray(t.messages) ? t.messages.length : 0), 0) + adminSupportList.reduce((sum, s) => sum + (Array.isArray(s.messages) ? s.messages.length : 0), 0);
 
       return (
         <div className="min-h-screen flex flex-col w-full max-w-full overflow-x-hidden relative">
@@ -519,7 +526,7 @@
               <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                 <button onClick={() => setLang(lang === 'ru' ? 'en' : 'ru')} className="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-bold text-slate-300 hover:text-white transition-colors">{lang.toUpperCase()}</button>
                 <a href={TELEGRAM_LINK} target="_blank" rel="noreferrer" className="w-8 h-8 sm:w-auto sm:px-3 sm:py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 flex items-center justify-center gap-1.5 hover:bg-sky-500/20 transition-colors"><i className="fa-brands fa-telegram"></i><span className="hidden md:inline text-xs font-bold">TG</span></a>
-                <button onClick={() => setWalletModalOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-amber-500/40 hover:bg-slate-800 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.1)]"><i className="fa-solid fa-coins text-amber-400 text-xs"></i><span className="text-cyan-300 font-bold text-xs font-mono">{balance.toLocaleString()}</span><span className="hidden sm:inline text-[10px] text-slate-500 font-bold">AWS</span></button>
+                <button onClick={() => setWalletModalOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-amber-500/40 hover:bg-slate-800 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.1)]"><i className="fa-solid fa-coins text-amber-400 text-xs"></i><span className="text-cyan-300 font-bold text-xs font-mono">{Number(balance).toLocaleString()}</span><span className="hidden sm:inline text-[10px] text-slate-500 font-bold">AWS</span></button>
                 
                 {user ? (
                   <div className="flex items-center gap-2 shrink-0">
@@ -541,7 +548,7 @@
               <button onClick={() => { setTab('feed'); setEditingTask(null); }} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'feed' ? 'bg-cyan-500/10 border-cyan-500 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}><i className="fa-solid fa-layer-group w-5 text-center text-cyan-400"></i><span>{t('feed')}</span></button>
               <button onClick={() => { setTab('ai_studio'); setEditingTask(null); }} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'ai_studio' ? 'bg-fuchsia-500/10 border-fuchsia-500 text-fuchsia-300 shadow-[0_0_15px_rgba(217,70,239,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}><i className="fa-solid fa-wand-magic-sparkles w-5 text-center text-fuchsia-400"></i><span>{t('aiStudio')}</span></button>
               <button onClick={() => { if (!user) setAuthModalOpen(true); else { setTab('cabinet'); setEditingTask(null); } }} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'cabinet' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}><i className="fa-regular fa-id-badge w-5 text-center text-emerald-400"></i><span>{t('profile')}</span></button>
-              <button onClick={() => { if (!user) setAuthModalOpen(true); else { setTab('create'); setEditingTask(null); setNewTitle(''); setNewPrompt(''); setTaskPhotos([]); } }} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'create' && !editingTask ? 'bg-amber-500/10 border-amber-500 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}><i className="fa-solid fa-circle-plus w-5 text-center text-amber-400"></i><span>{t('newTask')}</span></button>
+              <button onClick={() => { if (!user) setAuthModalOpen(true); else { setTab('create'); setEditingTask(null); setNewTitle(''); setNewPrompt(''); setTaskPhotos([]); setNewBudget('15000'); } }} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'create' && !editingTask ? 'bg-amber-500/10 border-amber-500 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}><i className="fa-solid fa-circle-plus w-5 text-center text-amber-400"></i><span>{t('newTask')}</span></button>
               
               {isAdmin && (
                 <button onClick={() => setTab('admin')} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all mt-4 ${tab === 'admin' ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-[0_0_15px_rgba(243,24,115,0.2)]' : 'bg-slate-900/60 border-rose-900/50 text-rose-400 hover:bg-rose-900/30'}`}><i className="fa-solid fa-shield-halved w-5 text-center"></i><span>{t('adminPanel')}</span></button>
@@ -564,15 +571,16 @@
 
                    {adminSubTab === 'stats' && (
                      <>
-                       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                          <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Пользователей</div><div className="text-3xl font-mono text-white">{totalSystemUsers}</div></div>
+                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Оборот (AWS)</div><div className="text-2xl font-mono text-amber-400 mt-1">{Number(totalSystemAWS).toLocaleString()}</div></div>
+                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Просмотров тасков</div><div className="text-3xl font-mono text-emerald-400">{Number(totalSystemViews).toLocaleString()}</div></div>
                          <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Всего заказов</div><div className="text-3xl font-mono text-cyan-400">{tasks.length}</div></div>
-                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Оборот (AWS)</div><div className="text-2xl font-mono text-amber-400 mt-1">{totalSystemAWS.toLocaleString()}</div></div>
                          <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Сделок в работе</div><div className="text-3xl font-mono text-fuchsia-400">{activeDealsCount}</div></div>
+                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Купленных откликов</div><div className="text-3xl font-mono text-rose-400">{paidUnlocksCount}</div></div>
                        </div>
-                       
                        <div className="p-4 bg-emerald-900/20 border border-emerald-500/30 rounded-xl text-emerald-300 text-xs font-bold text-center">
-                          Система работает штатно. База данных активно обновляется. Просмотров тасков суммарно: {totalSystemViews}.
+                          Система работает штатно. База данных активно обновляется. Сообщений в системе: {totalMessagesCount}.
                        </div>
                      </>
                    )}
@@ -658,7 +666,7 @@
                         <div className="w-full sm:w-auto flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 pt-4 sm:pt-0 border-t sm:border-0 border-slate-800/80 shrink-0">
                           <div className="text-left sm:text-right">
                             <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">{t('budget')}</div>
-                            <div className="font-mono text-xl font-extrabold text-cyan-400">{item.budget.toLocaleString()} AWS</div>
+                            <div className="font-mono text-xl font-extrabold text-cyan-400">{Number(item.budget || 0).toLocaleString()} AWS</div>
                             <div className="text-[10px] text-amber-400 font-mono mt-1">{t('applyFee')} {item.response_fee} AWS</div>
                           </div>
                           <button onClick={() => openTaskModalWithViewCount(item)} className="px-5 py-2.5 rounded-xl font-bold text-xs bg-slate-800 text-white hover:bg-cyan-500 hover:text-black border border-slate-700 hover:border-cyan-400 transition-all shadow-lg shrink-0">{t('details')}</button>
@@ -682,7 +690,7 @@
                     </div>
                     <div className="flex items-center gap-2 bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-800">
                       <i className="fa-solid fa-coins text-amber-400 text-xs"></i>
-                      <span className="text-sm font-mono text-slate-200">{balance.toLocaleString()} AWS</span>
+                      <span className="text-sm font-mono text-slate-200">{Number(balance).toLocaleString()} AWS</span>
                     </div>
                   </div>
 
@@ -736,7 +744,7 @@
                     <div className="flex flex-col items-center sm:items-end gap-3 w-full sm:w-auto">
                       <div className="bg-slate-900/80 border border-amber-500/30 px-5 py-3 rounded-2xl text-center sm:text-right w-full sm:w-auto">
                         <div className="text-[10px] text-slate-400 uppercase font-bold mb-1">{t('balance')}</div>
-                        <div className="text-2xl font-mono font-bold text-amber-400">{balance.toLocaleString()} <span className="text-sm">AWS</span></div>
+                        <div className="text-2xl font-mono font-bold text-amber-400">{Number(balance).toLocaleString()} <span className="text-sm">AWS</span></div>
                       </div>
                       <button onClick={() => setWalletModalOpen(true)} className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 hover:shadow-[0_0_15px_rgba(245,158,11,0.4)] transition-all"><i className="fa-solid fa-wallet"></i> {t('topUp')}</button>
                     </div>
@@ -756,7 +764,7 @@
                           <div className="flex justify-between items-start gap-4">
                             <div>
                               <h4 className="font-bold text-base text-slate-100">{item.title}</h4>
-                              <div className="text-xs text-cyan-400 font-mono mt-1">{t('budget')}: {item.budget.toLocaleString()} AWS</div>
+                              <div className="text-xs text-cyan-400 font-mono mt-1">{t('budget')}: {Number(item.budget || 0).toLocaleString()} AWS</div>
                             </div>
                             <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase ${item.status === 'open' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>{item.status === 'open' ? t('statusOpen') : t('statusWork')}</span>
                           </div>
@@ -805,7 +813,7 @@
                             </div>
                             <div className="text-right">
                               <div className="text-[10px] text-slate-500 uppercase">{t('payment')}</div>
-                              <div className="text-sm text-amber-400 font-mono font-bold">{item.budget.toLocaleString()}</div>
+                              <div className="text-sm text-amber-400 font-mono font-bold">{Number(item.budget || 0).toLocaleString()} AWS</div>
                             </div>
                           </div>
                           <button onClick={() => { setSelectedTaskForChat(item); setTab('deal_chat'); }} className="w-full py-2.5 bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 font-bold text-xs rounded-xl hover:bg-emerald-500/20 transition-colors"><i className="fa-solid fa-bolt mr-1.5"></i>{t('jumpToChat')}</button>
@@ -933,7 +941,7 @@
                       <button onClick={() => setTab('feed')} className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"><i className="fa-solid fa-arrow-left"></i></button>
                       <div className="min-w-0">
                          <div className="text-sm font-bold text-slate-100 truncate">{selectedTaskForChat.title}</div>
-                         <div className="text-[10px] text-cyan-400 font-mono">{t('budget')}: {selectedTaskForChat.budget.toLocaleString()} AWS</div>
+                         <div className="text-[10px] text-cyan-400 font-mono">{t('budget')}: {Number(selectedTaskForChat.budget || 0).toLocaleString()} AWS</div>
                       </div>
                     </div>
                     {user?.id === selectedTaskForChat.author_id && (
@@ -967,10 +975,10 @@
                           <div className="text-xs text-red-400 font-bold">Подтвердите Email (в письме), чтобы откликаться.</div>
                       ) : (
                           <button onClick={() => { 
-                            if(balance < selectedTaskForChat.response_fee) { 
+                            if(Number(balance) < selectedTaskForChat.response_fee) { 
                               setWalletModalOpen(true); 
                             } else { 
-                              setBalance(p => p - selectedTaskForChat.response_fee); 
+                              setBalance(p => Number(p) - selectedTaskForChat.response_fee); 
                               setPaidUnlocks([...paidUnlocks, selectedTaskForChat.id]); 
                               showToast('Чат разблокирован!'); 
                             } 
@@ -1015,7 +1023,7 @@
                     </div>
                     <div className="text-right">
                        <div className="text-[10px] text-slate-500 uppercase font-bold">{t('budget')}</div>
-                       <div className="font-mono text-2xl font-extrabold text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]">{viewingTask.budget.toLocaleString()} AWS</div>
+                       <div className="font-mono text-2xl font-extrabold text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]">{Number(viewingTask.budget || 0).toLocaleString()} AWS</div>
                     </div>
                   </div>
 
@@ -1033,10 +1041,10 @@
                            <div className="text-center p-3 text-xs font-bold text-red-400 border border-red-500/30 rounded-xl bg-red-900/20">Подтвердите Email, чтобы взять этот заказ в работу.</div>
                         ) : (
                            <button onClick={() => { 
-                             if(balance < viewingTask.response_fee) { 
+                             if(Number(balance) < viewingTask.response_fee) { 
                                setWalletModalOpen(true); 
                              } else { 
-                               setBalance(p => p - viewingTask.response_fee); 
+                               setBalance(p => Number(p) - viewingTask.response_fee); 
                                setPaidUnlocks([...paidUnlocks, viewingTask.id]); 
                                setViewingTask(null); 
                                setSelectedTaskForChat(viewingTask); 
