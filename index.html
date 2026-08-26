@@ -83,6 +83,7 @@
         cardStyle: "Стиль:", noDeals: "Нет активных сделок.", payment: "Оплата", jumpToChat: "В чат",
         avatars: "Аватары", frames: "Рамки аватаров", cardFrames: "Стили карточек заказов", select: "Выбрать",
         pubSmartOrder: "Опубликовать", editSmartOrder: "Редактировать", shortTitle: "Краткое название",
+        catVideo: "🎬 Видео-генерация", catArt: "🎨 2D/3D Арт", catArch: "🏛️ Архитектура", catCode: "⚡ Код / Боты",
         refs: "Референсы", addPhoto: "Фото", taskDesc: "Техническое задание...",
         escrow: "Безопасная сделка (Escrow).", publish: "Опубликовать", saveChanges: "Сохранить",
         dealStart: "Безопасная сделка.", finishDeal: "Завершить сделку", enterMsg: "Сообщение...", payToReply: "Оплатите отклик для доступа к чату.", payFeeBtn: "Оплатить",
@@ -108,6 +109,7 @@
         cardStyle: "Style:", noDeals: "No deals.", payment: "Pay", jumpToChat: "Chat",
         avatars: "Avatars", frames: "Avatar Frames", cardFrames: "Card Styles", select: "Select",
         pubSmartOrder: "Publish", editSmartOrder: "Edit", shortTitle: "Title",
+        catVideo: "🎬 Video Generation", catArt: "🎨 2D/3D Art", catArch: "🏛️ Architecture", catCode: "⚡ Code / Bots",
         refs: "Refs", addPhoto: "Photo", taskDesc: "Description...",
         escrow: "Safe deal (Escrow).", publish: "Publish", saveChanges: "Save",
         dealStart: "Safe deal started.", finishDeal: "Complete", enterMsg: "Message...", payToReply: "Pay fee to reply.", payFeeBtn: "Pay",
@@ -281,12 +283,10 @@
       // Admin User Stats & Support Fetch
       useEffect(() => {
          if (isAdmin && tab === 'admin' && isGlobalMode && db) {
-             // Load support chats
              const unsub = window.Firebase.onSnapshot(window.Firebase.collection(db, 'artifacts', appId, 'support'), (snap) => {
                  setAdminSupportList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
              });
              
-             // Load all users for advanced stats
              window.Firebase.getDocs(window.Firebase.collection(db, 'artifacts', appId, 'users'))
                .then(snap => setAdminUsers(snap.docs.map(d => d.data())))
                .catch(err => console.error("Admin fetch error", err));
@@ -365,7 +365,7 @@
       const startEditingTask = (task) => {
           setEditingTask(task); setNewTitle(task.title || ''); setNewCategory(task.category || 'video'); setNewPrompt(task.prompt || '');
           setNewBudget((task.budget || 15000).toString()); setNewTool(task.tool || 'ComfyUI'); 
-          setTaskPhotos(task.photos || []); // ЗАЩИТА ОТ BLACK SCREEN
+          setTaskPhotos(task.photos || []);
           setTab('create'); 
       };
 
@@ -411,6 +411,7 @@
         const fee = aiMode === 'text' ? 15 : 50;
         if (balance < fee) { setWalletModalOpen(true); return; }
         setBalance(p => p - fee); setAiLoading(true); setAiResultImg(null); setAiResultText('');
+        
         try {
           if (aiMode === 'image') {
              const isRu = /[а-яА-ЯЁё]/.test(aiPrompt); 
@@ -419,18 +420,32 @@
                try { 
                  const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=ru&tl=en&dt=t&q=${encodeURIComponent(aiPrompt)}`); 
                  const d = await r.json(); engP = d[0][0][0]; 
-               } catch(e){} // Игнорируем ошибку перевода, отправляем как есть
+               } catch(e){} 
              }
-             const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(engP)}?width=1024&height=1024&seed=${Date.now()}`;
-             const img = new Image(); img.src = url; 
-             img.onload = () => { setAiResultImg(url); setAiLoading(false); showToast(t('aiSuccessImg')); }; 
-             img.onerror = () => { setAiLoading(false); showToast(t('aiError'), 'error'); setBalance(p => p + fee); };
+             
+             // ИСПРАВЛЕНИЕ: Pollinations работает нестабильно через new Image(), делаем безопасный обход
+             const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(engP+', highly detailed, 8k, cyberpunk')}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
+             
+             const img = new Image(); 
+             img.onload = () => { 
+                if(aiLoading) { setAiResultImg(url); setAiLoading(false); showToast(t('aiSuccessImg')); }
+             }; 
+             img.onerror = () => { 
+                if(aiLoading) { setAiLoading(false); showToast("Не удалось сгенерировать изображение, попробуйте проще", 'error'); setBalance(p => p + fee); }
+             };
+             img.src = url;
+
+             // Защитный таймаут, если сервер Pollinations висит
+             setTimeout(() => {
+                 if(aiLoading) { setAiLoading(false); showToast("Таймаут генерации", "error"); setBalance(p => p + fee); }
+             }, 15000);
+
           } else if (aiMode === 'text') {
              if (!GEMINI_API_KEY) {
                 setAiResultText("⚠️ Ошибка: API ключ Gemini не указан."); setAiLoading(false); setBalance(p => p + fee); return;
              }
-             // ИСПОЛЬЗУЕМ ВЕРСИЮ GEMINI-3.6-FLASH КАК ПРОСИТ GOOGLE API
-             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
+             // ИСПРАВЛЕНИЕ: Использована официальная модель 1.5-flash
+             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
              const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: aiPrompt }] }] }) });
              const data = await res.json();
              if (data.error) throw new Error(data.error.message);
@@ -475,6 +490,7 @@
       const totalSystemViews = tasks.reduce((sum, t) => sum + (t.views || 0), 0);
       const totalSystemAWS = adminUsers.length > 0 ? adminUsers.reduce((sum, u) => sum + (u.balance || 0), 0) : 0;
       const totalSystemUsers = adminUsers.length > 0 ? adminUsers.length : (isGlobalMode ? "..." : "Локально");
+      const activeDealsCount = tasks.filter(t => t.messages && t.messages.length > 0).length;
 
       return (
         <div className="min-h-screen flex flex-col w-full max-w-full overflow-x-hidden relative">
@@ -482,12 +498,6 @@
           {!isGlobalMode && (
             <div className="bg-amber-500/20 text-amber-300 text-[10px] text-center py-1 font-mono tracking-wide border-b border-amber-500/30">
               <i className="fa-solid fa-triangle-exclamation mr-1"></i> {t('offlineMode')}
-            </div>
-          )}
-          {user && !emailVerified && isGlobalMode && (
-            <div className="bg-red-500/20 text-red-300 text-[11px] text-center py-1.5 font-bold tracking-wide border-b border-red-500/30">
-              <i className="fa-solid fa-envelope mr-1"></i> Пожалуйста, подтвердите email (перейдите по ссылке в письме), чтобы снять лимиты аккаунта.
-              <button onClick={()=>{window.Firebase.sendEmailVerification(auth.currentUser); showToast('Письмо отправлено снова');}} className="ml-3 underline">Отправить снова</button>
             </div>
           )}
 
@@ -558,11 +568,11 @@
                          <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Пользователей</div><div className="text-3xl font-mono text-white">{totalSystemUsers}</div></div>
                          <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Всего заказов</div><div className="text-3xl font-mono text-cyan-400">{tasks.length}</div></div>
                          <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Оборот (AWS)</div><div className="text-2xl font-mono text-amber-400 mt-1">{totalSystemAWS.toLocaleString()}</div></div>
-                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Открытые задачи</div><div className="text-3xl font-mono text-fuchsia-400">{tasks.filter(t=>t.status==='open').length}</div></div>
+                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Сделок в работе</div><div className="text-3xl font-mono text-fuchsia-400">{activeDealsCount}</div></div>
                        </div>
                        
                        <div className="p-4 bg-emerald-900/20 border border-emerald-500/30 rounded-xl text-emerald-300 text-xs font-bold text-center">
-                          Система работает штатно. База данных активно обновляется. Просмотров тасков: {totalSystemViews}.
+                          Система работает штатно. База данных активно обновляется. Просмотров тасков суммарно: {totalSystemViews}.
                        </div>
                      </>
                    )}
@@ -719,7 +729,7 @@
                         <h2 className="text-2xl font-black text-slate-100 tracking-tight">{user?.name}</h2>
                         <p className="text-sm text-slate-400 font-mono mt-1">{user?.email}</p>
                         <div className="mt-3 flex flex-wrap justify-center sm:justify-start gap-2">
-                           <span className="text-[10px] bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">ID: {user?.id.slice(0,8)}...</span>
+                           <span className="text-[10px] bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">ID: {user?.id?.slice(0,8)}...</span>
                         </div>
                       </div>
                     </div>
@@ -853,12 +863,12 @@
                   <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none"><i className="fa-solid fa-file-contract text-9xl"></i></div>
                   <h2 className="text-2xl font-bold text-amber-400 mb-6 relative z-10">{editingTask ? t('editSmartOrder') : t('pubSmartOrder')}</h2>
                   
-                  {!emailVerified && isGlobalMode ? (
+                  {!emailVerified && isGlobalMode && auth?.currentUser ? (
                      <div className="bg-slate-900 p-8 rounded-xl border border-red-500/50 text-center relative z-10">
                         <i className="fa-solid fa-envelope-open-text text-4xl text-red-400 mb-4"></i>
                         <h3 className="text-lg font-bold text-white mb-2">Необходимо подтвердить Email</h3>
                         <p className="text-sm text-slate-400 mb-4">Для защиты от спама мы просим всех авторов подтвердить свою почту. Ссылка была отправлена вам при регистрации.</p>
-                        <button onClick={()=>{window.Firebase.sendEmailVerification(auth.currentUser); showToast('Письмо отправлено!');}} className="px-6 py-2 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600">Отправить письмо еще раз</button>
+                        <button onClick={()=>{window.Firebase.sendEmailVerification(auth?.currentUser); showToast('Письмо отправлено!');}} className="px-6 py-2 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600">Отправить письмо еще раз</button>
                      </div>
                   ) : (
                     <form onSubmit={handleCreateOrEditTask} className="space-y-5 relative z-10">
@@ -866,7 +876,10 @@
                       
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <select value={newCategory || 'video'} onChange={(e) => setNewCategory(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm outline-none text-slate-300 appearance-none">
-                          <option value="video">{t('catVideo')}</option><option value="art">{t('catArt')}</option><option value="arch">{t('catArch')}</option><option value="biz">{t('catCode')}</option>
+                          <option value="video">{t('catVideo') || "Видео-генерация"}</option>
+                          <option value="art">{t('catArt') || "2D/3D Арт"}</option>
+                          <option value="arch">{t('catArch') || "Архитектура"}</option>
+                          <option value="biz">{t('catCode') || "Код / Боты"}</option>
                         </select>
                         <select value={newTool || 'Midjourney'} onChange={(e) => setNewTool(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm outline-none text-slate-300 appearance-none">
                           <option value="Midjourney">Midjourney v6</option><option value="ComfyUI">ComfyUI / StableD</option><option value="Runway Gen-3">Runway Gen-3</option><option value="Claude 3.5">Claude / GPT-4o</option>
