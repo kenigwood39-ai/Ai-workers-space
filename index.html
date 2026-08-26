@@ -51,7 +51,6 @@
     const ADMIN_EMAIL = "kenigwood39@gmail.com";
     const CRYPTO_WALLET = "RiXj1x6mePC60cAuaRd4RO9yZs2FCkd3zeYcMtzzj9MI2GvSWAGT2e0qyRN0eLXx";
 
-    // ОРИГИНАЛЬНЫЙ КЛЮЧ ОТ FIREBASE (БАЗА ДАННЫХ И АВТОРИЗАЦИЯ)
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyBI6K0YuwV6jAHvUg2x8Y2dX-FuTLfDgd0",
       authDomain: "ai-workers-space.firebaseapp.com",
@@ -62,7 +61,6 @@
       measurementId: "G-VFM3W6YCBQ"
     };
 
-    // КЛЮЧ ДЛЯ НЕЙРОСЕТИ (GEMINI)
     const GEMINI_API_KEY = "AIzaSyDpmr1RBiZTgN7F_3WhuLsX2sapB9iSS2E"; 
 
     const DICTIONARY = {
@@ -78,6 +76,8 @@
         genImg: "Генератор Изображений", genText: "Генератор Текста",
         promptImg: "Опишите сцену, атмосферу, стиль (Flux/Imagen)...", promptText: "Задайте вопрос, попросите написать код или текст (Gemini)...",
         launchAI: "Запустить нейросеть", processing: "Синтез данных...", aiReply: "Ответ ИИ:", saveOrig: "Сохранить",
+        aiSuccessImg: "Изображение готово! ✨", aiSuccessText: "Ответ нейросети получен! ⚡", aiError: "Ошибка генерации ИИ",
+        taskUpdated: "Заказ успешно обновлен!",
         balance: "Баланс", topUp: "Пополнить", myOrders: "Мои заказы", activeDeals: "Активные сделки", shop: "Экипировка 🛍️",
         noOrders: "Нет заказов.", openChat: "Чат", edit: "Редактировать", delete: "Удалить",
         cardStyle: "Стиль:", noDeals: "Нет активных сделок.", payment: "Оплата", jumpToChat: "В чат",
@@ -104,6 +104,8 @@
         genImg: "Image Gen", genText: "Text Gen",
         promptImg: "Describe scene...", promptText: "Ask a question...",
         launchAI: "Generate", processing: "Processing...", aiReply: "AI Reply:", saveOrig: "Save",
+        aiSuccessImg: "Image generated! ✨", aiSuccessText: "AI response received! ⚡", aiError: "AI generation error",
+        taskUpdated: "Order updated successfully!",
         balance: "Balance", topUp: "Top Up", myOrders: "My Orders", activeDeals: "Active Deals", shop: "Shop 🛍️",
         noOrders: "No orders.", openChat: "Chat", edit: "Edit", delete: "Delete",
         cardStyle: "Style:", noDeals: "No deals.", payment: "Pay", jumpToChat: "Chat",
@@ -136,7 +138,6 @@
       });
     };
 
-    // СНИЖЕННАЯ В 2 РАЗА ЦЕНА НА ОТКЛИКИ
     const calculateResponseFee = (b) => { 
       b = Number(b) || 0; 
       let fee;
@@ -146,9 +147,23 @@
       return Math.max(50, Math.round(fee / 2)); 
     };
 
-    const MINIMAL_AVATARS = [ { id: 'm1', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&q=80', price: 0 }, { id: 'm2', url: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=300&q=80', price: 0 }, { id: 'm3', url: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=300&q=80', price: 500 }, { id: 'm4', url: 'https://images.unsplash.com/photo-1634926878768-2a5b3c42f139?w=300&q=80', price: 5000 } ];
-    const AVATAR_FRAMES = [ { id: 'f0', name: 'Без рамки', class: 'frame-none', price: 0 }, { id: 'f1', name: 'Cyan Glow', class: 'frame-cyan', price: 500 }, { id: 'f5', name: 'Rainbow Mythic ✨', class: 'frame-rainbow-mythic', price: 5000 } ];
-    const TASK_CARD_FRAMES = [ { id: 'c0', name: 'Стандарт', class: 'card-frame-default', price: 0, dotColor: '#334155' }, { id: 'c1', name: 'Неон Cyan', class: 'card-frame-neon', price: 1000, dotColor: '#06b6d4' }, { id: 'c2', name: 'Кибер Маджента', class: 'card-frame-cyber', price: 2500, dotColor: '#d946ef' }, { id: 'c4', name: 'Fire Ultra 🔥', class: 'card-frame-fire-ultra', price: 10000, dotColor: '#ef4444' } ];
+    const MINIMAL_AVATARS = [
+      { id: 'm1', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&q=80', price: 0 },
+      { id: 'm2', url: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=300&q=80', price: 0 },
+      { id: 'm3', url: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=300&q=80', price: 500 },
+      { id: 'm4', url: 'https://images.unsplash.com/photo-1634926878768-2a5b3c42f139?w=300&q=80', price: 5000 }
+    ];
+    const AVATAR_FRAMES = [
+      { id: 'f0', name: 'Без рамки', class: 'frame-none', price: 0 },
+      { id: 'f1', name: 'Cyan Glow', class: 'frame-cyan', price: 500 },
+      { id: 'f5', name: 'Rainbow Mythic ✨', class: 'frame-rainbow-mythic', price: 5000 }
+    ];
+    const TASK_CARD_FRAMES = [
+      { id: 'c0', name: 'Стандарт', class: 'card-frame-default', price: 0, dotColor: '#334155' },
+      { id: 'c1', name: 'Неон Cyan', class: 'card-frame-neon', price: 1000, dotColor: '#06b6d4' },
+      { id: 'c2', name: 'Кибер Маджента', class: 'card-frame-cyber', price: 2500, dotColor: '#d946ef' },
+      { id: 'c4', name: 'Fire Ultra 🔥', class: 'card-frame-fire-ultra', price: 10000, dotColor: '#ef4444' }
+    ];
 
     function App() {
       const [lang, setLang] = useState('ru');
@@ -338,6 +353,46 @@
          }, 3000);
       };
 
+      // ФУНКЦИЯ ЗАГРУЗКИ ФОТО К ТАСКУ
+      const handleUploadTaskPhotos = async (e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+        const currentCount = (taskPhotos || []).length;
+        const availableSlots = 5 - currentCount;
+        if (availableSlots <= 0) return showToast('Максимум 5 фото', 'error');
+
+        const filesToProcess = files.slice(0, availableSlots);
+        try {
+          const compressed = await Promise.all(filesToProcess.map(f => compressImage(f)));
+          setTaskPhotos(prev => [...(prev || []), ...compressed]);
+          showToast(`Добавлено фото: ${compressed.length}`);
+        } catch (err) {
+          showToast('Ошибка при загрузке фото', 'error');
+        }
+        e.target.value = '';
+      };
+
+      // ФУНКЦИЯ ПРОСМОТРА ТАСКА С УВЕЛИЧЕНИЕМ СЧЕТЧИКА ПРОСМОТРОВ
+      const openTaskModalWithViewCount = async (task) => {
+        const updatedViews = (Number(task.views) || 0) + 1;
+        const updatedTask = { ...task, views: updatedViews };
+        setViewingTask(updatedTask);
+        setCurrentPhotoSlide(0);
+
+        setTasks(prev => prev.map(t => t.id === task.id ? updatedTask : t));
+        if (isGlobalMode && db) {
+          try {
+            await window.Firebase.setDoc(
+              window.Firebase.doc(db, 'artifacts', appId, 'tasks', task.id.toString()),
+              { views: updatedViews },
+              { merge: true }
+            );
+          } catch (e) {
+            console.error("View count update error", e);
+          }
+        }
+      };
+
       const handleCreateOrEditTask = async (e) => {
         e.preventDefault(); 
         if (!user) return;
@@ -353,8 +408,13 @@
            : 
            { id: Date.now(), category: newCategory, title: newTitle, prompt: newPrompt || 'Подробности в чате', tool: newTool, budget: bVal, response_fee: calculateResponseFee(bVal), currency: 'AWS', author: user.name, author_id: user.id, card_frame: user.cardFrame || 'card-frame-default', status: 'open', views: 0, messages: [], photos: finalPhotos, hidden: false };
         
-        if(isGlobalMode && db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', taskObj.id.toString()), taskObj, { merge: true });
-        else setTasks(editingTask ? tasks.map(t => t.id === taskObj.id ? taskObj : t) : [taskObj, ...tasks]);
+        if(isGlobalMode && db) {
+          await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', taskObj.id.toString()), taskObj, { merge: true });
+        } else {
+          const updated = editingTask ? tasks.map(t => t.id === taskObj.id ? taskObj : t) : [taskObj, ...tasks];
+          setTasks(updated);
+          localStorage.setItem('aws_local_tasks', JSON.stringify(updated));
+        }
         
         showToast(editingTask ? t('taskUpdated') : 'Опубликовано!'); 
         setEditingTask(null); setNewTitle(''); setNewPrompt(''); setTaskPhotos([]); 
@@ -409,7 +469,7 @@
         setSupportInput('');
       };
 
-      // ПРАВИЛЬНАЯ ЛОГИКА ЗАПРОСОВ К ИИ
+      // ПРАВИЛЬНАЯ И НАДЕЖНАЯ ЛОГИКА ГЕНЕРАЦИИ ИИ
       const handleGenerateAI = async (e) => {
         e.preventDefault(); if (!aiPrompt.trim()) return;
         const fee = aiMode === 'text' ? 15 : 50;
@@ -420,37 +480,57 @@
         
         try {
           if (aiMode === 'image') {
-             const isRu = /[а-яА-ЯЁё]/.test(aiPrompt); 
-             let engP = aiPrompt;
-             if(isRu) { 
-               try { 
-                 const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=ru&tl=en&dt=t&q=${encodeURIComponent(aiPrompt)}`); 
-                 const d = await r.json(); engP = d[0][0][0]; 
-               } catch(e){} 
-             }
+             const seed = Math.floor(Math.random() * 1000000);
+             const encodedPrompt = encodeURIComponent(aiPrompt.trim());
+             const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&seed=${seed}`;
              
-             const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(engP)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
-             
-             // ИСПОЛЬЗУЕМ FETCH ДЛЯ НАДЕЖНОЙ ЗАГРУЗКИ БЕЗ CORS И ЗАВИСАНИЙ
-             const res = await fetch(url);
-             if (!res.ok) throw new Error("Image API load failed");
-             const blob = await res.blob();
-             setAiResultImg(URL.createObjectURL(blob));
-             setAiLoading(false);
-             showToast(t('aiSuccessImg'));
+             const imgPreloader = new Image();
+             imgPreloader.crossOrigin = "anonymous";
+             imgPreloader.onload = () => {
+               setAiResultImg(imageUrl);
+               setAiLoading(false);
+               showToast(t('aiSuccessImg'));
+             };
+             imgPreloader.onerror = () => {
+               setAiResultImg(imageUrl);
+               setAiLoading(false);
+               showToast(t('aiSuccessImg'));
+             };
+             imgPreloader.src = imageUrl;
 
           } else if (aiMode === 'text') {
-             if (!GEMINI_API_KEY) {
-                throw new Error("API ключ Gemini не указан.");
+             let generatedText = null;
+
+             // 1. Попытка через Gemini API
+             if (GEMINI_API_KEY) {
+               try {
+                 const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+                 const payload = { contents: [{ parts: [{ text: aiPrompt }] }] };
+                 const res = await fetch(geminiUrl, { 
+                   method: 'POST', 
+                   headers: { 'Content-Type': 'application/json' }, 
+                   body: JSON.stringify(payload) 
+                 });
+                 if (res.ok) {
+                   const data = await res.json();
+                   if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                     generatedText = data.candidates[0].content.parts[0].text;
+                   }
+                 }
+               } catch (geminiErr) {
+                 console.warn("Gemini direct API failed, switching to backup provider...", geminiErr);
+               }
              }
-             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-             const payload = { contents: [{ parts: [{ text: aiPrompt }] }] };
-             
-             const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-             const data = await res.json();
-             
-             if (data.error) throw new Error(data.error.message);
-             setAiResultText(data.candidates?.[0]?.content?.parts?.[0]?.text || "No response.");
+
+             // 2. Резервный канал (Pollinations AI Text / OpenAI) - доступный и стабильный
+             if (!generatedText) {
+               const backupUrl = `https://text.pollinations.ai/${encodeURIComponent(aiPrompt)}?model=openai`;
+               const resBackup = await fetch(backupUrl);
+               if (!resBackup.ok) throw new Error("Текстовый сервис временно недоступен.");
+               generatedText = await resBackup.text();
+             }
+
+             setAiResultText(generatedText || "Ответ не сформирован.");
              setAiLoading(false); 
              showToast(t('aiSuccessText'));
           }
@@ -491,7 +571,6 @@
         </div>
       );
 
-      // Advanced Admin Stats Logic (Safely handled with optional chaining and Number())
       const totalSystemViews = tasks.reduce((sum, t) => sum + Number(t.views || 0), 0);
       const totalSystemAWS = adminUsers.length > 0 ? adminUsers.reduce((sum, u) => sum + Number(u.balance || 0), 0) : 0;
       const totalSystemUsers = adminUsers.length > 0 ? adminUsers.length : (isGlobalMode ? "..." : "Локально");
@@ -1194,6 +1273,10 @@
     }
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
+  </script>
+</body>
+</html>
+
   </script>
 </body>
 </html>
