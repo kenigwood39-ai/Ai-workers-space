@@ -51,8 +51,9 @@
     const ADMIN_EMAIL = "kenigwood39@gmail.com";
     const CRYPTO_WALLET = "RiXj1x6mePC60cAuaRd4RO9yZs2FCkd3zeYcMtzzj9MI2GvSWAGT2e0qyRN0eLXx";
 
+    // ОРИГИНАЛЬНЫЙ КЛЮЧ ОТ FIREBASE (Для работы базы данных и входа)
     const FIREBASE_CONFIG = {
-      apiKey: "AIzaSyDpmr1RBiZTgN7F_3WhuLsX2sapB9iSS2E",
+      apiKey: "AIzaSyBI6K0YuwV6jAHvUg2x8Y2dX-FuTLfDgd0",
       authDomain: "ai-workers-space.firebaseapp.com",
       projectId: "ai-workers-space",
       storageBucket: "ai-workers-space.firebasestorage.app",
@@ -61,7 +62,8 @@
       measurementId: "G-VFM3W6YCBQ"
     };
 
-    const GEMINI_API_KEY = ""; 
+    // КЛЮЧ ОТ GEMINI (Для работы текстового ИИ)
+    const GEMINI_API_KEY = "AIzaSyDpmr1RBiZTgN7F_3WhuLsX2sapB9iSS2E"; 
 
     const DICTIONARY = {
       ru: {
@@ -132,7 +134,7 @@
       });
     };
 
-    // СНИЖЕННАЯ В 2 РАЗА ЦЕНА НА ОТКЛИКИ (деление на 2)
+    // СНИЖЕННАЯ ЦЕНА НА ОТКЛИКИ
     const calculateResponseFee = (b) => { 
       b = Number(b) || 0; 
       let fee;
@@ -180,7 +182,7 @@
       
       const [walletModalOpen, setWalletModalOpen] = useState(false);
       const [depositAmountAWS, setDepositAmountAWS] = useState('1000');
-      const [cryptoStep, setCryptoStep] = useState(1); // 1 = input, 2 = show address
+      const [cryptoStep, setCryptoStep] = useState(1); 
       const [cryptoChecking, setCryptoChecking] = useState(false);
       
       const [newTitle, setNewTitle] = useState('');
@@ -232,7 +234,6 @@
 
             window.Firebase.onAuthStateChanged(firebaseAuth, async (u) => {
               if (u) {
-                // Force reload user to get fresh emailVerified status
                 await u.reload(); 
                 setEmailVerified(u.emailVerified);
 
@@ -248,7 +249,6 @@
                   setUser(newProfile); setBalance(isM ? 25000 : 1000);
                 }
 
-                // Listen to personal support chat
                 window.Firebase.onSnapshot(window.Firebase.doc(firestoreDb, 'artifacts', appId, 'support', u.uid), (docSnap) => {
                     if (docSnap.exists()) setMySupportMsgs(docSnap.data().messages || []);
                 });
@@ -402,13 +402,22 @@
         setBalance(p => p - fee); setAiLoading(true); setAiResultImg(null); setAiResultText('');
         try {
           if (aiMode === 'image') {
-             const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(aiPrompt+', highly detailed, 8k')}?width=1024&height=1024&seed=${Date.now()}&nologo=true`;
+             const isRu = /[а-яА-ЯЁё]/.test(aiPrompt); 
+             let engP = aiPrompt;
+             if(isRu) { 
+               try { 
+                 const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=ru&tl=en&dt=t&q=${encodeURIComponent(aiPrompt)}`); 
+                 const d = await r.json(); 
+                 engP = d[0][0][0]; 
+               } catch(e){} 
+             }
+             const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(engP+', highly detailed, 8k, cyberpunk')}?width=1024&height=1024&seed=${Date.now()}&nologo=true`;
              const img = new Image(); img.src = url; 
              img.onload = () => { setAiResultImg(url); setAiLoading(false); showToast(t('aiSuccessImg')); }; 
              img.onerror = () => { setAiLoading(false); showToast(t('aiError'), 'error'); };
           } else if (aiMode === 'text') {
              if (!GEMINI_API_KEY) {
-                setAiResultText("⚠️ API ключ Gemini не указан разработчиком в коде."); setAiLoading(false); setBalance(p => p + fee); return;
+                setAiResultText("⚠️ Ошибка: API ключ Gemini не указан."); setAiLoading(false); setBalance(p => p + fee); return;
              }
              const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
              const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: aiPrompt }] }] }) });
@@ -919,7 +928,7 @@
                       <div className="text-xs text-slate-300 text-center sm:text-left">{t('payToReply')}</div>
                       
                       {!emailVerified && isGlobalMode ? (
-                          <div className="text-xs text-red-400 font-bold">Подтвердите Email, чтобы откликаться!</div>
+                          <div className="text-xs text-red-400 font-bold">Подтвердите Email (в письме), чтобы откликаться.</div>
                       ) : (
                           <button onClick={() => { 
                             if(balance < selectedTaskForChat.response_fee) { 
@@ -985,7 +994,7 @@
                     ) : (
                       <>
                         {!emailVerified && isGlobalMode ? (
-                           <div className="text-center p-3 text-xs font-bold text-red-400 border border-red-500/30 rounded-xl bg-red-900/20">Подтвердите Email, чтобы взять этот заказ в работу.</div>
+                           <div className="text-center p-3 text-xs font-bold text-red-400 border border-red-500/30 rounded-xl bg-red-900/20">Подтвердите Email, чтобы откликнуться.</div>
                         ) : (
                            <button onClick={() => { 
                              if(balance < viewingTask.response_fee) { 
@@ -1034,7 +1043,7 @@
                       <span className="text-slate-400">{t('toPay')}</span>
                       <span className="font-mono font-bold text-white text-lg">{depositAmountAWS} <span className="text-xs text-slate-500">USDT</span></span>
                     </div>
-                    <button onClick={() => { if(Number(depositAmountAWS)>0) setCryptoStep(2); }} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold text-sm hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all">Оплатить криптовалютой</button>
+                    <button onClick={() => { if(Number(depositAmountAWS)>0) setCryptoStep(2); }} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold text-sm hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all">{t('payTest')}</button>
                   </>
                 ) : (
                   <>
