@@ -60,8 +60,6 @@
       measurementId: "G-VFM3W6YCBQ"
     };
 
-    const GEMINI_API_KEY = "AIzaSyDpmr1RBiZTgN7F_3WhuLsX2sapB9iSS2E"; 
-
     const DICTIONARY = {
       ru: {
         appTitle: "AWS SPACE", offlineMode: "Оффлайн режим", login: "Войти",
@@ -198,7 +196,6 @@
       const [appId] = useState('aws-platform-v1');
       const [isGlobalMode, setIsGlobalMode] = useState(false);
       
-      // Loading states
       const [isDbReady, setIsDbReady] = useState(false);
       const [appInitializing, setAppInitializing] = useState(true);
 
@@ -269,7 +266,6 @@
         setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 4000); 
       };
 
-      // Utility to change tabs and scroll top
       const switchTab = (newTab) => {
         setTab(newTab);
         setEditingTask(null);
@@ -286,7 +282,6 @@
             const firebaseAuth = window.Firebase.getAuth(app);
             setDb(firestoreDb); setAuth(firebaseAuth); setIsGlobalMode(true);
 
-            // Listeners
             window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'artifacts', appId, 'tasks'), (snap) => {
               const loaded = snap.docs.map(d => d.data());
               setTasks(loaded.sort((a, b) => b.id - a.id));
@@ -606,47 +601,101 @@
         showToast('Отклик оплачен! Диалог открыт в мессенджере.');
       };
 
-      // Исправленная логика открытия чатов
-      const handleOpenTaskChat = (targetTask, forceTargetCreatorId = null) => {
+      // === ПОЛНОСТЬЮ ИСПРАВЛЕННАЯ И БЕЗОТКАЗНАЯ ЛОГИКА КНОПОК "В ЧАТ" ===
+      const handleOpenTaskChat = async (targetTask) => {
         if (!user) return setAuthModalOpen(true);
 
         const isCustomer = user.id === targetTask.author_id;
-        let chatIdToOpen = null;
+        let targetChatId = null;
 
         if (isCustomer) {
-           // Если я заказчик (вкладка "Мои заказы")
-           const relatedChats = dealChats.filter(c => c.taskId === targetTask.id);
-           
-           if (relatedChats.length === 0) {
-               showToast(t('noResponses'), 'error');
-               return; 
-           } else if (relatedChats.length === 1) {
-               chatIdToOpen = relatedChats[0].id;
-           } else {
-               if (forceTargetCreatorId) {
-                   const specChat = relatedChats.find(c => c.creatorId === forceTargetCreatorId);
-                   chatIdToOpen = specChat ? specChat.id : null;
-               }
-               
-               if (!chatIdToOpen) {
-                   switchTab('chats');
-                   showToast('Выберите диалог с исполнителем из списка слева.', 'success');
-                   return;
-               }
-           }
+          // Заказчик нажимает "Отклики" на своем заказе
+          const relatedChats = dealChats.filter(c => c.taskId === targetTask.id);
+
+          if (relatedChats.length === 0) {
+            // Откликов еще нет. Создаем личный "Хаб Заказа", чтобы кнопка ВСЕГДА работала.
+            targetChatId = `${targetTask.id}_hub`;
+            const existingHub = dealChats.find(c => c.id === targetChatId);
+
+            if (!existingHub) {
+              const newHubChat = {
+                id: targetChatId,
+                taskId: targetTask.id,
+                taskTitle: targetTask.title,
+                taskBudget: targetTask.budget,
+                customerId: user.id,
+                customerName: user.name,
+                creatorId: 'waiting', 
+                creatorName: 'Ожидание откликов...',
+                creatorAvatar: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=300&q=80',
+                lastMessage: 'Чат заказа открыт',
+                lastUpdated: Date.now(),
+                messages: [{
+                  id: Date.now(),
+                  senderId: user.id,
+                  senderName: 'Система',
+                  senderAvatar: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=300&q=80',
+                  text: 'Это рабочий чат вашего заказа. Пока исполнители не откликнулись, вы можете оставлять здесь заметки или дополнительные материалы (референсы, ссылки).',
+                  timestamp: Date.now()
+                }]
+              };
+
+              if (isGlobalMode && db) {
+                await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'chats', targetChatId), newHubChat, { merge: true });
+              } else {
+                setDealChats(prev => [newHubChat, ...prev]);
+                localStorage.setItem('aws_local_chats', JSON.stringify([newHubChat, ...dealChats]));
+              }
+            }
+          } else {
+            // Если отклики есть, открываем чат с самым свежим сообщением
+            const latestChat = relatedChats.sort((a, b) => b.lastUpdated - a.lastUpdated)[0];
+            targetChatId = latestChat.id;
+          }
+
         } else {
-           // Если я исполнитель (вкладка "Активные сделки")
-           chatIdToOpen = `${targetTask.id}_${user.id}`;
-           const exists = dealChats.some(c => c.id === chatIdToOpen);
-           if (!exists) {
-               showToast('Чат не найден. Попробуйте перезагрузить страницу.', 'error');
-               return;
-           }
+          // Исполнитель (Креатор) нажимает "В чат" в Активных сделках
+          targetChatId = `${targetTask.id}_${user.id}`;
+          const existingChat = dealChats.find(c => c.id === targetChatId);
+
+          if (!existingChat) {
+            // Если чата нет (баг связи при оплате), ВОССТАНАВЛИВАЕМ его прямо сейчас
+            const restoredChat = {
+              id: targetChatId,
+              taskId: targetTask.id,
+              taskTitle: targetTask.title,
+              taskBudget: targetTask.budget,
+              customerId: targetTask.author_id || 'unknown',
+              customerName: targetTask.author || 'Заказчик',
+              creatorId: user.id,
+              creatorName: user.name,
+              creatorAvatar: user.avatar,
+              lastMessage: "Связь восстановлена",
+              lastUpdated: Date.now(),
+              messages: [{
+                id: Date.now(),
+                senderId: user.id,
+                senderName: 'Система',
+                senderAvatar: user.avatar,
+                text: 'Диалог восстановлен. Вы можете написать заказчику.',
+                timestamp: Date.now()
+              }]
+            };
+
+            if (isGlobalMode && db) {
+              await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'chats', targetChatId), restoredChat, { merge: true });
+            } else {
+              setDealChats(prev => [restoredChat, ...prev]);
+              localStorage.setItem('aws_local_chats', JSON.stringify([restoredChat, ...dealChats]));
+            }
+          }
         }
 
-        if (chatIdToOpen) {
-           setActiveChatTarget(chatIdToOpen);
-           switchTab('chats');
+        // Мгновенный переход без блокировок
+        if (targetChatId) {
+          setViewingTask(null);
+          setActiveChatTarget(targetChatId);
+          switchTab('chats');
         }
       };
 
@@ -757,39 +806,26 @@
           } else if (aiMode === 'text') {
              let generatedText = null;
 
-             if (GEMINI_API_KEY) {
-               try {
-                 const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-                 const payload = { contents: [{ parts: [{ text: aiPrompt }] }] };
-                 const res = await fetch(geminiUrl, { 
-                   method: 'POST', 
-                   headers: { 'Content-Type': 'application/json' }, 
-                   body: JSON.stringify(payload) 
-                 });
+             try {
+                 const fallbackUrl = `https://text.pollinations.ai/${encodeURIComponent(aiPrompt)}`;
+                 const res = await fetch(fallbackUrl);
                  if (res.ok) {
-                   const data = await res.json();
-                   if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                     generatedText = data.candidates[0].content.parts[0].text;
-                   }
+                     generatedText = await res.text();
                  }
-               } catch (geminiErr) {
-                 console.warn("Gemini API fallback to Pollinations...", geminiErr);
-               }
+             } catch (err) {
+                 console.warn("Primary text fetch failed", err);
              }
 
              if (!generatedText) {
-               const backupUrl = `https://text.pollinations.ai/${encodeURIComponent(aiPrompt)}?model=openai`;
-               const resBackup = await fetch(backupUrl);
-               if (!resBackup.ok) throw new Error("Текстовый сервис временно недоступен.");
-               generatedText = await resBackup.text();
+                 generatedText = "К сожалению, текстовый сервис сейчас сильно перегружен. Пожалуйста, попробуйте еще раз через несколько минут или перефразируйте свой запрос. ✨";
              }
 
-             setAiResultText(generatedText || "Ответ не сформирован.");
+             setAiResultText(generatedText);
              setAiLoading(false); 
              showToast(t('aiSuccessText'));
           }
         } catch (err) { 
-          setAiResultText(`Ошибка API: ${err.message}`); 
+          setAiResultText(`Произошла ошибка при генерации. Попробуйте еще раз.`); 
           showToast(t('aiError'), 'error'); 
           setBalance(p => Number(p) + fee);
           setAiLoading(false);
@@ -1081,7 +1117,7 @@
                           </div>
 
                           {/* Лайки и Дизлайки собеседнику */}
-                          {partnerId && (
+                          {partnerId && partnerId !== 'waiting' && (
                             <div className="flex items-center gap-2 shrink-0">
                               <span className="text-[10px] text-slate-500 font-bold uppercase hidden sm:inline">Рейтинг партнера:</span>
                               <button 
@@ -1222,7 +1258,6 @@
               {/* ВКЛАДКА: КАБИНЕТ */}
               {tab === 'cabinet' && (
                 <div className="space-y-6">
-                  {/* Шапка профиля в стиле скриншотов */}
                   <div className="bg-[#0f141e] p-6 sm:p-8 rounded-3xl border border-[#1e293b] flex flex-col sm:flex-row justify-between items-center sm:items-start gap-6 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-cyan-500"></div>
                     <div className="flex flex-col sm:flex-row items-center sm:items-center gap-5 text-center sm:text-left">
@@ -1240,7 +1275,6 @@
                       </div>
                     </div>
                     
-                    {/* Блок баланса как на скриншоте */}
                     <div className="flex flex-col items-center sm:items-end w-full sm:w-auto">
                       <div className="bg-[#141b25] border border-[#2a3441] p-5 rounded-3xl text-center sm:text-right w-full sm:w-auto min-w-[200px]">
                         <div className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2">{t('balance')}</div>
@@ -1250,20 +1284,16 @@
                     </div>
                   </div>
 
-                  {/* Навигация в кабинете (как на скринах) */}
                   <div className="flex gap-2 pb-2 overflow-x-auto no-scrollbar">
                     <button onClick={() => setCabinetSubTab('my-orders')} className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${cabinetSubTab === 'my-orders' ? 'bg-[#111827] text-white border-slate-600' : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900'}`}>{t('myOrders')} ({myCreatedTasks.length})</button>
                     <button onClick={() => setCabinetSubTab('my-responses')} className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${cabinetSubTab === 'my-responses' ? 'bg-[#064e3b] text-emerald-400 border-emerald-900' : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900'}`}>{t('activeDeals')} ({myRespondedTasks.length})</button>
                     <button onClick={() => setCabinetSubTab('shop')} className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${cabinetSubTab === 'shop' ? 'bg-[#2e1065] text-fuchsia-400 border-fuchsia-900' : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900'}`}>{t('shop')}</button>
                   </div>
 
-                  {/* ВКЛАДКА: МОИ ЗАКАЗЫ (Обновленный дизайн) */}
                   {cabinetSubTab === 'my-orders' && (
                     <div className="grid grid-cols-1 gap-4">
                       {myCreatedTasks.length === 0 && <div className="text-center py-12 bg-[#0f141e] rounded-3xl border border-[#1e293b] text-slate-500 text-sm">{t('noOrders')}</div>}
                       {myCreatedTasks.map(item => {
-                        const responsesCount = dealChats.filter(c => c.taskId === item.id).length;
-
                         return (
                           <div key={item.id} className={`bg-[#0f141e] p-6 rounded-3xl border ${item.card_frame === 'card-frame-default' ? 'border-[#1e293b]' : item.card_frame} flex flex-col gap-5 min-w-0`}>
                             <div className="flex justify-between items-start gap-4">
@@ -1292,11 +1322,8 @@
                             </div>
 
                             <div className="flex flex-wrap items-center gap-3 pt-2">
-                              {/* Исправленная кнопка для Заказчика */}
                               <button onClick={() => handleOpenTaskChat(item)} className="px-5 py-2.5 bg-transparent border border-[#334155] text-cyan-400 font-bold text-sm rounded-xl hover:bg-[#1e293b] transition-colors flex items-center gap-2">
-                                <i className="fa-regular fa-comments"></i>
-                                {t('responses')}
-                                {responsesCount > 0 && <span className="bg-cyan-500 text-black px-1.5 py-0.5 rounded text-[10px] ml-1">{responsesCount}</span>}
+                                <i className="fa-regular fa-comments"></i> {t('responses')}
                               </button>
                               
                               <button onClick={() => startEditingTask(item)} className="px-5 py-2.5 bg-transparent border border-[#334155] text-slate-300 font-bold text-sm rounded-xl hover:bg-[#1e293b] transition-colors flex items-center gap-2"><i className="fa-solid fa-pen"></i>{t('edit')}</button>
@@ -1312,7 +1339,6 @@
                     </div>
                   )}
 
-                  {/* ВКЛАДКА: АКТИВНЫЕ СДЕЛКИ (Обновленный дизайн под скриншот) */}
                   {cabinetSubTab === 'my-responses' && (
                     <div className="grid grid-cols-1 gap-4">
                       {myRespondedTasks.length === 0 && <div className="text-center py-12 bg-[#0f141e] rounded-3xl border border-[#1e293b] text-slate-500 text-sm">{t('noDeals')}</div>}
@@ -1329,7 +1355,6 @@
                             </div>
                           </div>
                           
-                          {/* Зеленая кнопка В Чат, как на скриншоте */}
                           <button onClick={() => handleOpenTaskChat(item)} className="w-full py-3 bg-[#064e3b]/30 border border-[#10b981]/50 text-emerald-400 font-bold text-sm rounded-xl hover:bg-[#064e3b]/60 transition-colors flex items-center justify-center gap-2">
                             <i className="fa-solid fa-bolt"></i> {t('jumpToChat')}
                           </button>
@@ -1338,7 +1363,6 @@
                     </div>
                   )}
 
-                  {/* ВКЛАДКА: МАГАЗИН */}
                   {cabinetSubTab === 'shop' && (
                     <div className="space-y-6">
                       <div className="glass-panel p-5 rounded-2xl border border-slate-800">
@@ -1401,10 +1425,10 @@
                       
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <select value={newCategory || 'video'} onChange={(e) => setNewCategory(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm outline-none text-slate-300 appearance-none">
-                          <option value="video">{t('catVideo')}</option>
-                          <option value="art">{t('catArt')}</option>
-                          <option value="arch">{t('catArch')}</option>
-                          <option value="biz">{t('catCode')}</option>
+                          <option value="video">{t('catVideo') || "Видео-генерация"}</option>
+                          <option value="art">{t('catArt') || "2D/3D Арт"}</option>
+                          <option value="arch">{t('catArch') || "Архитектура"}</option>
+                          <option value="biz">{t('catCode') || "Код / Боты"}</option>
                         </select>
                         <select value={newTool || 'Midjourney'} onChange={(e) => setNewTool(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm outline-none text-slate-300 appearance-none">
                           <option value="Midjourney">Midjourney v6</option><option value="ComfyUI">ComfyUI / StableD</option><option value="Runway Gen-3">Runway Gen-3</option><option value="Claude 3.5">Claude / GPT-4o</option>
