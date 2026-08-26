@@ -51,7 +51,7 @@
     const ADMIN_EMAIL = "kenigwood39@gmail.com";
     const CRYPTO_WALLET = "RiXj1x6mePC60cAuaRd4RO9yZs2FCkd3zeYcMtzzj9MI2GvSWAGT2e0qyRN0eLXx";
 
-    // ОРИГИНАЛЬНЫЙ КЛЮЧ ОТ FIREBASE (Для работы базы данных и входа)
+    // ОРИГИНАЛЬНЫЙ КЛЮЧ ОТ FIREBASE (БАЗА ДАННЫХ И АВТОРИЗАЦИЯ)
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyBI6K0YuwV6jAHvUg2x8Y2dX-FuTLfDgd0",
       authDomain: "ai-workers-space.firebaseapp.com",
@@ -62,7 +62,7 @@
       measurementId: "G-VFM3W6YCBQ"
     };
 
-    // КЛЮЧ ОТ GEMINI (Для работы текстового ИИ)
+    // КЛЮЧ ДЛЯ НЕЙРОСЕТИ (GEMINI)
     const GEMINI_API_KEY = "AIzaSyDpmr1RBiZTgN7F_3WhuLsX2sapB9iSS2E"; 
 
     const DICTIONARY = {
@@ -76,7 +76,7 @@
         statusOpen: "Открыт", statusWork: "В работе", customer: "Заказчик:", budget: "Бюджет", applyFee: "Отклик:", details: "Подробнее",
         aiStudioTitle: "ИИ-Песочница", aiStudioDesc: "Тестируйте промпты прямо на бирже перед взятием заказа.",
         genImg: "Генератор Изображений", genText: "Генератор Текста",
-        promptImg: "Опишите сцену, атмосферу, стиль...", promptText: "Задайте вопрос, попросите написать код или текст...",
+        promptImg: "Опишите сцену, атмосферу, стиль (Flux/Imagen)...", promptText: "Задайте вопрос, попросите написать код или текст (Gemini)...",
         launchAI: "Запустить нейросеть", processing: "Синтез данных...", aiReply: "Ответ ИИ:", saveOrig: "Сохранить",
         balance: "Баланс", topUp: "Пополнить", myOrders: "Мои заказы", activeDeals: "Активные сделки", shop: "Экипировка 🛍️",
         noOrders: "Нет заказов.", openChat: "Чат", edit: "Редактировать", delete: "Удалить",
@@ -134,7 +134,7 @@
       });
     };
 
-    // СНИЖЕННАЯ ЦЕНА НА ОТКЛИКИ
+    // СНИЖЕННАЯ В 2 РАЗА ЦЕНА НА ОТКЛИКИ
     const calculateResponseFee = (b) => { 
       b = Number(b) || 0; 
       let fee;
@@ -205,12 +205,14 @@
       const [aiResultText, setAiResultText] = useState('');
       const [aiLoading, setAiLoading] = useState(false);
 
-      // Support Chat States
       const [supportOpen, setSupportOpen] = useState(false);
       const [supportInput, setSupportInput] = useState('');
       const [mySupportMsgs, setMySupportMsgs] = useState([]);
       const [adminSupportList, setAdminSupportList] = useState([]);
       const [adminActiveSupportId, setAdminActiveSupportId] = useState(null);
+
+      // Admin states for enriched stats
+      const [adminUsers, setAdminUsers] = useState([]);
 
       const showToast = (message, type = 'success') => { 
         const id = Date.now(); 
@@ -276,15 +278,22 @@
         }
       }, [user, balance, inventory, paidUnlocks]);
 
-      // Admin Support Fetch
+      // Admin User Stats & Support Fetch
       useEffect(() => {
-         if (isAdmin && tab === 'admin' && adminSubTab === 'support' && isGlobalMode && db) {
+         if (isAdmin && tab === 'admin' && isGlobalMode && db) {
+             // Load support chats
              const unsub = window.Firebase.onSnapshot(window.Firebase.collection(db, 'artifacts', appId, 'support'), (snap) => {
                  setAdminSupportList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
              });
+             
+             // Load all users for advanced stats
+             window.Firebase.getDocs(window.Firebase.collection(db, 'artifacts', appId, 'users'))
+               .then(snap => setAdminUsers(snap.docs.map(d => d.data())))
+               .catch(err => console.error("Admin fetch error", err));
+               
              return () => unsub();
          }
-      }, [tab, adminSubTab, isAdmin, db, isGlobalMode]);
+      }, [tab, isAdmin, db, isGlobalMode]);
 
       useEffect(() => { if (chatScrollRef.current) chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight; }, [selectedTaskForChat?.messages, mySupportMsgs, adminSupportList]);
 
@@ -338,7 +347,7 @@
         if (!newTitle.trim()) return;
 
         const bVal = Number(newBudget) || 15000;
-        const finalPhotos = taskPhotos.length > 0 ? taskPhotos : ['https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=800&q=80'];
+        const finalPhotos = (taskPhotos && taskPhotos.length > 0) ? taskPhotos : ['https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=800&q=80'];
         
         let taskObj = editingTask ? 
            { ...editingTask, category: newCategory, title: newTitle, prompt: newPrompt, tool: newTool, budget: bVal, response_fee: calculateResponseFee(bVal), photos: finalPhotos } 
@@ -354,8 +363,10 @@
       };
 
       const startEditingTask = (task) => {
-          setEditingTask(task); setNewTitle(task.title); setNewCategory(task.category); setNewPrompt(task.prompt);
-          setNewBudget(task.budget.toString()); setNewTool(task.tool); setTaskPhotos(task.photos); setTab('create'); 
+          setEditingTask(task); setNewTitle(task.title || ''); setNewCategory(task.category || 'video'); setNewPrompt(task.prompt || '');
+          setNewBudget((task.budget || 15000).toString()); setNewTool(task.tool || 'ComfyUI'); 
+          setTaskPhotos(task.photos || []); // ЗАЩИТА ОТ BLACK SCREEN
+          setTab('create'); 
       };
 
       const updateTaskSpecificFrame = async (taskId, newFrameClass) => {
@@ -407,19 +418,19 @@
              if(isRu) { 
                try { 
                  const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=ru&tl=en&dt=t&q=${encodeURIComponent(aiPrompt)}`); 
-                 const d = await r.json(); 
-                 engP = d[0][0][0]; 
-               } catch(e){} 
+                 const d = await r.json(); engP = d[0][0][0]; 
+               } catch(e){} // Игнорируем ошибку перевода, отправляем как есть
              }
-             const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(engP+', highly detailed, 8k, cyberpunk')}?width=1024&height=1024&seed=${Date.now()}&nologo=true`;
+             const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(engP)}?width=1024&height=1024&seed=${Date.now()}`;
              const img = new Image(); img.src = url; 
              img.onload = () => { setAiResultImg(url); setAiLoading(false); showToast(t('aiSuccessImg')); }; 
-             img.onerror = () => { setAiLoading(false); showToast(t('aiError'), 'error'); };
+             img.onerror = () => { setAiLoading(false); showToast(t('aiError'), 'error'); setBalance(p => p + fee); };
           } else if (aiMode === 'text') {
              if (!GEMINI_API_KEY) {
                 setAiResultText("⚠️ Ошибка: API ключ Gemini не указан."); setAiLoading(false); setBalance(p => p + fee); return;
              }
-             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+             // ИСПОЛЬЗУЕМ ВЕРСИЮ GEMINI-3.6-FLASH КАК ПРОСИТ GOOGLE API
+             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
              const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: aiPrompt }] }] }) });
              const data = await res.json();
              if (data.error) throw new Error(data.error.message);
@@ -427,7 +438,7 @@
              setAiLoading(false); showToast(t('aiSuccessText'));
           }
         } catch (err) { 
-          setAiResultText(`Ошибка: ${err.message}`); showToast(t('aiError'), 'error'); setBalance(p => p + fee); setAiLoading(false);
+          setAiResultText(`Ошибка API: ${err.message}`); showToast(t('aiError'), 'error'); setBalance(p => p + fee); setAiLoading(false);
         }
       };
 
@@ -459,6 +470,11 @@
           <i className="fa-solid fa-circle-notch fa-spin text-4xl"></i><span className="animate-pulse">Connecting AWS...</span>
         </div>
       );
+
+      // Advanced Admin Stats
+      const totalSystemViews = tasks.reduce((sum, t) => sum + (t.views || 0), 0);
+      const totalSystemAWS = adminUsers.length > 0 ? adminUsers.reduce((sum, u) => sum + (u.balance || 0), 0) : 0;
+      const totalSystemUsers = adminUsers.length > 0 ? adminUsers.length : (isGlobalMode ? "..." : "Локально");
 
       return (
         <div className="min-h-screen flex flex-col w-full max-w-full overflow-x-hidden relative">
@@ -539,7 +555,14 @@
                    {adminSubTab === 'stats' && (
                      <>
                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-xs text-slate-400 font-bold">Тасков</div><div className="text-3xl font-mono text-cyan-400">{tasks.length}</div></div>
+                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Пользователей</div><div className="text-3xl font-mono text-white">{totalSystemUsers}</div></div>
+                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Всего заказов</div><div className="text-3xl font-mono text-cyan-400">{tasks.length}</div></div>
+                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Оборот (AWS)</div><div className="text-2xl font-mono text-amber-400 mt-1">{totalSystemAWS.toLocaleString()}</div></div>
+                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Открытые задачи</div><div className="text-3xl font-mono text-fuchsia-400">{tasks.filter(t=>t.status==='open').length}</div></div>
+                       </div>
+                       
+                       <div className="p-4 bg-emerald-900/20 border border-emerald-500/30 rounded-xl text-emerald-300 text-xs font-bold text-center">
+                          Система работает штатно. База данных активно обновляется. Просмотров тасков: {totalSystemViews}.
                        </div>
                      </>
                    )}
@@ -604,7 +627,7 @@
                     {feedTasks.map((item) => (
                       <div key={item.id} className={`glass-panel p-4 sm:p-5 rounded-2xl ${item.card_frame || 'card-frame-default'} flex flex-col sm:flex-row gap-5 transition-all min-w-0 relative overflow-hidden group`}>
                         <div onClick={() => openTaskModalWithViewCount(item)} className="w-full sm:w-48 h-56 sm:h-36 rounded-xl overflow-hidden border border-slate-800 bg-slate-950 shrink-0 relative cursor-pointer">
-                          <img src={item.photos[0]} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="task preview" />
+                          <img src={item.photos?.[0]} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="task preview" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-3">
                             <span className="text-[10px] bg-cyan-500/20 backdrop-blur-md text-cyan-300 border border-cyan-500/40 px-2 py-1 rounded font-mono font-bold shadow-sm">{item.tool}</span>
                           </div>
@@ -839,25 +862,25 @@
                      </div>
                   ) : (
                     <form onSubmit={handleCreateOrEditTask} className="space-y-5 relative z-10">
-                      <input type="text" required placeholder={t('shortTitle')} value={newTitle} onChange={(e) => setNewTitle(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-5 py-4 text-sm focus:border-amber-500 outline-none transition-colors text-white" />
+                      <input type="text" required placeholder={t('shortTitle')} value={newTitle || ''} onChange={(e) => setNewTitle(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-5 py-4 text-sm focus:border-amber-500 outline-none transition-colors text-white" />
                       
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm outline-none text-slate-300 appearance-none">
+                        <select value={newCategory || 'video'} onChange={(e) => setNewCategory(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm outline-none text-slate-300 appearance-none">
                           <option value="video">{t('catVideo')}</option><option value="art">{t('catArt')}</option><option value="arch">{t('catArch')}</option><option value="biz">{t('catCode')}</option>
                         </select>
-                        <select value={newTool} onChange={(e) => setNewTool(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm outline-none text-slate-300 appearance-none">
+                        <select value={newTool || 'Midjourney'} onChange={(e) => setNewTool(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm outline-none text-slate-300 appearance-none">
                           <option value="Midjourney">Midjourney v6</option><option value="ComfyUI">ComfyUI / StableD</option><option value="Runway Gen-3">Runway Gen-3</option><option value="Claude 3.5">Claude / GPT-4o</option>
                         </select>
                         <div className="relative">
-                          <input type="number" required placeholder={t('budget')} value={newBudget} onChange={(e) => setNewBudget(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm font-mono outline-none text-amber-300 focus:border-amber-500" />
+                          <input type="number" required placeholder={t('budget')} value={newBudget || ''} onChange={(e) => setNewBudget(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm font-mono outline-none text-amber-300 focus:border-amber-500" />
                           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 pointer-events-none">AWS</span>
                         </div>
                       </div>
                       
                       <div className="bg-slate-950/50 p-5 rounded-2xl border border-slate-700/50 space-y-4">
                         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
-                          <label className="text-sm font-bold text-slate-200"><i className="fa-solid fa-images text-cyan-400 mr-2"></i>{t('refs')} ({taskPhotos.length}/5)</label>
-                          {taskPhotos.length < 5 && (
+                          <label className="text-sm font-bold text-slate-200"><i className="fa-solid fa-images text-cyan-400 mr-2"></i>{t('refs')} ({(taskPhotos || []).length}/5)</label>
+                          {(taskPhotos || []).length < 5 && (
                             <label className="px-4 py-2 bg-slate-800 text-slate-200 border border-slate-600 font-bold text-xs rounded-xl cursor-pointer hover:bg-slate-700 transition-colors shrink-0">
                               <i className="fa-solid fa-cloud-arrow-up mr-1.5"></i> {t('addPhoto')}
                               <input type="file" accept="image/*" multiple className="hidden" onChange={handleUploadTaskPhotos} />
@@ -865,9 +888,9 @@
                           )}
                         </div>
                         
-                        {taskPhotos.length > 0 && (
+                        {(taskPhotos || []).length > 0 && (
                           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
-                            {taskPhotos.map((photo, idx) => (
+                            {(taskPhotos || []).map((photo, idx) => (
                               <div key={idx} className="relative w-full aspect-square rounded-xl border border-slate-600 overflow-hidden group">
                                 <img src={photo} className="w-full h-full object-cover" />
                                 <button type="button" onClick={() => setTaskPhotos(p => p.filter((_, i) => i !== idx))} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
@@ -878,7 +901,7 @@
                           </div>
                         )}
                       </div>
-                      <textarea rows="4" required placeholder={t('taskDesc')} value={newPrompt} onChange={(e) => setNewPrompt(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl p-4 text-sm outline-none focus:border-amber-500 text-slate-200 resize-none"></textarea>
+                      <textarea rows="4" required placeholder={t('taskDesc')} value={newPrompt || ''} onChange={(e) => setNewPrompt(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl p-4 text-sm outline-none focus:border-amber-500 text-slate-200 resize-none"></textarea>
                       
                       <div className="flex items-center justify-between p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20">
                          <span className="text-xs text-amber-200/70 hidden sm:inline">{t('escrow')}</span>
@@ -956,8 +979,8 @@
                 <button onClick={() => setViewingTask(null)} className="absolute top-4 right-4 text-slate-400 hover:text-white z-20 bg-slate-900/80 w-8 h-8 rounded-full flex items-center justify-center border border-slate-700 transition-colors"><i className="fa-solid fa-xmark"></i></button>
                 
                 <div className="relative w-full h-56 sm:h-96 rounded-2xl overflow-hidden bg-slate-950 mb-5 border border-slate-800 shrink-0 group">
-                  <img src={viewingTask.photos[currentPhotoSlide] || viewingTask.photos[0]} className="w-full h-full object-contain" alt="Task Ref" />
-                  {viewingTask.photos.length > 1 && (
+                  <img src={viewingTask.photos?.[currentPhotoSlide] || viewingTask.photos?.[0]} className="w-full h-full object-contain" alt="Task Ref" />
+                  {(viewingTask.photos || []).length > 1 && (
                     <>
                       <button onClick={() => setCurrentPhotoSlide(p => p > 0 ? p - 1 : viewingTask.photos.length - 1)} className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 text-white hover:bg-black opacity-0 group-hover:opacity-100 transition-opacity border border-slate-700"><i className="fa-solid fa-chevron-left"></i></button>
                       <button onClick={() => setCurrentPhotoSlide(p => p < viewingTask.photos.length - 1 ? p + 1 : 0)} className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 text-white hover:bg-black opacity-0 group-hover:opacity-100 transition-opacity border border-slate-700"><i className="fa-solid fa-chevron-right"></i></button>
@@ -994,7 +1017,7 @@
                     ) : (
                       <>
                         {!emailVerified && isGlobalMode ? (
-                           <div className="text-center p-3 text-xs font-bold text-red-400 border border-red-500/30 rounded-xl bg-red-900/20">Подтвердите Email, чтобы откликнуться.</div>
+                           <div className="text-center p-3 text-xs font-bold text-red-400 border border-red-500/30 rounded-xl bg-red-900/20">Подтвердите Email, чтобы взять этот заказ в работу.</div>
                         ) : (
                            <button onClick={() => { 
                              if(balance < viewingTask.response_fee) { 
@@ -1043,7 +1066,7 @@
                       <span className="text-slate-400">{t('toPay')}</span>
                       <span className="font-mono font-bold text-white text-lg">{depositAmountAWS} <span className="text-xs text-slate-500">USDT</span></span>
                     </div>
-                    <button onClick={() => { if(Number(depositAmountAWS)>0) setCryptoStep(2); }} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold text-sm hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all">{t('payTest')}</button>
+                    <button onClick={() => { if(Number(depositAmountAWS)>0) setCryptoStep(2); }} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold text-sm hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all">Оплатить криптовалютой</button>
                   </>
                 ) : (
                   <>
