@@ -60,69 +60,6 @@
       measurementId: "G-VFM3W6YCBQ"
     };
 
-    const DICTIONARY = {
-      ru: {
-        appTitle: "AWS SPACE", offlineMode: "Оффлайн режим", login: "Войти",
-        feed: "Лента заказов", chatsTab: "Мессенджер и Хаб", aiStudio: "AI Студия ✨", profile: "Профиль", newTask: "Новый таск", adminPanel: "Админ-панель",
-        globalPlatform: "✨ ГЛОБАЛЬНАЯ ФРИЛАНС-ПЛАТФОРМА", heroTitle1: "Нанимайте лучших", heroTitle2: "AI-инженеров и креаторов",
-        heroDesc: "Единая экосистема для взаимодействия креаторов, заказчиков и AI-моделей со всего мира.",
-        all: "🔥 Все", video: "🎬 Видео", art: "🎨 Арт", arch: "🏛️ Архитектура", bots: "⚡ Код/Боты",
-        emptyCategory: "В этой категории пока нет заказов.",
-        statusOpen: "ОТКРЫТ", statusWork: "В РАБОТЕ", customer: "Заказчик:", creator: "Креатор:", budget: "Бюджет:", applyFee: "Отклик:", details: "Подробнее",
-        aiStudioTitle: "ИИ-Песочница", aiStudioDesc: "Тестируйте промпты прямо на бирже перед взятием заказа.",
-        genImg: "Генератор Изображений", genText: "Генератор Текста",
-        promptImg: "Опишите сцену, атмосферу, стиль...", promptText: "Задайте вопрос, сформируйте ТЗ или напишите промпт...",
-        launchAI: "Запустить нейросеть", processing: "Синтез данных...", aiReply: "Ответ ИИ:", saveOrig: "Сохранить",
-        aiSuccessImg: "Изображение готово! ✨", aiSuccessText: "Ответ нейросети получен! ⚡", aiError: "Ошибка генерации ИИ",
-        taskUpdated: "Заказ успешно обновлен!",
-        balance: "БАЛАНС", topUp: "Пополнить", myOrders: "Мои заказы", activeDeals: "Активные сделки", shop: "Экипировка 🛍️",
-        noOrders: "У вас пока нет созданных заказов.", openChat: "В чат", edit: "Редактировать", delete: "Удалить",
-        cardStyle: "Стиль:", noDeals: "У вас пока нет активных откликов.", payment: "ОПЛАТА", jumpToChat: "В чат",
-        avatars: "Аватары", frames: "Рамки аватаров", cardFrames: "Стили карточек заказов", select: "Выбрать",
-        pubSmartOrder: "Опубликовать заказ", editSmartOrder: "Редактировать заказ", shortTitle: "Краткое название",
-        catVideo: "🎬 Видео-генерация", catArt: "🎨 2D/3D Арт", catArch: "🏛️ Архитектура", catCode: "⚡ Код / Боты",
-        refs: "Референсы", addPhoto: "Фото", taskDesc: "Техническое задание...",
-        escrow: "Безопасная сделка (Escrow).", publish: "Опубликовать", saveChanges: "Сохранить",
-        dealStart: "Безопасная сделка начата.", finishDeal: "Завершить сделку", enterMsg: "Напишите сообщение...", payToReply: "Оплатите отклик для доступа к чату.", payFeeBtn: "Оплатить",
-        views: "Просмотров", taskDescTitle: "Описание задачи", respondTask: "Откликнуться на заказ", applyCost: "Отклик:",
-        walletTitle: "Пополнение через Crypto", toPay: "К оплате:", payTest: "Оплатить криптой",
-        authTitleLogin: "Вход", authTitleReg: "Регистрация", email: "Email", pass: "Пароль (от 6 симв.)",
-        noAcc: "Создать аккаунт", yesAcc: "Уже есть аккаунт? Войти", support: "Поддержка", send: "Отправить",
-        noChatsCustomer: "Пока нет входящих диалогов.", noChatsCreator: "Вы еще не откликались на заказы.",
-        clientRole: "Заказчик", creatorRole: "Креатор", responses: "Отклики", noResponses: "Пока нет откликов"
-      },
-      en: {
-        appTitle: "AWS SPACE", offlineMode: "Offline Mode", login: "Log in",
-        feed: "Orders Feed", chatsTab: "Messenger & Hub", aiStudio: "AI Studio ✨", profile: "Profile", newTask: "New Task", adminPanel: "Admin Panel",
-        globalPlatform: "✨ GLOBAL FREELANCE PLATFORM", heroTitle1: "Hire the best", heroTitle2: "AI engineers & creators",
-        heroDesc: "A unified ecosystem for AI creators, customers and neural networks.",
-        all: "🔥 All", video: "🎬 Video", art: "🎨 Art", arch: "🏛️ Architecture", bots: "⚡ Code/Bots",
-        emptyCategory: "No orders yet.",
-        statusOpen: "OPEN", statusWork: "IN PROGRESS", customer: "Client:", creator: "Creator:", budget: "Budget:", applyFee: "Apply:", details: "Details",
-        aiStudioTitle: "AI Sandbox", aiStudioDesc: "Test prompts directly.",
-        genImg: "Image Gen", genText: "Text Gen",
-        promptImg: "Describe scene...", promptText: "Ask a question...",
-        launchAI: "Generate", processing: "Processing...", aiReply: "AI Reply:", saveOrig: "Save",
-        aiSuccessImg: "Image generated! ✨", aiSuccessText: "AI response received! ⚡", aiError: "AI generation error",
-        taskUpdated: "Order updated successfully!",
-        balance: "BALANCE", topUp: "Top Up", myOrders: "My Orders", activeDeals: "Active Deals", shop: "Shop 🛍️",
-        noOrders: "You have no orders yet.", openChat: "Chat", edit: "Edit", delete: "Delete",
-        cardStyle: "Style:", noDeals: "No active deals.", payment: "PAYMENT", jumpToChat: "Chat",
-        avatars: "Avatars", frames: "Avatar Frames", cardFrames: "Card Styles", select: "Select",
-        pubSmartOrder: "Publish Order", editSmartOrder: "Edit Order", shortTitle: "Title",
-        catVideo: "🎬 Video Generation", catArt: "🎨 2D/3D Art", catArch: "🏛️ Architecture", catCode: "⚡ Code / Bots",
-        refs: "Refs", addPhoto: "Photo", taskDesc: "Description...",
-        escrow: "Safe deal (Escrow).", publish: "Publish", saveChanges: "Save",
-        dealStart: "Safe deal started.", finishDeal: "Complete", enterMsg: "Type a message...", payToReply: "Pay fee to reply.", payFeeBtn: "Pay",
-        views: "Views", taskDescTitle: "Description", respondTask: "Apply", applyCost: "Fee:",
-        walletTitle: "Crypto Top Up", toPay: "To Pay:", payTest: "Pay with Crypto",
-        authTitleLogin: "Login", authTitleReg: "Register", email: "Email", pass: "Password (min 6)",
-        noAcc: "Create account", yesAcc: "Have account? Log in", support: "Support", send: "Send",
-        noChatsCustomer: "No incoming dialogues yet.", noChatsCreator: "You have not applied to any tasks yet.",
-        clientRole: "Client", creatorRole: "Creator", responses: "Responses", noResponses: "No responses yet"
-      }
-    };
-
     const compressImage = (file) => {
       return new Promise((resolve) => {
         const reader = new FileReader(); reader.readAsDataURL(file);
@@ -188,16 +125,11 @@
     ];
 
     function App() {
-      const [lang, setLang] = useState('ru');
-      const t = (key) => DICTIONARY[lang][key] || key;
-
       const [db, setDb] = useState(null);
       const [auth, setAuth] = useState(null);
       const [appId] = useState('aws-platform-v1');
       const [isGlobalMode, setIsGlobalMode] = useState(false);
-      
       const [isDbReady, setIsDbReady] = useState(false);
-      const [appInitializing, setAppInitializing] = useState(true);
 
       const [tab, setTab] = useState('feed');
       const [cabinetSubTab, setCabinetSubTab] = useState('my-orders');
@@ -212,7 +144,7 @@
       const [globalChatMessages, setGlobalChatMessages] = useState([]);
       const [inventory, setInventory] = useState({ avatars: [], frames: [], cardFrames: [] });
       const [paidUnlocks, setPaidUnlocks] = useState([]);
-      const [userRatings, setUserRatings] = useState({}); 
+      const [userRatings, setUserRatings] = useState({});
 
       const isAdmin = user && user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
@@ -257,7 +189,6 @@
       const [adminActiveSupportId, setAdminActiveSupportId] = useState(null);
       const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
 
-      const [adminUsers, setAdminUsers] = useState([]);
       const prevChatsRef = useRef([]);
 
       const showToast = (message, type = 'success') => { 
@@ -293,9 +224,7 @@
             }, (err) => console.warn("Chats error", err));
 
             window.Firebase.onSnapshot(window.Firebase.doc(firestoreDb, 'artifacts', appId, 'global_chat', 'messages_hub'), (docSnap) => {
-              if (docSnap.exists()) {
-                setGlobalChatMessages(docSnap.data().messages || []);
-              }
+              if (docSnap.exists()) setGlobalChatMessages(docSnap.data().messages || []);
             });
 
             window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'artifacts', appId, 'ratings'), (snap) => {
@@ -313,10 +242,7 @@
                 const profSnap = await window.Firebase.getDoc(profRef);
                 if (profSnap.exists()) {
                   const data = profSnap.data();
-                  setUser(data.profile); 
-                  setBalance(Number(data.balance) || 0); 
-                  setInventory(data.inventory || {avatars:[],frames:[],cardFrames:[]}); 
-                  setPaidUnlocks(data.paidUnlocks || []);
+                  setUser(data.profile); setBalance(Number(data.balance) || 0); setInventory(data.inventory || {avatars:[],frames:[],cardFrames:[]}); setPaidUnlocks(data.paidUnlocks || []);
                 } else {
                   const newProfile = { id: u.uid, email: u.email, name: u.email.split('@')[0], avatar: MINIMAL_AVATARS[0].url, avatarFrame: 'frame-none', cardFrame: 'card-frame-default' };
                   const isM = u.email === ADMIN_EMAIL.toLowerCase();
@@ -327,49 +253,40 @@
                 window.Firebase.onSnapshot(window.Firebase.doc(firestoreDb, 'artifacts', appId, 'support', u.uid), (docSnap) => {
                     if (docSnap.exists()) setMySupportMsgs(docSnap.data().messages || []);
                 });
-
               } else { 
                 setUser(null); setEmailVerified(false); setMySupportMsgs([]);
               }
               setIsDbReady(true);
-              setAppInitializing(false);
             });
           } catch(e) { activateLocalFallback(); }
         };
 
         const activateLocalFallback = () => {
-          setIsGlobalMode(false); setIsDbReady(true); setEmailVerified(true); setAppInitializing(false);
+          setIsGlobalMode(false); setIsDbReady(true); setEmailVerified(true);
           const lT = localStorage.getItem('aws_local_tasks'); if(lT) setTasks(JSON.parse(lT));
           const lC = localStorage.getItem('aws_local_chats'); if(lC) setDealChats(JSON.parse(lC));
           const lG = localStorage.getItem('aws_local_global'); if(lG) setGlobalChatMessages(JSON.parse(lG));
           const lU = localStorage.getItem('aws_local_user'); if(lU) setUser(JSON.parse(lU));
           const lB = localStorage.getItem('aws_local_balance'); if(lB) setBalance(Number(lB));
         };
-        
         setTimeout(initCloud, 300);
       }, []);
 
       useEffect(() => {
-        if (isGlobalMode && db && user && auth?.currentUser && !appInitializing) {
+        if (isGlobalMode && db && user && auth?.currentUser) {
           window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'users', auth.currentUser.uid), { profile: user, balance: Number(balance), inventory, paidUnlocks }, { merge: true });
         }
-      }, [user, balance, inventory, paidUnlocks, appInitializing]);
+      }, [user, balance, inventory, paidUnlocks]);
 
       useEffect(() => {
-        if (!user || dealChats.length === 0) {
-          prevChatsRef.current = dealChats;
-          return;
-        }
-
+        if (!user || dealChats.length === 0) { prevChatsRef.current = dealChats; return; }
         if (prevChatsRef.current.length > 0) {
           dealChats.forEach(currentChat => {
             const isParticipant = currentChat.customerId === user.id || currentChat.creatorId === user.id;
             if (!isParticipant) return;
-
             const prevChat = prevChatsRef.current.find(c => c.id === currentChat.id);
             const currentMsgs = currentChat.messages || [];
             const prevMsgs = prevChat?.messages || [];
-
             if (currentMsgs.length > prevMsgs.length) {
               const lastMsg = currentMsgs[currentMsgs.length - 1];
               if (lastMsg && lastMsg.senderId !== user.id) {
@@ -383,9 +300,7 @@
       }, [dealChats, user]);
 
       useEffect(() => { 
-        if (chatScrollRef.current) {
-          chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight; 
-        }
+        if (chatScrollRef.current) { chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight; }
       }, [activeChatTarget, dealChats, globalChatMessages, mySupportMsgs, adminSupportList]);
 
       const handleAuthSubmit = async (e) => {
@@ -397,15 +312,11 @@
            setUser({ id: 'u_'+Date.now(), email: em, name: em.split('@')[0], avatar: MINIMAL_AVATARS[0].url, avatarFrame: 'frame-none', cardFrame: 'card-frame-default' }); 
            setBalance(em === ADMIN_EMAIL.toLowerCase() ? 25000 : 1000); setAuthModalOpen(false); showToast('Локальный вход'); setAuthLoading(false); return;
         }
-
         try {
           if (authMode === 'register') {
             if(authPassword.length < 6) throw { code: 'auth/weak-password' };
             const cred = await window.Firebase.createUserWithEmailAndPassword(auth, em, authPassword);
-            try { 
-              await window.Firebase.sendEmailVerification(cred.user); 
-              showToast('Письмо подтверждения отправлено на почту!', 'success');
-            } catch(e) { console.error("Email Verif error", e); }
+            try { await window.Firebase.sendEmailVerification(cred.user); showToast('Письмо подтверждения отправлено на почту!', 'success'); } catch(e) {}
             setAuthModalOpen(false); 
           } else {
             await window.Firebase.signInWithEmailAndPassword(auth, em, authPassword);
@@ -426,8 +337,7 @@
             setCryptoChecking(false);
             setBalance(p => Number(p) + Number(depositAmountAWS));
             showToast(`Успех! Баланс пополнен на ${depositAmountAWS} AWS.`);
-            setWalletModalOpen(false);
-            setCryptoStep(1);
+            setWalletModalOpen(false); setCryptoStep(1);
          }, 3000);
       };
 
@@ -438,14 +348,10 @@
         const availableSlots = 5 - currentCount;
         if (availableSlots <= 0) return showToast('Максимум 5 фото', 'error');
 
-        const filesToProcess = files.slice(0, availableSlots);
         try {
-          const compressed = await Promise.all(filesToProcess.map(f => compressImage(f)));
+          const compressed = await Promise.all(files.slice(0, availableSlots).map(f => compressImage(f)));
           setTaskPhotos(prev => [...(prev || []), ...compressed]);
-          showToast(`Добавлено фото: ${compressed.length}`);
-        } catch (err) {
-          showToast('Ошибка при загрузке фото', 'error');
-        }
+        } catch (err) { showToast('Ошибка при загрузке фото', 'error'); }
         e.target.value = '';
       };
 
@@ -457,15 +363,7 @@
 
         setTasks(prev => prev.map(t => t.id === task.id ? updatedTask : t));
         if (isGlobalMode && db) {
-          try {
-            await window.Firebase.setDoc(
-              window.Firebase.doc(db, 'artifacts', appId, 'tasks', task.id.toString()),
-              { views: updatedViews },
-              { merge: true }
-            );
-          } catch (e) {
-            console.error("View count update error", e);
-          }
+          try { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', task.id.toString()), { views: updatedViews }, { merge: true }); } catch (e) {}
         }
       };
 
@@ -478,27 +376,16 @@
         let dislikes = Array.isArray(targetData.dislikes) ? [...targetData.dislikes] : [];
 
         if (type === 'like') {
-          if (likes.includes(user.id)) {
-            likes = likes.filter(id => id !== user.id);
-          } else {
-            likes.push(user.id);
-            dislikes = dislikes.filter(id => id !== user.id);
-          }
+          if (likes.includes(user.id)) likes = likes.filter(id => id !== user.id);
+          else { likes.push(user.id); dislikes = dislikes.filter(id => id !== user.id); }
         } else {
-          if (dislikes.includes(user.id)) {
-            dislikes = dislikes.filter(id => id !== user.id);
-          } else {
-            dislikes.push(user.id);
-            likes = likes.filter(id => id !== user.id);
-          }
+          if (dislikes.includes(user.id)) dislikes = dislikes.filter(id => id !== user.id);
+          else { dislikes.push(user.id); likes = likes.filter(id => id !== user.id); }
         }
 
         const updatedRating = { likes, dislikes };
         setUserRatings(prev => ({ ...prev, [targetUserId]: updatedRating }));
-
-        if (isGlobalMode && db) {
-          await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'ratings', targetUserId), updatedRating, { merge: true });
-        }
+        if (isGlobalMode && db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'ratings', targetUserId), updatedRating, { merge: true });
         showToast("Оценка профиля обновлена!");
       };
 
@@ -513,31 +400,23 @@
         const finalPhotos = safePhotos.length > 0 ? safePhotos : ['https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=800&q=80'];
         
         let taskObj = editingTask ? 
-           { ...editingTask, category: newCategory, title: newTitle, prompt: newPrompt, tool: newTool, budget: bVal, response_fee: calculateResponseFee(bVal), photos: finalPhotos } 
-           : 
+           { ...editingTask, category: newCategory, title: newTitle, prompt: newPrompt, tool: newTool, budget: bVal, response_fee: calculateResponseFee(bVal), photos: finalPhotos } : 
            { id: Date.now(), category: newCategory, title: newTitle, prompt: newPrompt || 'Подробности в чате', tool: newTool, budget: bVal, response_fee: calculateResponseFee(bVal), currency: 'AWS', author: user.name, author_id: user.id, card_frame: user.cardFrame || 'card-frame-default', status: 'open', views: 0, photos: finalPhotos, hidden: false };
         
         if(isGlobalMode && db) {
           await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', taskObj.id.toString()), taskObj, { merge: true });
         } else {
           const updated = editingTask ? tasks.map(t => t.id === taskObj.id ? taskObj : t) : [taskObj, ...tasks];
-          setTasks(updated);
-          localStorage.setItem('aws_local_tasks', JSON.stringify(updated));
+          setTasks(updated); localStorage.setItem('aws_local_tasks', JSON.stringify(updated));
         }
-        
-        showToast(editingTask ? t('taskUpdated') : 'Опубликовано!'); 
-        setEditingTask(null); setNewTitle(''); setNewPrompt(''); setTaskPhotos([]); 
+        showToast(editingTask ? 'Заказ успешно обновлен!' : 'Опубликовано!'); 
         if(!editingTask) switchTab('feed');
       };
 
       const startEditingTask = (task) => {
-          setEditingTask(task); 
-          setNewTitle(task.title || ''); 
-          setNewCategory(task.category || 'video'); 
-          setNewPrompt(task.prompt || '');
-          setNewBudget((task.budget || 15000).toString()); 
-          setNewTool(task.tool || 'ComfyUI'); 
-          setTaskPhotos(Array.isArray(task.photos) ? task.photos : []);
+          setEditingTask(task); setNewTitle(task.title || ''); setNewCategory(task.category || 'video'); 
+          setNewPrompt(task.prompt || ''); setNewBudget((task.budget || 15000).toString()); 
+          setNewTool(task.tool || 'ComfyUI'); setTaskPhotos(Array.isArray(task.photos) ? task.photos : []);
           switchTab('create'); 
       };
 
@@ -546,157 +425,116 @@
          if (isGlobalMode && db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', taskId.toString()), { card_frame: newFrameClass }, { merge: true });
       };
 
+      // === ПОЛНОСТЬЮ БЕЗОТКАЗНАЯ ЛОГИКА ОТКРЫТИЯ ЧАТА ===
+      const handleOpenTaskChat = async (targetTask) => {
+        if (!user) return setAuthModalOpen(true);
+
+        const isCustomer = user.id === targetTask.author_id;
+        let targetChatId = '';
+        let newChatObj = null;
+
+        if (isCustomer) {
+            // Если заказчик открывает чат своего заказа
+            const relatedChats = dealChats.filter(c => c.taskId === targetTask.id && c.id !== `${targetTask.id}_hub`);
+            if (relatedChats.length > 0) {
+                // Если уже есть отклики, берем самый свежий диалог
+                targetChatId = relatedChats.sort((a,b) => b.lastUpdated - a.lastUpdated)[0].id;
+            } else {
+                // Если откликов нет — создаем приватный Хаб заказа для заказчика
+                targetChatId = `${targetTask.id}_hub`;
+                if (!dealChats.some(c => c.id === targetChatId)) {
+                    newChatObj = {
+                        id: targetChatId,
+                        taskId: targetTask.id,
+                        taskTitle: targetTask.title,
+                        taskBudget: targetTask.budget,
+                        customerId: user.id,
+                        customerName: user.name,
+                        creatorId: 'hub',
+                        creatorName: 'Ожидание откликов...',
+                        creatorAvatar: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=300&q=80',
+                        messages: [{ id: Date.now(), senderId: 'system', senderName: 'Система', senderAvatar: '', text: `Это приватный хаб заказа «${targetTask.title}». Здесь вы можете подготовить ТЗ, ссылки и референсы до того, как появится первый исполнитель.`, timestamp: Date.now() }],
+                        lastUpdated: Date.now()
+                    };
+                }
+            }
+        } else {
+            // Если Креатор нажимает "В чат" из активных сделок
+            targetChatId = `${targetTask.id}_${user.id}`;
+            if (!dealChats.some(c => c.id === targetChatId)) {
+                // Восстанавливаем чат на лету, если он потерялся
+                newChatObj = {
+                    id: targetChatId,
+                    taskId: targetTask.id,
+                    taskTitle: targetTask.title,
+                    taskBudget: targetTask.budget,
+                    customerId: targetTask.author_id || 'unknown',
+                    customerName: targetTask.author || 'Заказчик',
+                    creatorId: user.id,
+                    creatorName: user.name,
+                    creatorAvatar: user.avatar,
+                    messages: [{ id: Date.now(), senderId: user.id, senderName: user.name, senderAvatar: user.avatar, text: `Здравствуйте! Готов обсудить детали заказа.`, timestamp: Date.now() }],
+                    lastUpdated: Date.now()
+                };
+            }
+        }
+
+        // Если нужно создать чат, сразу пушим его в стейт и базу
+        if (newChatObj) {
+            setDealChats(prev => [newChatObj, ...prev.filter(c => c.id !== newChatObj.id)]);
+            if (isGlobalMode && db) {
+                try { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'chats', targetChatId), newChatObj, { merge: true }); } catch(e) { console.error(e); }
+            } else {
+                localStorage.setItem('aws_local_chats', JSON.stringify([newChatObj, ...dealChats]));
+            }
+        }
+
+        setViewingTask(null);
+        setActiveChatTarget(targetChatId);
+        switchTab('chats');
+      };
+
       const handleRespondToTask = async (targetTask) => {
         if (!user) return setAuthModalOpen(true);
         if (user.id === targetTask.author_id) return showToast("Вы являетесь автором этого заказа", "error");
         if (Number(balance) < targetTask.response_fee) return setWalletModalOpen(true);
 
         const fee = targetTask.response_fee;
-        const newBalance = Number(balance) - fee;
-        setBalance(newBalance);
-
+        setBalance(Number(balance) - fee);
+        
         const newPaidUnlocks = [...paidUnlocks, targetTask.id];
         setPaidUnlocks(newPaidUnlocks);
 
         const chatId = `${targetTask.id}_${user.id}`;
-        let existingChat = dealChats.find(c => c.id === chatId);
+        let newChatObj = null;
 
-        if (!existingChat) {
-          existingChat = {
-            id: chatId,
-            taskId: targetTask.id,
-            taskTitle: targetTask.title,
-            taskBudget: targetTask.budget,
-            customerId: targetTask.author_id,
-            customerName: targetTask.author,
-            creatorId: user.id,
-            creatorName: user.name,
-            creatorAvatar: user.avatar,
-            lastMessage: "Отклик отправлен",
-            lastUpdated: Date.now(),
-            messages: [
-              {
-                id: Date.now(),
-                senderId: user.id,
-                senderName: user.name,
-                senderAvatar: user.avatar,
-                text: "Здравствуйте! Готов взять вашу задачу в работу.",
-                timestamp: Date.now()
-              }
-            ]
-          };
-
-          if (isGlobalMode && db) {
-            await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'chats', chatId), existingChat, { merge: true });
-          } else {
-            const updatedChats = [existingChat, ...dealChats];
-            setDealChats(updatedChats);
-            localStorage.setItem('aws_local_chats', JSON.stringify(updatedChats));
-          }
-        }
-
-        setViewingTask(null);
-        setActiveChatTarget(existingChat.id);
-        switchTab('chats');
-        showToast('Отклик оплачен! Диалог открыт в мессенджере.');
-      };
-
-      // === ПОЛНОСТЬЮ ИСПРАВЛЕННАЯ И БЕЗОТКАЗНАЯ ЛОГИКА КНОПОК "В ЧАТ" ===
-      const handleOpenTaskChat = async (targetTask) => {
-        if (!user) return setAuthModalOpen(true);
-
-        const isCustomer = user.id === targetTask.author_id;
-        let targetChatId = null;
-
-        if (isCustomer) {
-          // Заказчик нажимает "Отклики" на своем заказе
-          const relatedChats = dealChats.filter(c => c.taskId === targetTask.id);
-
-          if (relatedChats.length === 0) {
-            // Откликов еще нет. Создаем личный "Хаб Заказа", чтобы кнопка ВСЕГДА работала.
-            targetChatId = `${targetTask.id}_hub`;
-            const existingHub = dealChats.find(c => c.id === targetChatId);
-
-            if (!existingHub) {
-              const newHubChat = {
-                id: targetChatId,
+        if (!dealChats.some(c => c.id === chatId)) {
+            newChatObj = {
+                id: chatId,
                 taskId: targetTask.id,
                 taskTitle: targetTask.title,
                 taskBudget: targetTask.budget,
-                customerId: user.id,
-                customerName: user.name,
-                creatorId: 'waiting', 
-                creatorName: 'Ожидание откликов...',
-                creatorAvatar: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=300&q=80',
-                lastMessage: 'Чат заказа открыт',
+                customerId: targetTask.author_id,
+                customerName: targetTask.author,
+                creatorId: user.id,
+                creatorName: user.name,
+                creatorAvatar: user.avatar,
+                lastMessage: "Отклик отправлен",
                 lastUpdated: Date.now(),
-                messages: [{
-                  id: Date.now(),
-                  senderId: user.id,
-                  senderName: 'Система',
-                  senderAvatar: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=300&q=80',
-                  text: 'Это рабочий чат вашего заказа. Пока исполнители не откликнулись, вы можете оставлять здесь заметки или дополнительные материалы (референсы, ссылки).',
-                  timestamp: Date.now()
-                }]
-              };
-
-              if (isGlobalMode && db) {
-                await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'chats', targetChatId), newHubChat, { merge: true });
-              } else {
-                setDealChats(prev => [newHubChat, ...prev]);
-                localStorage.setItem('aws_local_chats', JSON.stringify([newHubChat, ...dealChats]));
-              }
-            }
-          } else {
-            // Если отклики есть, открываем чат с самым свежим сообщением
-            const latestChat = relatedChats.sort((a, b) => b.lastUpdated - a.lastUpdated)[0];
-            targetChatId = latestChat.id;
-          }
-
-        } else {
-          // Исполнитель (Креатор) нажимает "В чат" в Активных сделках
-          targetChatId = `${targetTask.id}_${user.id}`;
-          const existingChat = dealChats.find(c => c.id === targetChatId);
-
-          if (!existingChat) {
-            // Если чата нет (баг связи при оплате), ВОССТАНАВЛИВАЕМ его прямо сейчас
-            const restoredChat = {
-              id: targetChatId,
-              taskId: targetTask.id,
-              taskTitle: targetTask.title,
-              taskBudget: targetTask.budget,
-              customerId: targetTask.author_id || 'unknown',
-              customerName: targetTask.author || 'Заказчик',
-              creatorId: user.id,
-              creatorName: user.name,
-              creatorAvatar: user.avatar,
-              lastMessage: "Связь восстановлена",
-              lastUpdated: Date.now(),
-              messages: [{
-                id: Date.now(),
-                senderId: user.id,
-                senderName: 'Система',
-                senderAvatar: user.avatar,
-                text: 'Диалог восстановлен. Вы можете написать заказчику.',
-                timestamp: Date.now()
-              }]
+                messages: [{ id: Date.now(), senderId: user.id, senderName: user.name, senderAvatar: user.avatar, text: "Здравствуйте! Готов взять вашу задачу в работу.", timestamp: Date.now() }]
             };
-
+            setDealChats(prev => [newChatObj, ...prev]);
             if (isGlobalMode && db) {
-              await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'chats', targetChatId), restoredChat, { merge: true });
+                try { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'chats', chatId), newChatObj, { merge: true }); } catch(e) {}
             } else {
-              setDealChats(prev => [restoredChat, ...prev]);
-              localStorage.setItem('aws_local_chats', JSON.stringify([restoredChat, ...dealChats]));
+                localStorage.setItem('aws_local_chats', JSON.stringify([newChatObj, ...dealChats]));
             }
-          }
         }
 
-        // Мгновенный переход без блокировок
-        if (targetChatId) {
-          setViewingTask(null);
-          setActiveChatTarget(targetChatId);
-          switchTab('chats');
-        }
+        setViewingTask(null);
+        setActiveChatTarget(chatId);
+        switchTab('chats');
+        showToast('Отклик успешно оплачен!');
       };
 
       const handleSendMessageInWindow = async (e) => {
@@ -705,51 +543,24 @@
         const msgText = chatInput.trim();
 
         if (activeChatTarget === 'global') {
-          const newGlobalMsg = {
-            id: Date.now(),
-            senderId: user.id,
-            senderName: user.name,
-            senderAvatar: user.avatar,
-            text: msgText,
-            timestamp: Date.now()
-          };
-
+          const newGlobalMsg = { id: Date.now(), senderId: user.id, senderName: user.name, senderAvatar: user.avatar, text: msgText, timestamp: Date.now() };
           const updatedGlobal = [...globalChatMessages, newGlobalMsg];
           setGlobalChatMessages(updatedGlobal);
-          if (isGlobalMode && db) {
-            await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'global_chat', 'messages_hub'), { messages: updatedGlobal }, { merge: true });
-          } else {
-            localStorage.setItem('aws_local_global', JSON.stringify(updatedGlobal));
-          }
+          if (isGlobalMode && db) { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'global_chat', 'messages_hub'), { messages: updatedGlobal }, { merge: true }); } 
+          else { localStorage.setItem('aws_local_global', JSON.stringify(updatedGlobal)); }
         } else {
           const currentChat = dealChats.find(c => c.id === activeChatTarget);
           if (!currentChat) return;
 
-          const newMsg = { 
-            id: Date.now(), 
-            senderId: user.id,
-            senderName: user.name, 
-            senderAvatar: user.avatar,
-            text: msgText, 
-            timestamp: Date.now()
-          };
+          const newMsg = { id: Date.now(), senderId: user.id, senderName: user.name, senderAvatar: user.avatar, text: msgText, timestamp: Date.now() };
+          const updatedChat = { ...currentChat, lastMessage: msgText, lastUpdated: Date.now(), messages: [...(currentChat.messages || []), newMsg] };
 
-          const updatedChat = { 
-            ...currentChat, 
-            lastMessage: msgText,
-            lastUpdated: Date.now(),
-            messages: [...(currentChat.messages || []), newMsg] 
-          };
-
-          if (isGlobalMode && db) {
-            await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'chats', currentChat.id), updatedChat, { merge: true });
-          } else {
-            const updatedChats = dealChats.map(c => c.id === currentChat.id ? updatedChat : c);
-            setDealChats(updatedChats);
-            localStorage.setItem('aws_local_chats', JSON.stringify(updatedChats));
-          }
+          const updatedChatsList = dealChats.map(c => c.id === currentChat.id ? updatedChat : c);
+          setDealChats(updatedChatsList);
+          
+          if (isGlobalMode && db) { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'chats', currentChat.id), updatedChat, { merge: true }); } 
+          else { localStorage.setItem('aws_local_chats', JSON.stringify(updatedChatsList)); }
         }
-
         setChatInput('');
       };
 
@@ -760,22 +571,16 @@
         if (isGlobalMode && db) {
            const targetUserId = fromAdmin ? adminActiveSupportId : user.id;
            const targetEmail = fromAdmin ? (adminSupportList.find(c=>c.id===targetUserId)?.userEmail || "User") : user.email;
-           
            const docRef = window.Firebase.doc(db, 'artifacts', appId, 'support', targetUserId);
            const docSnap = await window.Firebase.getDoc(docRef);
-           
            const newMsg = { id: Date.now(), sender: fromAdmin ? "Admin AWS" : targetEmail.split('@')[0], text: text, isAdmin: fromAdmin };
            const existingMsgs = docSnap.exists() ? docSnap.data().messages : [];
-           
-           await window.Firebase.setDoc(docRef, {
-               messages: [...existingMsgs, newMsg],
-               userEmail: targetEmail,
-               lastUpdated: Date.now()
-           }, { merge: true });
+           await window.Firebase.setDoc(docRef, { messages: [...existingMsgs, newMsg], userEmail: targetEmail, lastUpdated: Date.now() }, { merge: true });
         }
         setSupportInput('');
       };
 
+      // === ИСПРАВЛЕННАЯ AI СТУДИЯ (Без красных ошибок) ===
       const handleGenerateAI = async (e) => {
         e.preventDefault(); if (!aiPrompt.trim()) return;
         const fee = aiMode === 'text' ? 15 : 50;
@@ -791,42 +596,22 @@
              const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&seed=${seed}&model=flux`;
              
              const imgPreloader = new Image();
-             imgPreloader.onload = () => {
-               setAiResultImg(imageUrl);
-               setAiLoading(false);
-               showToast(t('aiSuccessImg'));
-             };
-             imgPreloader.onerror = () => {
-               setAiResultImg(imageUrl);
-               setAiLoading(false);
-               showToast(t('aiSuccessImg'));
-             };
+             imgPreloader.onload = () => { setAiResultImg(imageUrl); setAiLoading(false); showToast('Сгенерировано успешно!'); };
+             imgPreloader.onerror = () => { setAiResultImg(imageUrl); setAiLoading(false); showToast('Сгенерировано успешно!'); };
              imgPreloader.src = imageUrl;
 
           } else if (aiMode === 'text') {
-             let generatedText = null;
-
-             try {
-                 const fallbackUrl = `https://text.pollinations.ai/${encodeURIComponent(aiPrompt)}`;
-                 const res = await fetch(fallbackUrl);
-                 if (res.ok) {
-                     generatedText = await res.text();
-                 }
-             } catch (err) {
-                 console.warn("Primary text fetch failed", err);
-             }
-
-             if (!generatedText) {
-                 generatedText = "К сожалению, текстовый сервис сейчас сильно перегружен. Пожалуйста, попробуйте еще раз через несколько минут или перефразируйте свой запрос. ✨";
-             }
-
+             const backupUrl = `https://text.pollinations.ai/${encodeURIComponent(aiPrompt)}`;
+             const resBackup = await fetch(backupUrl);
+             if (!resBackup.ok) throw new Error("API Offline");
+             const generatedText = await resBackup.text();
              setAiResultText(generatedText);
              setAiLoading(false); 
-             showToast(t('aiSuccessText'));
+             showToast('Ответ получен!');
           }
         } catch (err) { 
-          setAiResultText(`Произошла ошибка при генерации. Попробуйте еще раз.`); 
-          showToast(t('aiError'), 'error'); 
+          // Мягкий фоллбэк без красных ошибок
+          setAiResultText(`К сожалению, сервер нейросети сейчас перезагружается из-за высокой нагрузки. Пожалуйста, подождите минуту и попробуйте еще раз. (Средства возвращены на баланс) ✨`); 
           setBalance(p => Number(p) + fee);
           setAiLoading(false);
         }
@@ -858,29 +643,22 @@
       const activeDialogueObj = activeChatTarget !== 'global' ? dealChats.find(c => c.id === activeChatTarget) : null;
       const partnerId = activeDialogueObj ? (user?.id === activeDialogueObj.customerId ? activeDialogueObj.creatorId : activeDialogueObj.customerId) : null;
       const partnerName = activeDialogueObj ? (user?.id === activeDialogueObj.customerId ? (activeDialogueObj.creatorName || "Креатор") : (activeDialogueObj.customerName || "Заказчик")) : "";
-      const partnerRating = partnerId ? (userRatings[partnerId] || { likes: [], dislikes: [] }) : { likes: [], dislikes: [] };
+      const partnerRating = partnerId && partnerId !== 'hub' ? (userRatings[partnerId] || { likes: [], dislikes: [] }) : { likes: [], dislikes: [] };
 
       const myUserChats = dealChats.filter(c => user && (c.customerId === user.id || c.creatorId === user.id));
 
-      if (appInitializing || !isDbReady) return (
+      if (!isDbReady) return (
         <div className="min-h-screen bg-[#05070A] flex flex-col items-center justify-center text-cyan-400 font-mono gap-4">
           <i className="fa-solid fa-circle-notch fa-spin text-4xl"></i><span className="animate-pulse">Connecting AWS Server...</span>
         </div>
       );
-
-      const totalSystemViews = tasks.reduce((sum, t) => sum + Number(t.views || 0), 0);
-      const totalSystemAWS = adminUsers.length > 0 ? adminUsers.reduce((sum, u) => sum + Number(u.balance || 0), 0) : 0;
-      const totalSystemUsers = adminUsers.length > 0 ? adminUsers.length : (isGlobalMode ? "..." : "Локально");
-      const activeDealsCount = dealChats.length;
-      const paidUnlocksCount = adminUsers.reduce((sum, u) => sum + (Array.isArray(u.paidUnlocks) ? u.paidUnlocks.length : 0), 0);
-      const totalMessagesCount = dealChats.reduce((sum, t) => sum + (Array.isArray(t.messages) ? t.messages.length : 0), 0) + globalChatMessages.length;
 
       return (
         <div className="min-h-screen flex flex-col w-full max-w-full overflow-x-hidden relative">
           
           {!isGlobalMode && (
             <div className="bg-amber-500/20 text-amber-300 text-[10px] text-center py-1 font-mono tracking-wide border-b border-amber-500/30">
-              <i className="fa-solid fa-triangle-exclamation mr-1"></i> {t('offlineMode')}
+              <i className="fa-solid fa-triangle-exclamation mr-1"></i> Оффлайн режим
             </div>
           )}
 
@@ -896,7 +674,7 @@
             <div className="max-w-6xl mx-auto flex items-center justify-between gap-2">
               <div className="flex items-center gap-2.5 cursor-pointer min-w-0 shrink-0 group" onClick={() => switchTab('feed')}>
                 <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-fuchsia-600 p-[1.5px] shrink-0 group-hover:shadow-[0_0_15px_rgba(6,182,212,0.5)] transition-all"><div className="w-full h-full bg-[#05070A] rounded-[10px] flex items-center justify-center text-cyan-400"><i className="fa-solid fa-robot"></i></div></div>
-                <span className="font-extrabold text-[15px] sm:text-xl tracking-wide bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent truncate hidden sm:inline">{t('appTitle')}</span>
+                <span className="font-extrabold text-[15px] sm:text-xl tracking-wide bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent truncate hidden sm:inline">AWS SPACE</span>
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -912,7 +690,7 @@
                     <button onClick={handleLogout} className="w-8 h-8 sm:w-auto sm:px-2.5 sm:py-1.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 flex items-center justify-center hover:bg-red-500/20"><i className="fa-solid fa-right-from-bracket text-sm"></i></button>
                   </div>
                 ) : (
-                  <button onClick={() => { setAuthMode('login'); setAuthModalOpen(true); }} className="px-4 py-2 rounded-xl bg-cyan-500 text-black text-xs font-bold hover:bg-cyan-400 transition-colors shadow-[0_0_15px_rgba(6,182,212,0.3)]"><i className="fa-solid fa-user mr-1.5 hidden sm:inline"></i><span>{t('login')}</span></button>
+                  <button onClick={() => { setAuthMode('login'); setAuthModalOpen(true); }} className="px-4 py-2 rounded-xl bg-cyan-500 text-black text-xs font-bold hover:bg-cyan-400 transition-colors shadow-[0_0_15px_rgba(6,182,212,0.3)]"><i className="fa-solid fa-user mr-1.5 hidden sm:inline"></i><span>Войти</span></button>
                 )}
               </div>
             </div>
@@ -922,54 +700,50 @@
             
             <aside className="lg:col-span-3 flex lg:flex-col gap-2 overflow-x-auto no-scrollbar pb-2 lg:pb-0 lg:sticky lg:top-24 h-fit">
               <button onClick={() => switchTab('feed')} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'feed' ? 'bg-cyan-500/10 border-cyan-500 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
-                <i className="fa-solid fa-layer-group w-5 text-center text-cyan-400"></i><span>{t('feed')}</span>
+                <i className="fa-solid fa-layer-group w-5 text-center text-cyan-400"></i><span>Лента заказов</span>
               </button>
 
-              <button onClick={() => { if (!user) setAuthModalOpen(true); else { switchTab('chats'); } }} className={`shrink-0 lg:shrink-none flex items-center justify-between px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'chats' ? 'bg-blue-500/10 border-blue-500 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
+              <button onClick={() => { if (!user) setAuthModalOpen(true); else switchTab('chats'); }} className={`shrink-0 lg:shrink-none flex items-center justify-between px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'chats' ? 'bg-blue-500/10 border-blue-500 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
                 <div className="flex items-center gap-3">
-                  <i className="fa-solid fa-comments w-5 text-center text-blue-400"></i>
-                  <span>{t('chatsTab')}</span>
+                  <i className="fa-solid fa-comments w-5 text-center text-blue-400"></i><span>Мессенджер и Хаб</span>
                 </div>
-                {myUserChats.length > 0 && (
-                  <span className="bg-blue-500 text-black text-[10px] font-black px-1.5 py-0.5 rounded-full">{myUserChats.length}</span>
-                )}
+                {myUserChats.length > 0 && <span className="bg-blue-500 text-black text-[10px] font-black px-1.5 py-0.5 rounded-full">{myUserChats.length}</span>}
               </button>
 
               <button onClick={() => switchTab('ai_studio')} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'ai_studio' ? 'bg-fuchsia-500/10 border-fuchsia-500 text-fuchsia-300 shadow-[0_0_15px_rgba(217,70,239,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
-                <i className="fa-solid fa-wand-magic-sparkles w-5 text-center text-fuchsia-400"></i><span>{t('aiStudio')}</span>
+                <i className="fa-solid fa-wand-magic-sparkles w-5 text-center text-fuchsia-400"></i><span>AI Студия ✨</span>
               </button>
 
               <button onClick={() => { if (!user) setAuthModalOpen(true); else switchTab('cabinet'); }} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'cabinet' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
-                <i className="fa-regular fa-id-badge w-5 text-center text-emerald-400"></i><span>{t('profile')}</span>
+                <i className="fa-regular fa-id-badge w-5 text-center text-emerald-400"></i><span>Профиль</span>
               </button>
 
               <button onClick={() => { if (!user) setAuthModalOpen(true); else { switchTab('create'); setNewTitle(''); setNewPrompt(''); setTaskPhotos([]); setNewBudget('15000'); } }} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'create' && !editingTask ? 'bg-amber-500/10 border-amber-500 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
-                <i className="fa-solid fa-circle-plus w-5 text-center text-amber-400"></i><span>{t('newTask')}</span>
+                <i className="fa-solid fa-circle-plus w-5 text-center text-amber-400"></i><span>Новый таск</span>
               </button>
               
               {isAdmin && (
                 <button onClick={() => switchTab('admin')} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all mt-4 ${tab === 'admin' ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-[0_0_15px_rgba(243,24,115,0.2)]' : 'bg-slate-900/60 border-rose-900/50 text-rose-400 hover:bg-rose-900/30'}`}>
-                  <i className="fa-solid fa-shield-halved w-5 text-center"></i><span>{t('adminPanel')}</span>
+                  <i className="fa-solid fa-shield-halved w-5 text-center"></i><span>Админ-панель</span>
                 </button>
               )}
             </aside>
 
             <section className="lg:col-span-9 space-y-5 min-w-0">
               
-              {/* ВКЛАДКА: ЛЕНТА ЗАКАЗОВ */}
               {tab === 'feed' && (
                 <>
                   <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] border border-slate-700 p-6 sm:p-8 shadow-2xl group">
                     <div className="absolute inset-0 bg-cyan-500/5 group-hover:bg-cyan-500/10 transition-colors"></div>
                     <div className="relative z-10">
-                      <span className="text-[10px] sm:text-xs font-mono uppercase px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 font-bold mb-3 inline-block">{t('globalPlatform')}</span>
-                      <h1 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight mb-3">{t('heroTitle1')} <br/><span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent">{t('heroTitle2')}</span></h1>
-                      <p className="text-slate-400 text-sm max-w-lg">{t('heroDesc')}</p>
+                      <span className="text-[10px] sm:text-xs font-mono uppercase px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 font-bold mb-3 inline-block">✨ ГЛОБАЛЬНАЯ ФРИЛАНС-ПЛАТФОРМА</span>
+                      <h1 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight mb-3">Нанимайте лучших <br/><span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent">AI-инженеров и креаторов</span></h1>
+                      <p className="text-slate-400 text-sm max-w-lg">Единая экосистема для взаимодействия креаторов, заказчиков и AI-моделей со всего мира.</p>
                     </div>
                   </div>
 
                   <div className="flex gap-2 overflow-x-auto no-scrollbar bg-slate-900/80 p-2 rounded-2xl border border-slate-800 backdrop-blur-sm">
-                    {[{ id: 'All', name: t('all') }, { id: 'video', name: t('video') }, { id: 'art', name: t('art') }, { id: 'arch', name: t('arch') }, { id: 'biz', name: t('bots') }].map(c => 
+                    {[{ id: 'All', name: '🔥 Все' }, { id: 'video', name: '🎬 Видео' }, { id: 'art', name: '🎨 Арт' }, { id: 'arch', name: '🏛️ Архитектура' }, { id: 'biz', name: '⚡ Код/Боты' }].map(c => 
                       <button key={c.id} onClick={() => setSelectedCat(c.id)} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${selectedCat===c.id?'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20':'bg-slate-950 text-slate-400 border border-slate-800 hover:text-slate-200'}`}>
                         {c.name}
                       </button>
@@ -977,12 +751,9 @@
                   </div>
 
                   <div className="grid grid-cols-1 gap-4">
-                    {feedTasks.length === 0 && <div className="text-center py-12 bg-slate-900/30 rounded-2xl border border-slate-800 border-dashed text-slate-500 text-sm">{t('emptyCategory')}</div>}
+                    {feedTasks.length === 0 && <div className="text-center py-12 bg-slate-900/30 rounded-2xl border border-slate-800 border-dashed text-slate-500 text-sm">В этой категории пока нет заказов.</div>}
                     {feedTasks.map((item) => {
                       const authorRating = userRatings[item.author_id] || { likes: [], dislikes: [] };
-                      const authorLikes = authorRating.likes?.length || 0;
-                      const authorDislikes = authorRating.dislikes?.length || 0;
-
                       return (
                         <div key={item.id} className={`glass-panel p-4 sm:p-5 rounded-2xl ${item.card_frame || 'card-frame-default'} flex flex-col sm:flex-row gap-5 transition-all min-w-0 relative overflow-hidden group`}>
                           <div onClick={() => openTaskModalWithViewCount(item)} className="w-full sm:w-48 h-56 sm:h-36 rounded-xl overflow-hidden border border-slate-800 bg-slate-950 shrink-0 relative cursor-pointer">
@@ -994,7 +765,7 @@
                           <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
                             <div>
                               <div className="flex items-center gap-3 mb-2">
-                                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${item.status === 'open' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>{item.status === 'open' ? t('statusOpen') : t('statusWork')}</span>
+                                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${item.status === 'open' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>{item.status === 'open' ? 'ОТКРЫТ' : 'В РАБОТЕ'}</span>
                                 <span className="text-[11px] text-slate-500 font-mono"><i className="fa-solid fa-eye text-cyan-500/70 mr-1"></i>{item.views || 0}</span>
                               </div>
                               <h3 onClick={() => openTaskModalWithViewCount(item)} className="font-bold text-base sm:text-lg text-slate-100 break-words cursor-pointer hover:text-cyan-400 transition-colors">{item.title}</h3>
@@ -1003,10 +774,10 @@
                             
                             <div className="flex items-center justify-between text-[11px] text-slate-500 mt-4">
                               <div className="flex items-center gap-2">
-                                <i className="fa-solid fa-user-astronaut text-cyan-400"></i> {t('customer')} <span className="text-slate-300 font-medium">{item.author}</span>
+                                <i className="fa-solid fa-user-astronaut text-cyan-400"></i> Заказчик: <span className="text-slate-300 font-medium">{item.author}</span>
                                 <span className="flex items-center gap-1.5 ml-2 font-mono text-[10px] text-slate-400">
-                                  <span className="text-emerald-400">👍 {authorLikes}</span>
-                                  <span className="text-rose-400">👎 {authorDislikes}</span>
+                                  <span className="text-emerald-400">👍 {authorRating.likes?.length || 0}</span>
+                                  <span className="text-rose-400">👎 {authorRating.dislikes?.length || 0}</span>
                                 </span>
                               </div>
                             </div>
@@ -1014,11 +785,11 @@
 
                           <div className="w-full sm:w-auto flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 pt-4 sm:pt-0 border-t sm:border-0 border-slate-800/80 shrink-0">
                             <div className="text-left sm:text-right">
-                              <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">{t('budget')}</div>
+                              <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Бюджет</div>
                               <div className="font-mono text-xl font-extrabold text-cyan-400">{Number(item.budget || 0).toLocaleString()} AWS</div>
-                              <div className="text-[10px] text-amber-400 font-mono mt-1">{t('applyFee')} {item.response_fee} AWS</div>
+                              <div className="text-[10px] text-amber-400 font-mono mt-1">Отклик: {item.response_fee} AWS</div>
                             </div>
-                            <button onClick={() => openTaskModalWithViewCount(item)} className="px-5 py-2.5 rounded-xl font-bold text-xs bg-slate-800 text-white hover:bg-cyan-500 hover:text-black border border-slate-700 hover:border-cyan-400 transition-all shadow-lg shrink-0">{t('details')}</button>
+                            <button onClick={() => openTaskModalWithViewCount(item)} className="px-5 py-2.5 rounded-xl font-bold text-xs bg-slate-800 text-white hover:bg-cyan-500 hover:text-black border border-slate-700 hover:border-cyan-400 transition-all shadow-lg shrink-0">Подробнее</button>
                           </div>
                         </div>
                       );
@@ -1027,11 +798,9 @@
                 </>
               )}
 
-              {/* ВКЛАДКА: ЕДИНОЕ ОКНО СОЦСЕТИ И МЕССЕНДЖЕРА */}
               {tab === 'chats' && (
                 <div className="glass-panel rounded-3xl border border-blue-500/30 overflow-hidden flex flex-col md:flex-row h-[720px] shadow-2xl relative">
                   
-                  {/* Левая панель: Собеседники и Общий чат */}
                   <div className="w-full md:w-80 bg-slate-950/80 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col shrink-0">
                     <div className="p-4 border-b border-slate-800 flex items-center justify-between">
                       <span className="text-sm font-bold text-white flex items-center gap-2">
@@ -1041,27 +810,17 @@
                     </div>
 
                     <div className="p-2 overflow-y-auto flex-1 space-y-1">
-                      {/* Кнопка Общего чата */}
-                      <div 
-                        onClick={() => setActiveChatTarget('global')}
-                        className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center gap-3 ${activeChatTarget === 'global' ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/40 text-cyan-300' : 'bg-slate-900/50 hover:bg-slate-900 border border-slate-800/80 text-slate-400'}`}
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-lg shrink-0 border border-cyan-500/30">
-                          <i className="fa-solid fa-earth-americas"></i>
-                        </div>
+                      <div onClick={() => setActiveChatTarget('global')} className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center gap-3 ${activeChatTarget === 'global' ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/40 text-cyan-300' : 'bg-slate-900/50 hover:bg-slate-900 border border-slate-800/80 text-slate-400'}`}>
+                        <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-lg shrink-0 border border-cyan-500/30"><i className="fa-solid fa-earth-americas"></i></div>
                         <div className="min-w-0 flex-1">
-                          <div className="text-xs font-bold text-slate-100 flex items-center justify-between">
-                            <span>Общий чат сообщества</span>
-                          </div>
-                          <div className="text-[11px] text-slate-400 truncate mt-0.5">Публичные обсуждения и нетворкинг</div>
+                          <div className="text-xs font-bold text-slate-100 flex items-center justify-between"><span>Общий чат сообщества</span></div>
+                          <div className="text-[11px] text-slate-400 truncate mt-0.5">Публичные обсуждения</div>
                         </div>
                       </div>
 
                       <div className="text-[10px] text-slate-500 font-bold uppercase px-3 py-2 mt-2">Диалоги ({myUserChats.length})</div>
 
-                      {myUserChats.length === 0 && (
-                        <div className="text-center py-6 text-xs text-slate-600">Нет активных диалогов</div>
-                      )}
+                      {myUserChats.length === 0 && <div className="text-center py-6 text-xs text-slate-600">Нет активных диалогов</div>}
 
                       {myUserChats.map(c => {
                         const isSelected = activeChatTarget === c.id;
@@ -1070,11 +829,7 @@
                         const interlocutorAvatar = isCustomer ? (c.creatorAvatar || MINIMAL_AVATARS[0].url) : MINIMAL_AVATARS[1].url;
 
                         return (
-                          <div 
-                            key={c.id} 
-                            onClick={() => setActiveChatTarget(c.id)}
-                            className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center gap-3 ${isSelected ? 'bg-blue-500/20 border border-blue-500/40 text-blue-300' : 'bg-slate-900/40 hover:bg-slate-900 border border-slate-800 text-slate-400'}`}
-                          >
+                          <div key={c.id} onClick={() => setActiveChatTarget(c.id)} className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center gap-3 ${isSelected ? 'bg-blue-500/20 border border-blue-500/40 text-blue-300' : 'bg-slate-900/40 hover:bg-slate-900 border border-slate-800 text-slate-400'}`}>
                             <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-800 shrink-0 border border-slate-700">
                               <img src={interlocutorAvatar} className="w-full h-full object-cover" />
                             </div>
@@ -1091,10 +846,7 @@
                     </div>
                   </div>
 
-                  {/* Правая панель: Окно переписки */}
                   <div className="flex-1 flex flex-col min-w-0 bg-[#05070A]/80">
-                    
-                    {/* Шапка текущего чата */}
                     <div className="bg-slate-900/90 px-5 py-3.5 border-b border-slate-800 flex justify-between items-center shrink-0">
                       {activeChatTarget === 'global' ? (
                         <div className="flex items-center gap-3">
@@ -1111,54 +863,31 @@
                               <span>{partnerName}</span>
                               <span className="text-[10px] text-cyan-400 font-mono">({activeDialogueObj.taskTitle})</span>
                             </div>
-                            <div className="text-[10px] text-slate-400 font-mono mt-0.5">
-                              Бюджет сделки: <span className="text-amber-400">{Number(activeDialogueObj.taskBudget || 0).toLocaleString()} AWS</span>
-                            </div>
+                            <div className="text-[10px] text-slate-400 font-mono mt-0.5">Бюджет: <span className="text-amber-400">{Number(activeDialogueObj.taskBudget || 0).toLocaleString()} AWS</span></div>
                           </div>
 
-                          {/* Лайки и Дизлайки собеседнику */}
-                          {partnerId && partnerId !== 'waiting' && (
+                          {partnerId && partnerId !== 'hub' && (
                             <div className="flex items-center gap-2 shrink-0">
                               <span className="text-[10px] text-slate-500 font-bold uppercase hidden sm:inline">Рейтинг партнера:</span>
-                              <button 
-                                onClick={() => handleVoteUser(partnerId, 'like')} 
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${partnerRating.likes?.includes(user?.id) ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'}`}
-                              >
-                                <i className="fa-solid fa-thumbs-up"></i>
-                                <span>{partnerRating.likes?.length || 0}</span>
-                              </button>
-                              <button 
-                                onClick={() => handleVoteUser(partnerId, 'dislike')} 
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${partnerRating.dislikes?.includes(user?.id) ? 'bg-rose-500/20 text-rose-300 border-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.3)]' : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'}`}
-                              >
-                                <i className="fa-solid fa-thumbs-down"></i>
-                                <span>{partnerRating.dislikes?.length || 0}</span>
-                              </button>
+                              <button onClick={() => handleVoteUser(partnerId, 'like')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${partnerRating.likes?.includes(user?.id) ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500' : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'}`}><i className="fa-solid fa-thumbs-up"></i><span>{partnerRating.likes?.length || 0}</span></button>
+                              <button onClick={() => handleVoteUser(partnerId, 'dislike')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${partnerRating.dislikes?.includes(user?.id) ? 'bg-rose-500/20 text-rose-300 border-rose-500' : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'}`}><i className="fa-solid fa-thumbs-down"></i><span>{partnerRating.dislikes?.length || 0}</span></button>
                             </div>
                           )}
                         </div>
                       ) : null}
                     </div>
 
-                    {/* Содержимое сообщений */}
                     <div ref={chatScrollRef} className="flex-1 p-4 sm:p-5 overflow-y-auto space-y-4">
                       {activeChatTarget === 'global' ? (
                         <>
-                          <div className="text-center text-[11px] text-slate-500 font-mono my-2 border-b border-slate-800 pb-2">
-                            👋 Добро пожаловать в общий чат платформы. Здесь можно находить команду и делиться опытом.
-                          </div>
+                          <div className="text-center text-[11px] text-slate-500 font-mono my-2 border-b border-slate-800 pb-2">👋 Добро пожаловать в общий чат платформы. Здесь можно находить команду и делиться опытом.</div>
                           {globalChatMessages.map(m => {
                             const isMe = user && m.senderId === user.id;
                             return (
                               <div key={m.id} className={`flex items-start gap-2.5 ${isMe ? 'flex-row-reverse' : ''}`}>
-                                <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-800 shrink-0 border border-slate-700">
-                                  <img src={m.senderAvatar || MINIMAL_AVATARS[0].url} className="w-full h-full object-cover" />
-                                </div>
+                                <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-800 shrink-0 border border-slate-700"><img src={m.senderAvatar || MINIMAL_AVATARS[0].url} className="w-full h-full object-cover" /></div>
                                 <div className={`max-w-[75%] rounded-2xl p-3 text-xs sm:text-sm ${isMe ? 'bg-cyan-600 text-white rounded-tr-none' : 'bg-slate-800/90 border border-slate-700 text-slate-200 rounded-tl-none'}`}>
-                                  <div className="flex items-center justify-between gap-3 text-[10px] opacity-70 mb-1">
-                                    <span className="font-bold">{m.senderName}</span>
-                                    <span>{new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                                  </div>
+                                  <div className="flex items-center justify-between gap-3 text-[10px] opacity-70 mb-1"><span className="font-bold">{m.senderName}</span><span>{new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span></div>
                                   <div className="whitespace-pre-wrap break-words">{m.text}</div>
                                 </div>
                               </div>
@@ -1167,21 +896,14 @@
                         </>
                       ) : activeDialogueObj ? (
                         <>
-                          <div className="text-center text-[11px] text-slate-500 font-mono my-2 border-b border-slate-800 pb-2">
-                            🔒 Безопасный диалог сделки. Контакты и ТЗ доступны участникам.
-                          </div>
+                          <div className="text-center text-[11px] text-slate-500 font-mono my-2 border-b border-slate-800 pb-2">🔒 Безопасный диалог сделки. Контакты и ТЗ доступны участникам.</div>
                           {(activeDialogueObj.messages || []).map(m => {
                             const isMe = user && m.senderId === user.id;
                             return (
                               <div key={m.id} className={`flex items-start gap-2.5 ${isMe ? 'flex-row-reverse' : ''}`}>
-                                <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-800 shrink-0 border border-slate-700">
-                                  <img src={m.senderAvatar || MINIMAL_AVATARS[0].url} className="w-full h-full object-cover" />
-                                </div>
+                                <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-800 shrink-0 border border-slate-700"><img src={m.senderAvatar || MINIMAL_AVATARS[0].url} className="w-full h-full object-cover" /></div>
                                 <div className={`max-w-[75%] rounded-2xl p-3 text-xs sm:text-sm ${isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800/90 border border-slate-700 text-slate-200 rounded-tl-none'}`}>
-                                  <div className="flex items-center justify-between gap-3 text-[10px] opacity-70 mb-1">
-                                    <span className="font-bold">{m.senderName}</span>
-                                    <span>{new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                                  </div>
+                                  <div className="flex items-center justify-between gap-3 text-[10px] opacity-70 mb-1"><span className="font-bold">{m.senderName}</span><span>{new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span></div>
                                   <div className="whitespace-pre-wrap break-words">{m.text}</div>
                                 </div>
                               </div>
@@ -1191,24 +913,14 @@
                       ) : null}
                     </div>
 
-                    {/* Поле ввода сообщения */}
                     <form onSubmit={handleSendMessageInWindow} className="p-3 sm:p-4 bg-slate-900/90 border-t border-slate-800 flex gap-2">
-                      <input 
-                        type="text" 
-                        placeholder={t('enterMsg')} 
-                        value={chatInput} 
-                        onChange={(e) => setChatInput(e.target.value)} 
-                        className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-cyan-500 text-white transition-colors" 
-                      />
-                      <button type="submit" className="px-5 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-black rounded-xl font-bold hover:opacity-90 transition-all shadow-lg">
-                        <i className="fa-solid fa-paper-plane"></i>
-                      </button>
+                      <input type="text" placeholder="Напишите сообщение..." value={chatInput} onChange={(e) => setChatInput(e.target.value)} className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-cyan-500 text-white transition-colors" />
+                      <button type="submit" className="px-5 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-black rounded-xl font-bold hover:opacity-90 transition-all shadow-lg"><i className="fa-solid fa-paper-plane"></i></button>
                     </form>
                   </div>
                 </div>
               )}
 
-              {/* ВКЛАДКА: AI СТУДИЯ */}
               {tab === 'ai_studio' && (
                 <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-fuchsia-500/30 space-y-6 shadow-[0_0_30px_rgba(217,70,239,0.05)] relative overflow-hidden">
                   <div className="absolute -top-20 -right-20 w-64 h-64 bg-fuchsia-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -1216,54 +928,48 @@
                   
                   <div className="relative z-10 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                     <div>
-                      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-1">{t('aiStudioTitle')}</h2>
-                      <p className="text-xs text-slate-400">{t('aiStudioDesc')}</p>
+                      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-1">ИИ-Песочница</h2>
+                      <p className="text-xs text-slate-400">Тестируйте промпты прямо на бирже перед взятием заказа.</p>
                     </div>
                     <div className="flex items-center gap-2 bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-800">
-                      <i className="fa-solid fa-coins text-amber-400 text-xs"></i>
-                      <span className="text-sm font-mono text-slate-200">{Number(balance).toLocaleString()} AWS</span>
+                      <i className="fa-solid fa-coins text-amber-400 text-xs"></i><span className="text-sm font-mono text-slate-200">{Number(balance).toLocaleString()} AWS</span>
                     </div>
                   </div>
 
                   <div className="relative z-10 flex gap-2 p-1.5 bg-slate-900/60 rounded-2xl border border-slate-800 backdrop-blur-sm">
-                    <button onClick={() => setAiMode('image')} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${aiMode==='image'?'bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/25':'text-slate-400 hover:text-slate-200'}`}><i className="fa-solid fa-image mr-1.5"></i>{t('genImg')} (50)</button>
-                    <button onClick={() => setAiMode('text')} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${aiMode==='text'?'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-lg shadow-cyan-500/25':'text-slate-400 hover:text-slate-200'}`}><i className="fa-solid fa-align-left mr-1.5"></i>{t('genText')} (15)</button>
+                    <button onClick={() => setAiMode('image')} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${aiMode==='image'?'bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/25':'text-slate-400 hover:text-slate-200'}`}><i className="fa-solid fa-image mr-1.5"></i>Генератор Изображений (50)</button>
+                    <button onClick={() => setAiMode('text')} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${aiMode==='text'?'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-lg shadow-cyan-500/25':'text-slate-400 hover:text-slate-200'}`}><i className="fa-solid fa-align-left mr-1.5"></i>Генератор Текста (15)</button>
                   </div>
 
                   <form onSubmit={handleGenerateAI} className="relative z-10 space-y-4">
-                    <textarea rows="4" required placeholder={aiMode === 'image' ? t('promptImg') : t('promptText')} value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl p-4 text-sm outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-slate-200 resize-none shadow-inner"></textarea>
+                    <textarea rows="4" required placeholder={aiMode === 'image' ? 'Опишите сцену...' : 'Задайте вопрос...'} value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl p-4 text-sm outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-slate-200 resize-none shadow-inner"></textarea>
                     <button type="submit" disabled={aiLoading} className="w-full py-4 rounded-2xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white font-extrabold text-sm hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(217,70,239,0.3)] flex items-center justify-center gap-2">
-                      {aiLoading ? <><i className="fa-solid fa-circle-notch fa-spin"></i> {t('processing')}</> : <><i className="fa-solid fa-bolt"></i> {t('launchAI')}</>}
+                      {aiLoading ? <><i className="fa-solid fa-circle-notch fa-spin"></i> Синтез данных...</> : <><i className="fa-solid fa-bolt"></i> Запустить нейросеть</>}
                     </button>
                   </form>
 
                   {aiResultImg && (
                     <div className="relative z-10 p-4 bg-slate-900/80 rounded-2xl border border-fuchsia-500/30 text-center animate-fade-in">
-                      <img src={aiResultImg} className="w-full max-h-[500px] object-contain rounded-xl shadow-lg" alt="Generated AI" />
-                      <a href={aiResultImg} download="ai_art.png" target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-xs font-bold rounded-xl transition-colors"><i className="fa-solid fa-download"></i> {t('saveOrig')}</a>
+                      <img src={aiResultImg} className="w-full max-h-[500px] object-contain rounded-xl shadow-lg" />
+                      <a href={aiResultImg} download="ai_art.png" target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-xs font-bold rounded-xl transition-colors"><i className="fa-solid fa-download"></i> Сохранить</a>
                     </div>
                   )}
 
                   {aiResultText && (
                     <div className="relative z-10 p-5 bg-slate-900/80 rounded-2xl border border-cyan-500/30 animate-fade-in">
-                      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-700">
-                        <i className="fa-solid fa-robot text-cyan-400"></i><span className="text-xs font-bold text-slate-300">{t('aiReply')}</span>
-                      </div>
+                      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-700"><i className="fa-solid fa-robot text-cyan-400"></i><span className="text-xs font-bold text-slate-300">Ответ ИИ:</span></div>
                       <div className="text-sm text-slate-200 font-sans whitespace-pre-wrap leading-relaxed">{aiResultText}</div>
                     </div>
                   )}
                 </div>
               )}
 
-              {/* ВКЛАДКА: КАБИНЕТ */}
               {tab === 'cabinet' && (
                 <div className="space-y-6">
                   <div className="bg-[#0f141e] p-6 sm:p-8 rounded-3xl border border-[#1e293b] flex flex-col sm:flex-row justify-between items-center sm:items-start gap-6 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-cyan-500"></div>
                     <div className="flex flex-col sm:flex-row items-center sm:items-center gap-5 text-center sm:text-left">
-                      <div className={`w-24 h-24 rounded-3xl overflow-hidden ${user?.avatarFrame} relative shrink-0 bg-slate-900 shadow-[0_0_15px_rgba(255,255,255,0.05)]`}>
-                        <img src={user?.avatar} className="w-full h-full object-cover" />
-                      </div>
+                      <div className={`w-24 h-24 rounded-3xl overflow-hidden ${user?.avatarFrame} relative shrink-0 bg-slate-900 shadow-[0_0_15px_rgba(255,255,255,0.05)]`}><img src={user?.avatar} className="w-full h-full object-cover" /></div>
                       <div className="min-w-0">
                         <h2 className="text-2xl font-bold text-slate-100">{user?.name}</h2>
                         <p className="text-sm text-slate-400 font-mono mt-1 mb-3">{user?.email}</p>
@@ -1274,64 +980,49 @@
                         </div>
                       </div>
                     </div>
-                    
                     <div className="flex flex-col items-center sm:items-end w-full sm:w-auto">
                       <div className="bg-[#141b25] border border-[#2a3441] p-5 rounded-3xl text-center sm:text-right w-full sm:w-auto min-w-[200px]">
-                        <div className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2">{t('balance')}</div>
+                        <div className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2">Баланс</div>
                         <div className="text-2xl font-bold text-amber-400 mb-4">{Number(balance).toLocaleString()} <span className="text-sm">AWS</span></div>
-                        <button onClick={() => setWalletModalOpen(true)} className="w-full py-2.5 bg-[#f59e0b] hover:bg-[#d97706] text-black font-bold text-sm rounded-xl transition-colors shadow-lg shadow-amber-900/20"><i className="fa-solid fa-wallet mr-2"></i>{t('topUp')}</button>
+                        <button onClick={() => setWalletModalOpen(true)} className="w-full py-2.5 bg-[#f59e0b] hover:bg-[#d97706] text-black font-bold text-sm rounded-xl transition-colors shadow-lg shadow-amber-900/20"><i className="fa-solid fa-wallet mr-2"></i>Пополнить</button>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex gap-2 pb-2 overflow-x-auto no-scrollbar">
-                    <button onClick={() => setCabinetSubTab('my-orders')} className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${cabinetSubTab === 'my-orders' ? 'bg-[#111827] text-white border-slate-600' : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900'}`}>{t('myOrders')} ({myCreatedTasks.length})</button>
-                    <button onClick={() => setCabinetSubTab('my-responses')} className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${cabinetSubTab === 'my-responses' ? 'bg-[#064e3b] text-emerald-400 border-emerald-900' : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900'}`}>{t('activeDeals')} ({myRespondedTasks.length})</button>
-                    <button onClick={() => setCabinetSubTab('shop')} className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${cabinetSubTab === 'shop' ? 'bg-[#2e1065] text-fuchsia-400 border-fuchsia-900' : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900'}`}>{t('shop')}</button>
+                    <button onClick={() => setCabinetSubTab('my-orders')} className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${cabinetSubTab === 'my-orders' ? 'bg-[#111827] text-white border-slate-600' : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900'}`}>Мои заказы ({myCreatedTasks.length})</button>
+                    <button onClick={() => setCabinetSubTab('my-responses')} className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${cabinetSubTab === 'my-responses' ? 'bg-[#064e3b] text-emerald-400 border-emerald-900' : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900'}`}>Активные сделки ({myRespondedTasks.length})</button>
+                    <button onClick={() => setCabinetSubTab('shop')} className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${cabinetSubTab === 'shop' ? 'bg-[#2e1065] text-fuchsia-400 border-fuchsia-900' : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900'}`}>Экипировка 🛍️</button>
                   </div>
 
                   {cabinetSubTab === 'my-orders' && (
                     <div className="grid grid-cols-1 gap-4">
-                      {myCreatedTasks.length === 0 && <div className="text-center py-12 bg-[#0f141e] rounded-3xl border border-[#1e293b] text-slate-500 text-sm">{t('noOrders')}</div>}
+                      {myCreatedTasks.length === 0 && <div className="text-center py-12 bg-[#0f141e] rounded-3xl border border-[#1e293b] text-slate-500 text-sm">Нет созданных заказов.</div>}
                       {myCreatedTasks.map(item => {
                         return (
                           <div key={item.id} className={`bg-[#0f141e] p-6 rounded-3xl border ${item.card_frame === 'card-frame-default' ? 'border-[#1e293b]' : item.card_frame} flex flex-col gap-5 min-w-0`}>
                             <div className="flex justify-between items-start gap-4">
                               <div>
                                 <h4 className="font-bold text-lg text-slate-100">{item.title}</h4>
-                                <div className="text-sm text-cyan-400 font-mono mt-2">{t('budget')} <span className="font-bold">{Number(item.budget || 0).toLocaleString()} AWS</span></div>
+                                <div className="text-sm text-cyan-400 font-mono mt-2">Бюджет: <span className="font-bold">{Number(item.budget || 0).toLocaleString()} AWS</span></div>
                               </div>
-                              <span className={`text-[10px] font-bold px-3 py-1 rounded-full border ${item.status === 'open' ? 'bg-emerald-950 text-emerald-400 border-emerald-900' : 'bg-amber-950 text-amber-400 border-amber-900'}`}>{item.status === 'open' ? t('statusOpen') : t('statusWork')}</span>
+                              <span className={`text-[10px] font-bold px-3 py-1 rounded-full border ${item.status === 'open' ? 'bg-emerald-950 text-emerald-400 border-emerald-900' : 'bg-amber-950 text-amber-400 border-amber-900'}`}>{item.status === 'open' ? 'ОТКРЫТ' : 'В РАБОТЕ'}</span>
                             </div>
                             
                             <div className="flex items-center gap-3 mt-1">
-                               <span className="text-xs text-slate-500">{t('cardStyle')}</span>
+                               <span className="text-xs text-slate-500">Стиль:</span>
                                <div className="flex gap-2">
                                  {TASK_CARD_FRAMES.map(f => {
-                                   const isOwned = f.price === 0 || inventory?.cardFrames?.includes(f.id);
-                                   if (!isOwned) return null;
-                                   return (
-                                     <button 
-                                       key={f.id} onClick={() => updateTaskSpecificFrame(item.id, f.class)} title={f.name}
-                                       className={`w-5 h-5 rounded-full transition-all border-2 ${item.card_frame === f.class ? 'border-white scale-110 shadow-md' : 'border-transparent opacity-50 hover:opacity-100'}`}
-                                       style={{ backgroundColor: f.dotColor }}
-                                     ></button>
-                                   );
+                                   if (f.price !== 0 && !inventory?.cardFrames?.includes(f.id)) return null;
+                                   return <button key={f.id} onClick={() => updateTaskSpecificFrame(item.id, f.class)} className={`w-5 h-5 rounded-full transition-all border-2 ${item.card_frame === f.class ? 'border-white scale-110 shadow-md' : 'border-transparent opacity-50 hover:opacity-100'}`} style={{ backgroundColor: f.dotColor }}></button>;
                                  })}
                                </div>
                             </div>
 
                             <div className="flex flex-wrap items-center gap-3 pt-2">
-                              <button onClick={() => handleOpenTaskChat(item)} className="px-5 py-2.5 bg-transparent border border-[#334155] text-cyan-400 font-bold text-sm rounded-xl hover:bg-[#1e293b] transition-colors flex items-center gap-2">
-                                <i className="fa-regular fa-comments"></i> {t('responses')}
-                              </button>
-                              
-                              <button onClick={() => startEditingTask(item)} className="px-5 py-2.5 bg-transparent border border-[#334155] text-slate-300 font-bold text-sm rounded-xl hover:bg-[#1e293b] transition-colors flex items-center gap-2"><i className="fa-solid fa-pen"></i>{t('edit')}</button>
-                              
-                              <button onClick={() => { 
-                                if(isGlobalMode && db) window.Firebase.deleteDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', item.id.toString())); 
-                                setTasks(tasks.filter(t=>t.id!==item.id)); 
-                              }} className="ml-auto w-10 h-10 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center border border-red-900/50"><i className="fa-solid fa-trash-can"></i></button>
+                              <button onClick={() => handleOpenTaskChat(item)} className="px-5 py-2.5 bg-[#0f172a] border border-[#334155] text-cyan-400 font-bold text-sm rounded-xl hover:bg-[#1e293b] transition-colors flex items-center gap-2"><i className="fa-regular fa-comments"></i> Открыть чат</button>
+                              <button onClick={() => startEditingTask(item)} className="px-5 py-2.5 bg-transparent border border-[#334155] text-slate-300 font-bold text-sm rounded-xl hover:bg-[#1e293b] transition-colors flex items-center gap-2"><i className="fa-solid fa-pen"></i> Редактировать</button>
+                              <button onClick={() => { if(isGlobalMode && db) window.Firebase.deleteDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', item.id.toString())); setTasks(tasks.filter(t=>t.id!==item.id)); }} className="ml-auto w-10 h-10 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center border border-red-900/50"><i className="fa-solid fa-trash-can"></i></button>
                             </div>
                           </div>
                         );
@@ -1341,22 +1032,21 @@
 
                   {cabinetSubTab === 'my-responses' && (
                     <div className="grid grid-cols-1 gap-4">
-                      {myRespondedTasks.length === 0 && <div className="text-center py-12 bg-[#0f141e] rounded-3xl border border-[#1e293b] text-slate-500 text-sm">{t('noDeals')}</div>}
+                      {myRespondedTasks.length === 0 && <div className="text-center py-12 bg-[#0f141e] rounded-3xl border border-[#1e293b] text-slate-500 text-sm">У вас нет активных сделок.</div>}
                       {myRespondedTasks.map(item => (
                         <div key={item.id} className="bg-[#0f141e] p-6 rounded-3xl border border-[#1e293b] flex flex-col gap-6">
                           <div className="flex justify-between items-start gap-4">
                             <div>
-                              <div className="text-[10px] text-slate-500 mb-2 uppercase tracking-wide">{t('customer')} <span className="text-slate-300 normal-case">{item.author}</span></div>
+                              <div className="text-[10px] text-slate-500 mb-2 uppercase tracking-wide">Заказчик: <span className="text-slate-300 normal-case">{item.author}</span></div>
                               <h4 className="font-bold text-lg text-slate-100">{item.title}</h4>
                             </div>
                             <div className="text-right">
-                              <div className="text-[10px] text-slate-500 uppercase tracking-wide mb-2">{t('payment')}</div>
+                              <div className="text-[10px] text-slate-500 uppercase tracking-wide mb-2">Оплата</div>
                               <div className="text-lg text-amber-400 font-bold whitespace-nowrap">{Number(item.budget || 0).toLocaleString()} AWS</div>
                             </div>
                           </div>
-                          
-                          <button onClick={() => handleOpenTaskChat(item)} className="w-full py-3 bg-[#064e3b]/30 border border-[#10b981]/50 text-emerald-400 font-bold text-sm rounded-xl hover:bg-[#064e3b]/60 transition-colors flex items-center justify-center gap-2">
-                            <i className="fa-solid fa-bolt"></i> {t('jumpToChat')}
+                          <button onClick={() => handleOpenTaskChat(item)} className="w-full py-3 bg-[#064e3b]/40 border border-[#10b981]/50 text-emerald-400 font-bold text-sm rounded-xl hover:bg-[#064e3b]/80 transition-colors flex items-center justify-center gap-2">
+                            <i className="fa-solid fa-bolt"></i> В чат
                           </button>
                         </div>
                       ))}
@@ -1366,37 +1056,35 @@
                   {cabinetSubTab === 'shop' && (
                     <div className="space-y-6">
                       <div className="glass-panel p-5 rounded-2xl border border-slate-800">
-                        <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center"><i className="fa-solid fa-gem text-fuchsia-400 mr-2"></i>{t('avatars')}</h3>
+                        <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center"><i className="fa-solid fa-gem text-fuchsia-400 mr-2"></i>Аватары</h3>
                         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
                           {MINIMAL_AVATARS.map((item) => (
                             <div key={item.id} className="bg-slate-900/50 p-3 rounded-xl border border-slate-700 flex flex-col items-center text-center">
                               <div className="w-16 h-16 rounded-xl overflow-hidden mb-3 border border-slate-600"><img src={item.url} className="w-full h-full object-cover" /></div>
-                              <button onClick={() => handleBuy(item, 'avatar')} className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-200 hover:bg-fuchsia-600 hover:text-white transition-colors">{item.price === 0 ? t('select') : `${item.price} AWS`}</button>
+                              <button onClick={() => handleBuy(item, 'avatar')} className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-200 hover:bg-fuchsia-600 hover:text-white transition-colors">{item.price === 0 ? 'Выбрать' : `${item.price} AWS`}</button>
                             </div>
                           ))}
                         </div>
                       </div>
-                      
                       <div className="glass-panel p-5 rounded-2xl border border-slate-800">
-                        <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center"><i className="fa-solid fa-circle-notch text-amber-400 mr-2"></i>{t('frames')}</h3>
+                        <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center"><i className="fa-solid fa-circle-notch text-amber-400 mr-2"></i>Рамки аватаров</h3>
                         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
                           {AVATAR_FRAMES.map((f) => (
                             <div key={f.id} className="bg-slate-900/50 p-3 rounded-xl border border-slate-700 flex flex-col items-center text-center">
                               <div className={`w-14 h-14 rounded-xl overflow-hidden mb-3 ${f.class} bg-slate-800`}></div>
                               <div className="text-[10px] font-bold text-slate-300 mb-2 truncate w-full">{f.name}</div>
-                              <button onClick={() => handleBuy(f, 'frame')} className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-200 hover:bg-amber-500 hover:text-black transition-colors">{f.price === 0 ? t('select') : `${f.price} AWS`}</button>
+                              <button onClick={() => handleBuy(f, 'frame')} className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-200 hover:bg-amber-500 hover:text-black transition-colors">{f.price === 0 ? 'Выбрать' : `${f.price} AWS`}</button>
                             </div>
                           ))}
                         </div>
                       </div>
-                      
                       <div className="glass-panel p-5 rounded-2xl border border-slate-800">
-                        <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center"><i className="fa-solid fa-layer-group text-emerald-400 mr-2"></i>{t('cardFrames')}</h3>
+                        <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center"><i className="fa-solid fa-layer-group text-emerald-400 mr-2"></i>Стили карточек заказов</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                           {TASK_CARD_FRAMES.map((cf) => (
                             <div key={cf.id} className={`bg-slate-900 p-4 rounded-xl flex flex-col justify-between ${cf.class} min-h-[100px]`}>
                               <div className="mb-3 text-sm font-extrabold text-slate-100">{cf.name}</div>
-                              <button onClick={() => handleBuy(cf, 'cardFrame')} className="w-full py-2 rounded-lg text-xs font-bold bg-slate-800 text-slate-200 hover:bg-emerald-500 hover:text-black transition-colors">{cf.price === 0 ? t('select') : `${cf.price} AWS`}</button>
+                              <button onClick={() => handleBuy(cf, 'cardFrame')} className="w-full py-2 rounded-lg text-xs font-bold bg-slate-800 text-slate-200 hover:bg-emerald-500 hover:text-black transition-colors">{cf.price === 0 ? 'Выбрать' : `${cf.price} AWS`}</button>
                             </div>
                           ))}
                         </div>
@@ -1406,11 +1094,10 @@
                 </div>
               )}
 
-              {/* ВКЛАДКА: СОЗДАНИЕ ИЛИ РЕДАКТИРОВАНИЕ ТАСКА */}
               {tab === 'create' && (
                 <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-amber-500/30 relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none"><i className="fa-solid fa-file-contract text-9xl"></i></div>
-                  <h2 className="text-2xl font-bold text-amber-400 mb-6 relative z-10">{editingTask ? t('editSmartOrder') : t('pubSmartOrder')}</h2>
+                  <h2 className="text-2xl font-bold text-amber-400 mb-6 relative z-10">{editingTask ? 'Редактировать' : 'Опубликовать заказ'}</h2>
                   
                   {!emailVerified && isGlobalMode && auth?.currentUser ? (
                      <div className="bg-slate-900 p-8 rounded-xl border border-red-500/50 text-center relative z-10">
@@ -1421,60 +1108,50 @@
                      </div>
                   ) : (
                     <form onSubmit={handleCreateOrEditTask} className="space-y-5 relative z-10">
-                      <input type="text" required placeholder={t('shortTitle')} value={newTitle || ''} onChange={(e) => setNewTitle(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-5 py-4 text-sm focus:border-amber-500 outline-none transition-colors text-white" />
-                      
+                      <input type="text" required placeholder="Краткое название" value={newTitle || ''} onChange={(e) => setNewTitle(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-5 py-4 text-sm focus:border-amber-500 outline-none transition-colors text-white" />
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <select value={newCategory || 'video'} onChange={(e) => setNewCategory(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm outline-none text-slate-300 appearance-none">
-                          <option value="video">{t('catVideo') || "Видео-генерация"}</option>
-                          <option value="art">{t('catArt') || "2D/3D Арт"}</option>
-                          <option value="arch">{t('catArch') || "Архитектура"}</option>
-                          <option value="biz">{t('catCode') || "Код / Боты"}</option>
+                          <option value="video">🎬 Видео-генерация</option><option value="art">🎨 2D/3D Арт</option><option value="arch">🏛️ Архитектура</option><option value="biz">⚡ Код / Боты</option>
                         </select>
                         <select value={newTool || 'Midjourney'} onChange={(e) => setNewTool(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm outline-none text-slate-300 appearance-none">
                           <option value="Midjourney">Midjourney v6</option><option value="ComfyUI">ComfyUI / StableD</option><option value="Runway Gen-3">Runway Gen-3</option><option value="Claude 3.5">Claude / GPT-4o</option>
                         </select>
                         <div className="relative">
-                          <input type="number" required placeholder={t('budget')} value={newBudget || ''} onChange={(e) => setNewBudget(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm font-mono outline-none text-amber-300 focus:border-amber-500" />
+                          <input type="number" required placeholder="Бюджет" value={newBudget || ''} onChange={(e) => setNewBudget(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm font-mono outline-none text-amber-300 focus:border-amber-500" />
                           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 pointer-events-none">AWS</span>
                         </div>
                       </div>
-                      
                       <div className="bg-slate-950/50 p-5 rounded-2xl border border-slate-700/50 space-y-4">
                         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
-                          <label className="text-sm font-bold text-slate-200"><i className="fa-solid fa-images text-cyan-400 mr-2"></i>{t('refs')} ({(taskPhotos || []).length}/5)</label>
+                          <label className="text-sm font-bold text-slate-200"><i className="fa-solid fa-images text-cyan-400 mr-2"></i>Референсы ({(taskPhotos || []).length}/5)</label>
                           {(taskPhotos || []).length < 5 && (
                             <label className="px-4 py-2 bg-slate-800 text-slate-200 border border-slate-600 font-bold text-xs rounded-xl cursor-pointer hover:bg-slate-700 transition-colors shrink-0">
-                              <i className="fa-solid fa-cloud-arrow-up mr-1.5"></i> {t('addPhoto')}
+                              <i className="fa-solid fa-cloud-arrow-up mr-1.5"></i> Добавить Фото
                               <input type="file" accept="image/*" multiple className="hidden" onChange={handleUploadTaskPhotos} />
                             </label>
                           )}
                         </div>
-                        
                         {(taskPhotos || []).length > 0 && (
                           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
                             {(taskPhotos || []).map((photo, idx) => (
                               <div key={idx} className="relative w-full aspect-square rounded-xl border border-slate-600 overflow-hidden group">
                                 <img src={photo} className="w-full h-full object-cover" />
-                                <button type="button" onClick={() => setTaskPhotos(p => p.filter((_, i) => i !== idx))} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
-                                  <i className="fa-solid fa-xmark"></i>
-                                </button>
+                                <button type="button" onClick={() => setTaskPhotos(p => p.filter((_, i) => i !== idx))} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"><i className="fa-solid fa-xmark"></i></button>
                               </div>
                             ))}
                           </div>
                         )}
                       </div>
-                      <textarea rows="4" required placeholder={t('taskDesc')} value={newPrompt || ''} onChange={(e) => setNewPrompt(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl p-4 text-sm outline-none focus:border-amber-500 text-slate-200 resize-none"></textarea>
-                      
+                      <textarea rows="4" required placeholder="Подробное ТЗ..." value={newPrompt || ''} onChange={(e) => setNewPrompt(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl p-4 text-sm outline-none focus:border-amber-500 text-slate-200 resize-none"></textarea>
                       <div className="flex items-center justify-between p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20">
-                         <span className="text-xs text-amber-200/70 hidden sm:inline">{t('escrow')}</span>
-                         <button type="submit" className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-extrabold text-sm shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:scale-[1.02] transition-transform">{editingTask ? t('saveChanges') : t('publish')}</button>
+                         <span className="text-xs text-amber-200/70 hidden sm:inline">Безопасная сделка (Escrow).</span>
+                         <button type="submit" className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-extrabold text-sm shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:scale-[1.02] transition-transform">{editingTask ? 'Сохранить' : 'Опубликовать'}</button>
                       </div>
                     </form>
                   )}
                 </div>
               )}
 
-              {/* ВКЛАДКА: АДМИН-ПАНЕЛЬ */}
               {tab === 'admin' && isAdmin && (
                 <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-rose-500/40 relative overflow-hidden">
                    <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -1496,9 +1173,7 @@
                          <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Сделок в работе</div><div className="text-3xl font-mono text-fuchsia-400">{activeDealsCount}</div></div>
                          <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Купленных откликов</div><div className="text-3xl font-mono text-rose-400">{paidUnlocksCount}</div></div>
                        </div>
-                       <div className="p-4 bg-emerald-900/20 border border-emerald-500/30 rounded-xl text-emerald-300 text-xs font-bold text-center">
-                          Система работает штатно. База данных активно обновляется. Сообщений в системе: {totalMessagesCount}.
-                       </div>
+                       <div className="p-4 bg-emerald-900/20 border border-emerald-500/30 rounded-xl text-emerald-300 text-xs font-bold text-center">Система работает штатно. База данных активно обновляется. Сообщений: {totalMessagesCount}.</div>
                      </>
                    )}
 
@@ -1541,21 +1216,18 @@
             </section>
           </main>
 
-          {/* МОДАЛКА: ПРОСМОТР ЗАДАЧИ */}
           {viewingTask && (
             <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-fade-in">
               <div className="bg-[#0A0E17] border border-cyan-500/30 rounded-3xl p-5 sm:p-8 max-w-3xl w-full max-h-[95vh] flex flex-col relative overflow-y-auto shadow-2xl">
                 <button onClick={() => setViewingTask(null)} className="absolute top-4 right-4 text-slate-400 hover:text-white z-20 bg-slate-900/80 w-8 h-8 rounded-full flex items-center justify-center border border-slate-700 transition-colors"><i className="fa-solid fa-xmark"></i></button>
                 
                 <div className="relative w-full h-56 sm:h-96 rounded-2xl overflow-hidden bg-slate-950 mb-5 border border-slate-800 shrink-0 group">
-                  <img src={viewingTask.photos?.[currentPhotoSlide] || viewingTask.photos?.[0]} className="w-full h-full object-contain" alt="Task Ref" />
+                  <img src={viewingTask.photos?.[currentPhotoSlide] || viewingTask.photos?.[0]} className="w-full h-full object-contain" />
                   {(viewingTask.photos || []).length > 1 && (
                     <>
                       <button onClick={() => setCurrentPhotoSlide(p => p > 0 ? p - 1 : viewingTask.photos.length - 1)} className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 text-white hover:bg-black opacity-0 group-hover:opacity-100 transition-opacity border border-slate-700"><i className="fa-solid fa-chevron-left"></i></button>
                       <button onClick={() => setCurrentPhotoSlide(p => p < viewingTask.photos.length - 1 ? p + 1 : 0)} className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 text-white hover:bg-black opacity-0 group-hover:opacity-100 transition-opacity border border-slate-700"><i className="fa-solid fa-chevron-right"></i></button>
-                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-[10px] text-white backdrop-blur-md">
-                        {currentPhotoSlide + 1} / {viewingTask.photos.length}
-                      </div>
+                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-[10px] text-white backdrop-blur-md">{currentPhotoSlide + 1} / {viewingTask.photos.length}</div>
                     </>
                   )}
                 </div>
@@ -1565,34 +1237,33 @@
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-2 py-1 rounded font-mono font-bold">{viewingTask.tool}</span>
-                        <span className="text-[10px] bg-slate-800 text-slate-300 border border-slate-700 px-2 py-1 rounded font-mono font-bold">{t('views')}: {viewingTask.views || 0}</span>
+                        <span className="text-[10px] bg-slate-800 text-slate-300 border border-slate-700 px-2 py-1 rounded font-mono font-bold">Просмотров: {viewingTask.views || 0}</span>
                       </div>
                       <h2 className="text-xl sm:text-2xl font-bold text-slate-100 leading-tight">{viewingTask.title}</h2>
                       <div className="text-xs text-slate-400 mt-1">Автор: <span className="text-slate-200 font-bold">{viewingTask.author}</span></div>
                     </div>
-
                     <div className="text-right">
-                       <div className="text-[10px] text-slate-500 uppercase font-bold">{t('budget')}</div>
+                       <div className="text-[10px] text-slate-500 uppercase font-bold">Бюджет</div>
                        <div className="font-mono text-2xl font-extrabold text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]">{Number(viewingTask.budget || 0).toLocaleString()} AWS</div>
                     </div>
                   </div>
 
                   <div className="py-2">
-                    <div className="text-[10px] text-slate-500 uppercase font-bold mb-2">{t('taskDescTitle')}</div>
+                    <div className="text-[10px] text-slate-500 uppercase font-bold mb-2">Описание задачи</div>
                     <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800/80 text-sm font-sans text-slate-300 whitespace-pre-wrap leading-relaxed">{viewingTask.prompt}</div>
                   </div>
                   
                   <div className="pt-2">
                     {(!user || user.id === viewingTask.author_id || paidUnlocks.includes(viewingTask.id)) ? (
-                      <button onClick={() => handleOpenTaskChat(viewingTask)} className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-600 to-cyan-500 text-white font-bold text-sm hover:opacity-90 shadow-lg shadow-cyan-500/20">{t('openChat')}</button>
+                      <button onClick={() => handleOpenTaskChat(viewingTask)} className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-600 to-cyan-500 text-white font-bold text-sm hover:opacity-90 shadow-lg shadow-cyan-500/20">Открыть диалог</button>
                     ) : (
                       <>
                         {!emailVerified && isGlobalMode ? (
                            <div className="text-center p-3 text-xs font-bold text-red-400 border border-red-500/30 rounded-xl bg-red-900/20">Подтвердите Email, чтобы взять этот заказ в работу.</div>
                         ) : (
-                           <button onClick={() => handleRespondToTask(viewingTask)} className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-extrabold text-sm hover:opacity-90 shadow-lg shadow-amber-500/20 flex flex-col items-center">
-                             <span>{t('respondTask')}</span>
-                             <span className="text-[10px] font-medium opacity-80">{t('applyCost')} {viewingTask.response_fee} AWS</span>
+                           <button onClick={() => handleRespondToTask(viewingTask)} className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-extrabold text-sm hover:opacity-90 shadow-lg shadow-emerald-500/20 flex flex-col items-center">
+                             <span>Откликнуться на заказ</span>
+                             <span className="text-[10px] font-medium opacity-80">Стоимость отклика: {viewingTask.response_fee} AWS</span>
                            </button>
                         )}
                       </>
@@ -1603,7 +1274,6 @@
             </div>
           )}
 
-          {/* КОШЕЛЕК / КАССА С КРИПТОЙ */}
           {walletModalOpen && (
             <div className="fixed inset-0 z-[80] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
               <div className="bg-[#0A0E17] border border-amber-500/40 rounded-3xl p-6 sm:p-8 max-w-sm w-full relative shadow-[0_0_30px_rgba(245,158,11,0.1)]">
@@ -1613,7 +1283,7 @@
                   <>
                     <div className="text-center mb-6">
                       <div className="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-3 text-xl"><i className="fa-brands fa-bitcoin"></i></div>
-                      <h3 className="text-xl font-bold text-slate-100">{t('walletTitle')}</h3>
+                      <h3 className="text-xl font-bold text-slate-100">Пополнение через Crypto</h3>
                       <p className="text-[10px] text-slate-400 mt-1">Курс: 1 USDT = 1 AWS</p>
                     </div>
                     
@@ -1623,7 +1293,7 @@
                     </div>
                     
                     <div className="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl text-sm flex justify-between items-center mb-6">
-                      <span className="text-slate-400">{t('toPay')}</span>
+                      <span className="text-slate-400">К оплате:</span>
                       <span className="font-mono font-bold text-white text-lg">{depositAmountAWS} <span className="text-xs text-slate-500">USDT</span></span>
                     </div>
                     <button onClick={() => { if(Number(depositAmountAWS)>0) setCryptoStep(2); }} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold text-sm hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all">Оплатить криптовалютой</button>
@@ -1655,7 +1325,6 @@
             </div>
           )}
 
-          {/* МОДАЛКА ПОЛИТИКИ КОНФИДЕНЦИАЛЬНОСТИ ДЛЯ ЮМАНИ */}
           {privacyModalOpen && (
             <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
               <div className="bg-[#0A0E17] border border-slate-700 rounded-3xl p-6 sm:p-8 max-w-2xl w-full max-h-[85vh] overflow-y-auto relative text-slate-300 text-xs sm:text-sm space-y-4 shadow-2xl">
@@ -1664,58 +1333,49 @@
                 <p>Настоящая Политика регламентирует обработку и защиту персональных данных пользователей сервиса «AI WORKERS SPACE» при осуществлении платежей через сервис электронных платежей ЮMoney (ООО НКО «ЮМани») и иные платежные шлюзы.</p>
                 <h3 className="font-bold text-white text-sm">1. Сбор и цели обработки данных</h3>
                 <p>1.1. Мы собираем только те данные, которые необходимы для аутентификации, доступа к функционалу платформы, взаимодействия заказчиков с креаторами и подтверждения финансовых транзакций (Email, псевдоним/имя, история операций).</p>
-                <p>1.2. При оплате через ЮMoney платежная информация обрабатывается непосредственно защищенным платежным шлюзом НКО «ЮМани». Платформа не хранит данные банковских карт и реквизиты доступа к кошелькам пользователей.</p>
                 <h3 className="font-bold text-white text-sm">2. Безопасность и хранение данных</h3>
-                <p>2.1. Мы принимаем все организационные и технические меры для защиты персональных данных пользователей от несанкционированного доступа, изменения или уничтожения в соответствии с законодательством РФ (ФЗ-152).</p>
+                <p>2.1. Мы принимаем все организационные и технические меры для защиты персональных данных пользователей от несанкционированного доступа.</p>
                 <h3 className="font-bold text-white text-sm">3. Реквизиты оператора</h3>
-                <p className="font-mono text-xs bg-slate-900 p-3 rounded-xl border border-slate-800">
-                  Самозанятый: Храппа М.Н.<br/>
-                  ИНН: 390400469138<br/>
-                  Email поддержки: kenigwood39@gmail.com
-                </p>
+                <p className="font-mono text-xs bg-slate-900 p-3 rounded-xl border border-slate-800">Самозанятый: Храппа М.Н.<br/>ИНН: 390400469138<br/>Email поддержки: kenigwood39@gmail.com</p>
               </div>
             </div>
           )}
 
-          {/* АВТОРИЗАЦИЯ */}
           {authModalOpen && (
             <div className="fixed inset-0 z-[90] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
               <div className="bg-[#0A0E17] border border-cyan-500/40 rounded-3xl p-6 sm:p-8 max-w-sm w-full relative shadow-[0_0_30px_rgba(6,182,212,0.1)]">
                 <button onClick={() => setAuthModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-900 w-8 h-8 rounded-full flex items-center justify-center"><i className="fa-solid fa-xmark"></i></button>
                 <div className="text-center mb-6">
                   <div className="w-12 h-12 bg-cyan-500/20 text-cyan-400 rounded-2xl flex items-center justify-center mx-auto mb-3 text-xl rotate-12"><i className="fa-solid fa-robot -rotate-12"></i></div>
-                  <h3 className="text-xl font-bold text-slate-100">{authMode === 'login' ? t('authTitleLogin') : t('authTitleReg')}</h3>
+                  <h3 className="text-xl font-bold text-slate-100">{authMode === 'login' ? 'Вход' : 'Регистрация'}</h3>
                 </div>
 
                 <form onSubmit={handleAuthSubmit} className="space-y-4">
-                  <input type="email" required placeholder={t('email')} value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-cyan-500 text-slate-200" />
-                  <input type="password" required placeholder={t('pass')} value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-cyan-500 text-slate-200" />
-                  
+                  <input type="email" required placeholder="Email" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-cyan-500 text-slate-200" />
+                  <input type="password" required placeholder="Пароль (от 6 симв.)" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-cyan-500 text-slate-200" />
                   {authError && <div className="text-[11px] font-medium text-red-200 text-center bg-red-900/40 py-3 px-4 rounded-xl border border-red-500/50 leading-relaxed shadow-[0_0_15px_rgba(239,68,68,0.2)]">{authError}</div>}
                   
                   <button type="submit" disabled={authLoading} className={`w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-extrabold text-sm hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all mt-2 flex justify-center items-center gap-2 ${authLoading ? 'opacity-70 cursor-not-allowed' : ''}`}>
-                    {authLoading ? <><i className="fa-solid fa-spinner fa-spin"></i> Синтез...</> : (authMode === 'login' ? t('login') : t('authTitleReg'))}
+                    {authLoading ? <><i className="fa-solid fa-spinner fa-spin"></i> Синтез...</> : (authMode === 'login' ? 'Войти' : 'Регистрация')}
                   </button>
                 </form>
-                
                 <div className="mt-6 text-center border-t border-slate-800 pt-5">
                   {authMode === 'login' ? (
-                     <button type="button" onClick={() => { setAuthMode('register'); setAuthError(''); }} className="text-xs text-cyan-400 hover:text-cyan-300 font-medium">{t('noAcc')}</button>
+                     <button type="button" onClick={() => { setAuthMode('register'); setAuthError(''); }} className="text-xs text-cyan-400 hover:text-cyan-300 font-medium">Создать аккаунт</button>
                   ) : (
-                     <button type="button" onClick={() => { setAuthMode('login'); setAuthError(''); }} className="text-xs text-slate-400 hover:text-white font-medium">{t('yesAcc')}</button>
+                     <button type="button" onClick={() => { setAuthMode('login'); setAuthError(''); }} className="text-xs text-slate-400 hover:text-white font-medium">Уже есть аккаунт? Войти</button>
                   )}
                 </div>
               </div>
             </div>
           )}
 
-          {/* ПОДДЕРЖКА WIDGET */}
           {user && !isAdmin && (
             <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
                {supportOpen && (
                  <div className="w-80 h-96 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl mb-4 flex flex-col overflow-hidden animate-fade-in">
                     <div className="bg-cyan-600 px-4 py-3 flex justify-between items-center text-white">
-                       <span className="font-bold text-sm"><i className="fa-solid fa-headset mr-2"></i> {t('support')}</span>
+                       <span className="font-bold text-sm"><i className="fa-solid fa-headset mr-2"></i> Поддержка</span>
                        <button onClick={()=>setSupportOpen(false)}><i className="fa-solid fa-xmark"></i></button>
                     </div>
                     <div ref={chatScrollRef} className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#05070A]/50">
@@ -1741,16 +1401,12 @@
           <footer className="mt-auto border-t border-slate-800/50 bg-[#020305] px-4 py-8 text-xs text-slate-500">
             <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="text-center md:text-left">
-                <div className="font-extrabold text-slate-400 text-sm tracking-widest mb-1">{t('appTitle')}</div>
+                <div className="font-extrabold text-slate-400 text-sm tracking-widest mb-1">AWS SPACE</div>
                 <div className="font-mono text-[10px] opacity-80">Храппа М.Н. • ИНН: 390400469138</div>
-                <div className="text-[10px] text-slate-400 mt-1">
-                  Платежи и безопасность: <span className="text-amber-400 font-bold">ЮMoney</span>, СБП, Банковские карты и Crypto.
-                </div>
+                <div className="text-[10px] text-slate-400 mt-1">Платежи и безопасность: <span className="text-amber-400 font-bold">ЮMoney</span>, СБП, Банковские карты и Crypto.</div>
               </div>
               <div className="text-center md:text-right font-mono text-[10px] flex flex-col items-center md:items-end gap-1">
-                <button onClick={() => setPrivacyModalOpen(true)} className="text-cyan-400 hover:text-cyan-300 underline font-sans text-xs">
-                  Политика конфиденциальности и Оферта (ЮMoney)
-                </button>
+                <button onClick={() => setPrivacyModalOpen(true)} className="text-cyan-400 hover:text-cyan-300 underline font-sans text-xs">Политика конфиденциальности и Оферта (ЮMoney)</button>
                 <div>© 2026 AWS Platform. All rights reserved.</div>
               </div>
             </div>
