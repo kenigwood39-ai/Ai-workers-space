@@ -146,7 +146,6 @@
       const [paidUnlocks, setPaidUnlocks] = useState([]);
       const [userRatings, setUserRatings] = useState({});
 
-      // Усиленная проверка на администратора (берем email напрямую из Auth)
       const currentUserEmail = user?.email || auth?.currentUser?.email || '';
       const isAdmin = currentUserEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
@@ -208,7 +207,6 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
 
-      // Слушатель для загрузки данных админ-панели (срабатывает только у админа)
       useEffect(() => {
         if (isGlobalMode && db && isAdmin) {
           const unsubUsers = window.Firebase.onSnapshot(window.Firebase.collection(db, 'artifacts', appId, 'users'), (snap) => {
@@ -317,14 +315,14 @@
         if (!user || dealChats.length === 0) { prevChatsRef.current = dealChats; return; }
         if (prevChatsRef.current.length > 0) {
           dealChats.forEach(currentChat => {
-            const isParticipant = currentChat.customerId === user.id || currentChat.creatorId === user.id;
+            const isParticipant = currentChat.customerId === user.id || currentChat.creatorId === user.id || currentChat.customerName === user.name || currentChat.creatorName === user.name;
             if (!isParticipant) return;
             const prevChat = prevChatsRef.current.find(c => c.id === currentChat.id);
             const currentMsgs = currentChat.messages || [];
             const prevMsgs = prevChat?.messages || [];
             if (currentMsgs.length > prevMsgs.length) {
               const lastMsg = currentMsgs[currentMsgs.length - 1];
-              if (lastMsg && lastMsg.senderId !== user.id) {
+              if (lastMsg && lastMsg.senderId !== user.id && lastMsg.senderName !== user.name) {
                 playNotificationBeep();
                 showToast(`💬 ${lastMsg.senderName || 'Новое сообщение'}: ${lastMsg.text}`);
               }
@@ -445,7 +443,7 @@
           setTasks(updated); localStorage.setItem('aws_local_tasks', JSON.stringify(updated));
         }
         showToast(editingTask ? 'Заказ успешно обновлен!' : 'Опубликовано!'); 
-        if(!editingTask) switchTab('create');
+        if(!editingTask) switchTab('feed');
       };
 
       const startEditingTask = (task) => {
@@ -460,10 +458,12 @@
          if (isGlobalMode && db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', taskId.toString()), { card_frame: newFrameClass }, { merge: true });
       };
 
+      // === БРОНЕБОЙНАЯ СВЯЗЬ: Связываем заказчика и креатора даже если ID поменялся ===
       const handleOpenTaskChat = async (targetTask) => {
         if (!user) return setAuthModalOpen(true);
 
-        const isCustomer = user.id === targetTask.author_id;
+        // Расширенная проверка: Заказчиком считается тот, у кого совпадает ID ИЛИ просто имя (если старый заказ)
+        const isCustomer = (targetTask.author_id === user.id) || (targetTask.author === user.name);
         let targetChatId = '';
         let newChatObj = null;
 
@@ -497,7 +497,7 @@
                     taskId: targetTask.id,
                     taskTitle: targetTask.title,
                     taskBudget: targetTask.budget,
-                    customerId: targetTask.author_id || 'unknown',
+                    customerId: targetTask.author_id || targetTask.authorId || null,
                     customerName: targetTask.author || 'Заказчик',
                     creatorId: user.id,
                     creatorName: user.name,
@@ -527,7 +527,9 @@
 
       const handleRespondToTask = async (targetTask) => {
         if (!user) return setAuthModalOpen(true);
-        if (user.id === targetTask.author_id) return showToast("Вы являетесь автором этого заказа", "error");
+        const isTaskAuthor = (targetTask.author_id === user.id) || (targetTask.author === user.name);
+        if (isTaskAuthor) return showToast("Вы являетесь автором этого заказа", "error");
+        
         if (Number(balance) < targetTask.response_fee) return setWalletModalOpen(true);
 
         const fee = targetTask.response_fee;
@@ -545,8 +547,9 @@
                 taskId: targetTask.id,
                 taskTitle: targetTask.title,
                 taskBudget: targetTask.budget,
-                customerId: targetTask.author_id,
-                customerName: targetTask.author,
+                // Гарантированно связываем по имени, даже если старый ID потерялся
+                customerId: targetTask.author_id || targetTask.authorId || null,
+                customerName: targetTask.author || 'Заказчик',
                 creatorId: user.id,
                 creatorName: user.name,
                 creatorAvatar: user.avatar,
@@ -665,16 +668,23 @@
         }
       };
 
+      // Безошибочный фильтр для отображения чатов
+      const myUserChats = dealChats.filter(c => {
+         if (!user) return false;
+         const isCust = c.customerId === user.id || c.customerName === user.name;
+         const isCreat = c.creatorId === user.id || c.creatorName === user.name;
+         return isCust || isCreat;
+      });
+
       const feedTasks = tasks.filter(t => !t.hidden && (selectedCat === 'All' || t.category === selectedCat));
-      const myCreatedTasks = tasks.filter(t => user && t.author_id === user.id);
+      const myCreatedTasks = tasks.filter(t => user && (t.author_id === user.id || t.author === user.name));
       const myRespondedTasks = tasks.filter(t => user && paidUnlocks.includes(t.id));
 
       const activeDialogueObj = activeChatTarget !== 'global' ? dealChats.find(c => c.id === activeChatTarget) : null;
-      const partnerId = activeDialogueObj ? (user?.id === activeDialogueObj.customerId ? activeDialogueObj.creatorId : activeDialogueObj.customerId) : null;
-      const partnerName = activeDialogueObj ? (user?.id === activeDialogueObj.customerId ? (activeDialogueObj.creatorName || "Креатор") : (activeDialogueObj.customerName || "Заказчик")) : "";
+      const isCustomerForActiveChat = activeDialogueObj && user && (activeDialogueObj.customerId === user.id || activeDialogueObj.customerName === user.name);
+      const partnerId = activeDialogueObj ? (isCustomerForActiveChat ? activeDialogueObj.creatorId : activeDialogueObj.customerId) : null;
+      const partnerName = activeDialogueObj ? (isCustomerForActiveChat ? (activeDialogueObj.creatorName || "Креатор") : (activeDialogueObj.customerName || "Заказчик")) : "";
       const partnerRating = partnerId && partnerId !== 'hub' ? (userRatings[partnerId] || { likes: [], dislikes: [] }) : { likes: [], dislikes: [] };
-
-      const myUserChats = dealChats.filter(c => user && (c.customerId === user.id || c.creatorId === user.id));
 
       if (!isDbReady) return (
         <div className="min-h-screen bg-[#05070A] flex flex-col items-center justify-center text-cyan-400 font-mono gap-4">
@@ -684,7 +694,7 @@
 
       const totalSystemViews = tasks.reduce((sum, t) => sum + Number(t.views || 0), 0);
       const totalSystemAWS = adminUsers.length > 0 ? adminUsers.reduce((sum, u) => sum + Number(u.balance || 0), 0) : 0;
-      const totalSystemUsers = adminUsers.length > 0 ? adminUsers.length : (isGlobalMode ? "0" : "Локально");
+      const totalSystemUsers = adminUsers.length > 0 ? adminUsers.length : (isGlobalMode ? "..." : "Локально");
       const activeDealsCount = dealChats.length;
       const paidUnlocksCount = adminUsers.reduce((sum, u) => sum + (Array.isArray(u.paidUnlocks) ? u.paidUnlocks.length : 0), 0);
       const totalMessagesCount = dealChats.reduce((sum, t) => sum + (Array.isArray(t.messages) ? t.messages.length : 0), 0) + globalChatMessages.length;
@@ -859,9 +869,9 @@
 
                       {myUserChats.map(c => {
                         const isSelected = activeChatTarget === c.id;
-                        const isCustomer = user?.id === c.customerId;
-                        const interlocutorName = isCustomer ? (c.creatorName || "Креатор") : (c.customerName || "Заказчик");
-                        const interlocutorAvatar = isCustomer ? (c.creatorAvatar || MINIMAL_AVATARS[0].url) : MINIMAL_AVATARS[1].url;
+                        const isCustomerForThisChat = c.customerId === user.id || c.customerName === user.name;
+                        const interlocutorName = isCustomerForThisChat ? (c.creatorName || "Креатор") : (c.customerName || "Заказчик");
+                        const interlocutorAvatar = isCustomerForThisChat ? (c.creatorAvatar || MINIMAL_AVATARS[0].url) : MINIMAL_AVATARS[1].url;
 
                         return (
                           <div key={c.id} onClick={() => setActiveChatTarget(c.id)} className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center gap-3 ${isSelected ? 'bg-blue-500/20 border border-blue-500/40 text-blue-300' : 'bg-slate-900/40 hover:bg-slate-900 border border-slate-800 text-slate-400'}`}>
@@ -871,7 +881,7 @@
                             <div className="min-w-0 flex-1">
                               <div className="text-xs font-bold text-slate-200 truncate flex items-center justify-between">
                                 <span>{interlocutorName}</span>
-                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">{isCustomer ? 'Креатор' : 'Заказчик'}</span>
+                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">{isCustomerForThisChat ? 'Креатор' : 'Заказчик'}</span>
                               </div>
                               <div className="text-[11px] text-slate-400 truncate mt-0.5">{c.taskTitle}</div>
                             </div>
@@ -917,7 +927,7 @@
                         <>
                           <div className="text-center text-[11px] text-slate-500 font-mono my-2 border-b border-slate-800 pb-2">👋 Добро пожаловать в общий чат платформы. Здесь можно находить команду и делиться опытом.</div>
                           {globalChatMessages.map(m => {
-                            const isMe = user && m.senderId === user.id;
+                            const isMe = user && (m.senderId === user.id || m.senderName === user.name);
                             return (
                               <div key={m.id} className={`flex items-start gap-2.5 ${isMe ? 'flex-row-reverse' : ''}`}>
                                 <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-800 shrink-0 border border-slate-700"><img src={m.senderAvatar || MINIMAL_AVATARS[0].url} className="w-full h-full object-cover" /></div>
@@ -933,7 +943,7 @@
                         <>
                           <div className="text-center text-[11px] text-slate-500 font-mono my-2 border-b border-slate-800 pb-2">🔒 Безопасный диалог сделки. Контакты и ТЗ доступны участникам.</div>
                           {(activeDialogueObj.messages || []).map(m => {
-                            const isMe = user && m.senderId === user.id;
+                            const isMe = user && (m.senderId === user.id || m.senderName === user.name);
                             return (
                               <div key={m.id} className={`flex items-start gap-2.5 ${isMe ? 'flex-row-reverse' : ''}`}>
                                 <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-800 shrink-0 border border-slate-700"><img src={m.senderAvatar || MINIMAL_AVATARS[0].url} className="w-full h-full object-cover" /></div>
@@ -1293,7 +1303,7 @@
                   </div>
                   
                   <div className="pt-2">
-                    {(!user || user.id === viewingTask.author_id || paidUnlocks.includes(viewingTask.id)) ? (
+                    {(!user || (user.id === viewingTask.author_id || user.name === viewingTask.author) || paidUnlocks.includes(viewingTask.id)) ? (
                       <button onClick={() => handleOpenTaskChat(viewingTask)} className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-600 to-cyan-500 text-white font-bold text-sm hover:opacity-90 shadow-lg shadow-cyan-500/20">Открыть диалог</button>
                     ) : (
                       <>
@@ -1395,7 +1405,7 @@
                   {authError && <div className="text-[11px] font-medium text-red-200 text-center bg-red-900/40 py-3 px-4 rounded-xl border border-red-500/50 leading-relaxed shadow-[0_0_15px_rgba(239,68,68,0.2)]">{authError}</div>}
                   
                   <button type="submit" disabled={authLoading} className={`w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-extrabold text-sm hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all mt-2 flex justify-center items-center gap-2 ${authLoading ? 'opacity-70 cursor-not-allowed' : ''}`}>
-                    {authLoading ? <><i className="fa-solid fa-spinner fa-spin"></i> Синтез...</> : (authMode === 'login' ? 'Войти' : 'Регистрация')}
+                    {authLoading ? <><i className="fa-solid fa-spinner fa-spin"></i> Загрузка...</> : (authMode === 'login' ? 'Войти' : 'Регистрация')}
                   </button>
                 </form>
                 <div className="mt-6 text-center border-t border-slate-800 pt-5">
