@@ -146,7 +146,9 @@
       const [paidUnlocks, setPaidUnlocks] = useState([]);
       const [userRatings, setUserRatings] = useState({});
 
-      const isAdmin = user && user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+      // Усиленная проверка на администратора (берем email напрямую из Auth)
+      const currentUserEmail = user?.email || auth?.currentUser?.email || '';
+      const isAdmin = currentUserEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
       const [toasts, setToasts] = useState([]);
       const [selectedCat, setSelectedCat] = useState('All');
@@ -189,6 +191,8 @@
       const [adminActiveSupportId, setAdminActiveSupportId] = useState(null);
       const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
 
+      const [adminUsers, setAdminUsers] = useState([]);
+
       const prevChatsRef = useRef([]);
 
       const showToast = (message, type = 'success') => { 
@@ -204,8 +208,20 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
 
+      // Слушатель для загрузки данных админ-панели (срабатывает только у админа)
       useEffect(() => {
-        // Надежный локальный фоллбэк без ошибок парсинга
+        if (isGlobalMode && db && isAdmin) {
+          const unsubUsers = window.Firebase.onSnapshot(window.Firebase.collection(db, 'artifacts', appId, 'users'), (snap) => {
+             setAdminUsers(snap.docs.map(d => d.data()));
+          });
+          const unsubSupport = window.Firebase.onSnapshot(window.Firebase.collection(db, 'artifacts', appId, 'support'), (snap) => {
+             setAdminSupportList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+          });
+          return () => { unsubUsers(); unsubSupport(); };
+        }
+      }, [isGlobalMode, db, isAdmin, appId]);
+
+      useEffect(() => {
         const activateLocalFallback = () => {
           setIsGlobalMode(false); 
           setEmailVerified(true);
@@ -250,7 +266,6 @@
               setUserRatings(rMap);
             });
 
-            // Обернуто в try-catch для предотвращения зависания экрана загрузки
             window.Firebase.onAuthStateChanged(firebaseAuth, async (u) => {
               try {
                 if (u) {
@@ -430,7 +445,7 @@
           setTasks(updated); localStorage.setItem('aws_local_tasks', JSON.stringify(updated));
         }
         showToast(editingTask ? 'Заказ успешно обновлен!' : 'Опубликовано!'); 
-        if(!editingTask) switchTab('feed');
+        if(!editingTask) switchTab('create');
       };
 
       const startEditingTask = (task) => {
@@ -445,7 +460,6 @@
          if (isGlobalMode && db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', taskId.toString()), { card_frame: newFrameClass }, { merge: true });
       };
 
-      // === ПОЛНОСТЬЮ БЕЗОТКАЗНАЯ ЛОГИКА ОТКРЫТИЯ ЧАТА ===
       const handleOpenTaskChat = async (targetTask) => {
         if (!user) return setAuthModalOpen(true);
 
@@ -454,7 +468,6 @@
         let newChatObj = null;
 
         if (isCustomer) {
-            // Заказчик нажимает Отклики на своем заказе
             const relatedChats = dealChats.filter(c => c.taskId === targetTask.id && !c.id.endsWith('_hub'));
             if (relatedChats.length > 0) {
                 targetChatId = relatedChats.sort((a,b) => b.lastUpdated - a.lastUpdated)[0].id;
@@ -477,7 +490,6 @@
                 }
             }
         } else {
-            // Креатор нажимает "В чат" из активных сделок
             targetChatId = `${targetTask.id}_${user.id}`;
             if (!dealChats.some(c => c.id === targetChatId)) {
                 newChatObj = {
@@ -599,7 +611,6 @@
         setSupportInput('');
       };
 
-      // Исправленная и мягкая логика AI
       const handleGenerateAI = async (e) => {
         e.preventDefault(); if (!aiPrompt.trim()) return;
         const fee = aiMode === 'text' ? 15 : 50;
@@ -670,6 +681,13 @@
           <i className="fa-solid fa-circle-notch fa-spin text-4xl"></i><span className="animate-pulse">Запуск AWS Space...</span>
         </div>
       );
+
+      const totalSystemViews = tasks.reduce((sum, t) => sum + Number(t.views || 0), 0);
+      const totalSystemAWS = adminUsers.length > 0 ? adminUsers.reduce((sum, u) => sum + Number(u.balance || 0), 0) : 0;
+      const totalSystemUsers = adminUsers.length > 0 ? adminUsers.length : (isGlobalMode ? "0" : "Локально");
+      const activeDealsCount = dealChats.length;
+      const paidUnlocksCount = adminUsers.reduce((sum, u) => sum + (Array.isArray(u.paidUnlocks) ? u.paidUnlocks.length : 0), 0);
+      const totalMessagesCount = dealChats.reduce((sum, t) => sum + (Array.isArray(t.messages) ? t.messages.length : 0), 0) + globalChatMessages.length;
 
       return (
         <div className="min-h-screen flex flex-col w-full max-w-full overflow-x-hidden relative">
