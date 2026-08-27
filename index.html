@@ -128,7 +128,6 @@
       const [db, setDb] = useState(null);
       const [auth, setAuth] = useState(null);
       const [appId] = useState('aws-platform-v1');
-      const [isGlobalMode, setIsGlobalMode] = useState(false);
       const [isDbReady, setIsDbReady] = useState(false);
 
       const [tab, setTab] = useState('feed');
@@ -191,7 +190,6 @@
       const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
 
       const [adminUsers, setAdminUsers] = useState([]);
-
       const prevChatsRef = useRef([]);
 
       const showToast = (message, type = 'success') => { 
@@ -207,20 +205,8 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
 
-      // Прямое обновление пользователя в БД, чтобы избежать зацикливаний
-      const updateUserDoc = async (updates) => {
-          if (isGlobalMode && db && user?.id) {
-              try {
-                  await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'users', user.id), updates, { merge: true });
-              } catch(e) {
-                  console.error("Failed to sync user doc:", e);
-              }
-          }
-      };
-
-      // Подгрузка данных для админки
       useEffect(() => {
-        if (isGlobalMode && db && isAdmin) {
+        if (db && isAdmin) {
           const unsubUsers = window.Firebase.onSnapshot(window.Firebase.collection(db, 'artifacts', appId, 'users'), (snap) => {
              setAdminUsers(snap.docs.map(d => d.data()));
           }, (e) => console.warn("Admin Users load error:", e));
@@ -231,39 +217,27 @@
           
           return () => { unsubUsers(); unsubSupport(); };
         }
-      }, [isGlobalMode, db, isAdmin, appId]);
+      }, [db, isAdmin, appId]);
 
+      // ИНИЦИАЛИЗАЦИЯ СТРОГО ЧЕРЕЗ FIREBASE
       useEffect(() => {
-        const activateLocalFallback = () => {
-          setIsGlobalMode(false); 
-          setEmailVerified(true);
-          try {
-            const lT = localStorage.getItem('aws_local_tasks'); if(lT) setTasks(JSON.parse(lT) || []);
-            const lC = localStorage.getItem('aws_local_chats'); if(lC) setDealChats(JSON.parse(lC) || []);
-            const lG = localStorage.getItem('aws_local_global'); if(lG) setGlobalChatMessages(JSON.parse(lG) || []);
-            const lU = localStorage.getItem('aws_local_user'); if(lU) setUser(JSON.parse(lU));
-            const lB = localStorage.getItem('aws_local_balance'); if(lB) setBalance(Number(lB) || 0);
-          } catch(e) { console.warn("Local storage parse error:", e); }
-          setIsDbReady(true);
-        };
-
         const initCloud = () => {
           try {
             const app = window.Firebase.initializeApp(FIREBASE_CONFIG);
             const firestoreDb = window.Firebase.getFirestore(app);
             const firebaseAuth = window.Firebase.getAuth(app);
-            setDb(firestoreDb); setAuth(firebaseAuth); setIsGlobalMode(true);
+            setDb(firestoreDb); 
+            setAuth(firebaseAuth);
 
-            // ВОЗВРАЩЕНЫ ОРИГИНАЛЬНЫЕ ПУТИ (Без public/data), ЧТОБЫ НЕ НАРУШАТЬ ПРАВИЛА ВАШЕЙ БД
             window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'artifacts', appId, 'tasks'), (snap) => {
               const loaded = snap.docs.map(d => d.data());
               setTasks(loaded.sort((a, b) => b.id - a.id));
-            }, (e) => console.error("Tasks snapshot error:", e));
+            }, (e) => console.error("Tasks error:", e));
 
             window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'artifacts', appId, 'chats'), (snap) => {
               const loadedChats = snap.docs.map(d => d.data());
               setDealChats(loadedChats.sort((a, b) => (b.lastUpdated || 0) - (a.lastUpdated || 0)));
-            }, (err) => console.error("Chats snapshot error:", err));
+            }, (err) => console.error("Chats error:", err));
 
             window.Firebase.onSnapshot(window.Firebase.doc(firestoreDb, 'artifacts', appId, 'global_chat', 'messages_hub'), (docSnap) => {
               if (docSnap.exists()) setGlobalChatMessages(docSnap.data().messages || []);
@@ -278,14 +252,10 @@
             window.Firebase.onAuthStateChanged(firebaseAuth, async (u) => {
               try {
                 if (u) {
-                  try { 
-                    await u.reload(); 
-                    setEmailVerified(u.emailVerified);
-                  } catch(err) { console.warn("Reload skipped"); }
+                  try { await u.reload(); setEmailVerified(u.emailVerified); } catch(err) {}
 
                   const profRef = window.Firebase.doc(firestoreDb, 'artifacts', appId, 'users', u.uid);
                   
-                  // Слушаем изменения профиля пользователя
                   window.Firebase.onSnapshot(profRef, (profSnap) => {
                       if (profSnap.exists() && profSnap.data().profile) {
                           const data = profSnap.data();
@@ -294,7 +264,6 @@
                           setInventory(data.inventory || {avatars:[],frames:[],cardFrames:[]}); 
                           setPaidUnlocks(data.paidUnlocks || []);
                       } else {
-                          // Создаем профиль, если его нет
                           const newProfile = { id: u.uid, email: u.email, name: u.email.split('@')[0], avatar: MINIMAL_AVATARS[0].url, avatarFrame: 'frame-none', cardFrame: 'card-frame-default' };
                           const isM = u.email === ADMIN_EMAIL.toLowerCase();
                           window.Firebase.setDoc(profRef, { profile: newProfile, balance: isM ? 25000 : 1000, inventory: { avatars: [], frames: [], cardFrames: [] }, paidUnlocks: [] });
@@ -315,25 +284,15 @@
             });
           } catch(e) { 
              console.error("Firebase overall init error:", e);
-             activateLocalFallback(); 
           }
         };
 
-        // Защита от гонки загрузки скриптов
-        let checkInterval = setInterval(() => {
+        const checkInterval = setInterval(() => {
            if (window.Firebase && window.Firebase.initializeApp) {
                clearInterval(checkInterval);
                initCloud();
            }
         }, 100);
-
-        setTimeout(() => {
-           if (!isDbReady && (!window.Firebase || !window.Firebase.initializeApp)) {
-               clearInterval(checkInterval);
-               console.warn("Firebase failed to load in 4 seconds. Using local fallback.");
-               activateLocalFallback();
-           }
-        }, 4000);
 
         return () => clearInterval(checkInterval);
       }, []);
@@ -367,11 +326,6 @@
         e.preventDefault(); setAuthError(''); setAuthLoading(true);
         const em = authEmail.trim().toLowerCase();
         
-        if (!isGlobalMode) {
-           if (authPassword.length < 6) { setAuthError('Пароль должен быть от 6 символов'); setAuthLoading(false); return; }
-           setUser({ id: 'u_'+Date.now(), email: em, name: em.split('@')[0], avatar: MINIMAL_AVATARS[0].url, avatarFrame: 'frame-none', cardFrame: 'card-frame-default' }); 
-           setBalance(em === ADMIN_EMAIL.toLowerCase() ? 25000 : 1000); setAuthModalOpen(false); showToast('Локальный вход'); setAuthLoading(false); return;
-        }
         try {
           if (authMode === 'register') {
             if(authPassword.length < 6) throw { code: 'auth/weak-password' };
@@ -389,15 +343,17 @@
         } finally { setAuthLoading(false); }
       };
 
-      const handleLogout = async () => { if(isGlobalMode && auth) await window.Firebase.signOut(auth); setUser(null); setEmailVerified(false); };
+      const handleLogout = async () => { if(auth) await window.Firebase.signOut(auth); setUser(null); setEmailVerified(false); };
 
-      const handleCryptoPaySubmit = () => {
+      const handleCryptoPaySubmit = async () => {
          setCryptoChecking(true);
-         setTimeout(() => {
+         setTimeout(async () => {
             setCryptoChecking(false);
             const newBalance = Number(balance) + Number(depositAmountAWS);
             setBalance(newBalance);
-            updateUserDoc({ balance: newBalance });
+            if (db && user) {
+                await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'users', user.id), { balance: newBalance }, { merge: true });
+            }
             showToast(`Успех! Баланс пополнен на ${depositAmountAWS} AWS.`);
             setWalletModalOpen(false); setCryptoStep(1);
          }, 3000);
@@ -424,7 +380,7 @@
         setCurrentPhotoSlide(0);
 
         setTasks(prev => prev.map(t => t.id === task.id ? updatedTask : t));
-        if (isGlobalMode && db) {
+        if (db) {
           try { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', task.id.toString()), { views: updatedViews }, { merge: true }); } catch (e) {}
         }
       };
@@ -447,14 +403,14 @@
 
         const updatedRating = { likes, dislikes };
         setUserRatings(prev => ({ ...prev, [targetUserId]: updatedRating }));
-        if (isGlobalMode && db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'ratings', targetUserId), updatedRating, { merge: true });
+        if (db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'ratings', targetUserId), updatedRating, { merge: true });
         showToast("Оценка профиля обновлена!");
       };
 
       const handleCreateOrEditTask = async (e) => {
         e.preventDefault(); 
         if (!user) return;
-        if (isGlobalMode && !emailVerified) return showToast('Подтвердите Email перейдя по ссылке в письме, чтобы создавать заказы.', 'error');
+        if (!emailVerified) return showToast('Подтвердите Email перейдя по ссылке в письме, чтобы создавать заказы.', 'error');
         if (!newTitle.trim()) return;
 
         const bVal = Number(newBudget) || 15000;
@@ -465,11 +421,8 @@
            { ...editingTask, category: newCategory, title: newTitle, prompt: newPrompt, tool: newTool, budget: bVal, response_fee: calculateResponseFee(bVal), photos: finalPhotos } : 
            { id: Date.now(), category: newCategory, title: newTitle, prompt: newPrompt || 'Подробности в чате', tool: newTool, budget: bVal, response_fee: calculateResponseFee(bVal), currency: 'AWS', author: user.name, author_id: user.id, card_frame: user.cardFrame || 'card-frame-default', status: 'open', views: 0, photos: finalPhotos, hidden: false };
         
-        if(isGlobalMode && db) {
+        if(db) {
           await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', taskObj.id.toString()), taskObj, { merge: true });
-        } else {
-          const updated = editingTask ? tasks.map(t => t.id === taskObj.id ? taskObj : t) : [taskObj, ...tasks];
-          setTasks(updated); localStorage.setItem('aws_local_tasks', JSON.stringify(updated));
         }
         showToast(editingTask ? 'Заказ успешно обновлен!' : 'Опубликовано!'); 
         if(!editingTask) switchTab('create');
@@ -483,11 +436,9 @@
       };
 
       const updateTaskSpecificFrame = async (taskId, newFrameClass) => {
-         setTasks(tasks.map(t => t.id === taskId ? { ...t, card_frame: newFrameClass } : t));
-         if (isGlobalMode && db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', taskId.toString()), { card_frame: newFrameClass }, { merge: true });
+         if (db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', taskId.toString()), { card_frame: newFrameClass }, { merge: true });
       };
 
-      // === БРОНЕБОЙНАЯ СИСТЕМА ОТКРЫТИЯ ЧАТОВ ===
       const handleOpenTaskChat = async (targetTask) => {
         if (!user) return setAuthModalOpen(true);
 
@@ -537,14 +488,8 @@
         }
 
         if (newChatObj) {
-            setDealChats(prev => {
-                const filtered = prev.filter(c => c.id !== newChatObj.id);
-                return [newChatObj, ...filtered];
-            });
-            if (isGlobalMode && db) {
+            if (db) {
                 try { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'chats', targetChatId), newChatObj, { merge: true }); } catch(e) { console.error("Chat sync error:", e); }
-            } else {
-                localStorage.setItem('aws_local_chats', JSON.stringify([newChatObj, ...dealChats]));
             }
         }
 
@@ -553,7 +498,7 @@
         switchTab('chats');
       };
 
-      // === ПОЛНОЦЕННАЯ ЛОГИКА ОПЛАТЫ ОТКЛИКА ===
+      // СТРОГОЕ СПИСАНИЕ ТОКЕНОВ В БД И СОЗДАНИЕ ЧАТА
       const handleRespondToTask = async (targetTask) => {
         if (!user) return setAuthModalOpen(true);
         const isTaskAuthor = (targetTask.author_id === user.id) || (targetTask.author === user.name);
@@ -566,12 +511,23 @@
         const newBalance = Number(balance) - fee;
         const newPaidUnlocks = [...paidUnlocks, targetTask.id];
         
-        setBalance(newBalance);
-        setPaidUnlocks(newPaidUnlocks);
-        
-        // Мгновенное сохранение списания баланса
-        updateUserDoc({ balance: newBalance, paidUnlocks: newPaidUnlocks });
+        // 1. Обязательно списываем средства из базы, перед тем как пустить в чат
+        if (db) {
+            try { 
+                await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'users', user.id), { balance: newBalance, paidUnlocks: newPaidUnlocks }, { merge: true }); 
+                // Только если списание прошло успешно:
+                setBalance(newBalance);
+                setPaidUnlocks(newPaidUnlocks);
+            } catch(e) { 
+                showToast("Ошибка при оплате отклика", "error");
+                return;
+            }
+        } else {
+            showToast("Нет соединения с базой данных!", "error");
+            return;
+        }
 
+        // 2. Создаем чат в базе
         const chatId = `${targetTask.id}_${user.id}`;
         let newChatObj = dealChats.find(c => c.id === chatId);
 
@@ -590,13 +546,10 @@
                 lastUpdated: Date.now(),
                 messages: [{ id: Date.now(), senderId: user.id, senderName: user.name, senderAvatar: user.avatar, text: "Здравствуйте! Готов взять вашу задачу в работу.", timestamp: Date.now() }]
             };
-            setDealChats(prev => [newChatObj, ...prev]);
             
-            if (isGlobalMode && db) {
-                try { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'chats', chatId), newChatObj, { merge: true }); } catch(e) { console.error("Chat creation error:", e); }
-            } else {
-                localStorage.setItem('aws_local_chats', JSON.stringify([newChatObj, ...dealChats]));
-            }
+            try { 
+                await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'chats', chatId), newChatObj, { merge: true }); 
+            } catch(e) { console.error("Chat creation error:", e); }
         }
 
         setViewingTask(null);
@@ -613,10 +566,9 @@
         if (activeChatTarget === 'global') {
           const newGlobalMsg = { id: Date.now(), senderId: user.id, senderName: user.name, senderAvatar: user.avatar, text: msgText, timestamp: Date.now() };
           const updatedGlobal = [...globalChatMessages, newGlobalMsg];
-          setGlobalChatMessages(updatedGlobal);
-          if (isGlobalMode && db) { 
+          if (db) { 
               try { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'global_chat', 'messages_hub'), { messages: updatedGlobal }, { merge: true }); } catch(e) { console.error("Global chat err:", e); }
-          } else { localStorage.setItem('aws_local_global', JSON.stringify(updatedGlobal)); }
+          }
         } else {
           const currentChat = dealChats.find(c => c.id === activeChatTarget);
           if (!currentChat) return;
@@ -624,12 +576,9 @@
           const newMsg = { id: Date.now(), senderId: user.id, senderName: user.name, senderAvatar: user.avatar, text: msgText, timestamp: Date.now() };
           const updatedChat = { ...currentChat, lastMessage: msgText, lastUpdated: Date.now(), messages: [...(currentChat.messages || []), newMsg] };
 
-          const updatedChatsList = dealChats.map(c => c.id === currentChat.id ? updatedChat : c);
-          setDealChats(updatedChatsList);
-          
-          if (isGlobalMode && db) { 
+          if (db) { 
               try { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'chats', currentChat.id), updatedChat, { merge: true }); } catch(e) { console.error("Message send err:", e); }
-          } else { localStorage.setItem('aws_local_chats', JSON.stringify(updatedChatsList)); }
+          }
         }
         setChatInput('');
       };
@@ -638,7 +587,7 @@
         e.preventDefault();
         const text = supportInput.trim(); if (!text) return;
         
-        if (isGlobalMode && db) {
+        if (db) {
            const targetUserId = fromAdmin ? adminActiveSupportId : user.id;
            const targetEmail = fromAdmin ? (adminSupportList.find(c=>c.id===targetUserId)?.userEmail || "User") : user.email;
            const docRef = window.Firebase.doc(db, 'artifacts', appId, 'support', targetUserId);
@@ -659,7 +608,7 @@
         
         const newBalance = Number(balance) - fee;
         setBalance(newBalance); 
-        updateUserDoc({ balance: newBalance }); // Сразу сохраняем списание
+        if(db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'users', user.id), { balance: newBalance }, { merge: true });
         
         setAiLoading(true); setAiResultImg(null); setAiResultText('');
         
@@ -687,19 +636,19 @@
           setAiResultText(`Сервер нейросети сейчас перегружен. Пожалуйста, подождите минуту и попробуйте еще раз. (Средства возвращены на баланс) ✨`); 
           const restoredBalance = Number(balance) + fee;
           setBalance(restoredBalance);
-          updateUserDoc({ balance: restoredBalance });
+          if(db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'users', user.id), { balance: restoredBalance }, { merge: true });
           setAiLoading(false);
         }
       };
 
-      const handleBuy = (item, type) => {
+      const handleBuy = async (item, type) => {
         if (!user) return setAuthModalOpen(true);
         const isOwned = item.price === 0 || inventory[type+'s']?.includes(item.id);
         if (isOwned) {
           let upd = { ...user }; if(type === 'avatar') upd.avatar = item.url; if(type === 'frame') upd.avatarFrame = item.class; if(type === 'cardFrame') upd.cardFrame = item.class;
           setUser(upd); 
-          updateUserDoc({ profile: upd });
-          if(type === 'cardFrame' && isGlobalMode && db) tasks.filter(t=>t.author_id===user.id).forEach(t => window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', t.id.toString()), {card_frame: item.class}, {merge:true}));
+          if(db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'users', user.id), { profile: upd }, { merge: true });
+          if(type === 'cardFrame' && db) tasks.filter(t=>t.author_id===user.id).forEach(t => window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', t.id.toString()), {card_frame: item.class}, {merge:true}));
           showToast('Обновлено!');
         } else {
           if (Number(balance) < item.price) return setWalletModalOpen(true);
@@ -712,9 +661,8 @@
           let upd = { ...user }; if(type === 'avatar') upd.avatar = item.url; if(type === 'frame') upd.avatarFrame = item.class; if(type === 'cardFrame') upd.cardFrame = item.class;
           setUser(upd); 
           
-          updateUserDoc({ balance: newBalance, inventory: nInv, profile: upd });
-          
-          if(type === 'cardFrame' && isGlobalMode && db) tasks.filter(t=>t.author_id===user.id).forEach(t => window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', t.id.toString()), {card_frame: item.class}, {merge:true}));
+          if(db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'users', user.id), { balance: newBalance, inventory: nInv, profile: upd }, { merge: true });
+          if(type === 'cardFrame' && db) tasks.filter(t=>t.author_id===user.id).forEach(t => window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', t.id.toString()), {card_frame: item.class}, {merge:true}));
           showToast('Покупка успешна! ✨');
         }
       };
@@ -729,6 +677,7 @@
       const partnerName = activeDialogueObj ? (isCustomerForActiveChat ? (activeDialogueObj.creatorName || "Креатор") : (activeDialogueObj.customerName || "Заказчик")) : "";
       const partnerRating = partnerId && partnerId !== 'hub' ? (userRatings[partnerId] || { likes: [], dislikes: [] }) : { likes: [], dislikes: [] };
 
+      // Правильный поиск чатов пользователя
       const myUserChats = dealChats.filter(c => {
          if (!user) return false;
          const isCust = c.customerId === user.id || c.customerName === user.name;
@@ -744,7 +693,7 @@
 
       const totalSystemViews = tasks.reduce((sum, t) => sum + Number(t.views || 0), 0);
       const totalSystemAWS = adminUsers.length > 0 ? adminUsers.reduce((sum, u) => sum + Number(u.balance || 0), 0) : 0;
-      const totalSystemUsers = adminUsers.length > 0 ? adminUsers.length : (isGlobalMode ? "0" : "Локально");
+      const totalSystemUsers = adminUsers.length > 0 ? adminUsers.length : "0";
       const activeDealsCount = dealChats.length;
       const paidUnlocksCount = adminUsers.reduce((sum, u) => sum + (Array.isArray(u.paidUnlocks) ? u.paidUnlocks.length : 0), 0);
       const totalMessagesCount = dealChats.reduce((sum, t) => sum + (Array.isArray(t.messages) ? t.messages.length : 0), 0) + globalChatMessages.length;
@@ -752,12 +701,6 @@
       return (
         <div className="min-h-screen flex flex-col w-full max-w-full overflow-x-hidden relative">
           
-          {!isGlobalMode && (
-            <div className="bg-amber-500/20 text-amber-300 text-[10px] text-center py-1 font-mono tracking-wide border-b border-amber-500/30">
-              <i className="fa-solid fa-triangle-exclamation mr-1"></i> Оффлайн режим
-            </div>
-          )}
-
           <div className="fixed top-12 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
             {toasts.map(t => (
               <div key={t.id} className={`toast-enter px-4 py-3 rounded-xl backdrop-blur-md border shadow-lg flex items-center gap-2 ${t.type === 'error' ? 'bg-red-950/80 border-red-500/50 text-red-200' : 'bg-emerald-950/80 border-emerald-500/50 text-emerald-200'}`}>
@@ -1121,7 +1064,7 @@
                                 {responsesCount > 0 && <span className="bg-cyan-500 text-black px-2 py-0.5 rounded-full text-[10px] ml-1">{responsesCount}</span>}
                               </button>
                               <button onClick={() => startEditingTask(item)} className="px-5 py-2.5 bg-transparent border border-[#334155] text-slate-300 font-bold text-sm rounded-xl hover:bg-[#1e293b] transition-colors flex items-center gap-2"><i className="fa-solid fa-pen"></i> Редактировать</button>
-                              <button onClick={() => { if(isGlobalMode && db) window.Firebase.deleteDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', item.id.toString())); setTasks(tasks.filter(t=>t.id!==item.id)); }} className="ml-auto w-10 h-10 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center border border-red-900/50"><i className="fa-solid fa-trash-can"></i></button>
+                              <button onClick={() => { if(db) window.Firebase.deleteDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', item.id.toString())); setTasks(tasks.filter(t=>t.id!==item.id)); }} className="ml-auto w-10 h-10 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center border border-red-900/50"><i className="fa-solid fa-trash-can"></i></button>
                             </div>
                           </div>
                         );
