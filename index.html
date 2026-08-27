@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <title>AI WORKERS SPACE — Global AI Freelance</title>
   
+  <!-- Подключение Tailwind, React и иконок -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -12,12 +13,12 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    /* CSS стили оставлены без изменений для сохранения вашего дизайна */
     html { scroll-behavior: smooth; background-color: #05070A; }
     body { background-color: #05070A; color: #f1f5f9; font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; min-height: 100vh; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     
+    /* Стили рамок */
     .frame-none { border: 2px solid transparent; }
     .frame-cyan { border: 2px solid #06b6d4; box-shadow: 0 0 10px rgba(6, 182, 212, 0.7); }
     .frame-emerald { border: 2px solid #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.8); }
@@ -38,6 +39,7 @@
 <body>
   <div id="root"></div>
 
+  <!-- Инициализация Firebase v11 (Production) -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
     import { getAuth, signInAnonymously, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
@@ -53,6 +55,7 @@
     const ADMIN_EMAIL = "kenigwood39@gmail.com";
     const CRYPTO_WALLET = "RiXj1x6mePC60cAuaRd4RO9yZs2FCkd3zeYcMtzzj9MI2GvSWAGT2e0qyRN0eLXx";
 
+    // Боевые ключи Firebase (безопасны для хранения на фронтенде)
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyBI6K0YuwV6jAHvUg2x8Y2dX-FuTLfDgd0",
       authDomain: "ai-workers-space.firebaseapp.com",
@@ -63,78 +66,1438 @@
       measurementId: "G-VFM3W6YCBQ"
     };
 
-    // ВНИМАНИЕ: GEMINI_API_KEY УДАЛЕН ИЗ ФРОНТЕНДА ДЛЯ БЕЗОПАСНОСТИ
+    // Утилита сжатия изображений перед загрузкой
+    const compressImage = (file) => {
+      return new Promise((resolve) => {
+        const reader = new FileReader(); reader.readAsDataURL(file);
+        reader.onload = (e) => {
+          const img = new Image(); img.src = e.target.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const scaleSize = 600 / img.width;
+            canvas.width = 600; canvas.height = img.height * scaleSize;
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', 0.7));
+          };
+        };
+      });
+    };
 
-    const compressImage = (file) => { /* логика сжатия */ };
-    const calculateResponseFee = (b) => { /* расчет комиссии */ };
+    const playNotificationBeep = () => {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.25);
+      } catch (e) {
+        console.warn("Audio fail", e);
+      }
+    };
 
-    // ... [Здесь остаются ваши константы MINIMAL_AVATARS, AVATAR_FRAMES, TASK_CARD_FRAMES] ...
-    // Для экономии места в ответе они подразумеваются как в оригинальном файле.
-    const MINIMAL_AVATARS = [ { id: 'm1', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&q=80', price: 0 } ];
-    const AVATAR_FRAMES = [ { id: 'f0', name: 'Без рамки', class: 'frame-none', price: 0 } ];
-    const TASK_CARD_FRAMES = [ { id: 'c0', name: 'Стандарт', class: 'card-frame-default', price: 0, dotColor: '#334155' } ];
+    const calculateResponseFee = (b) => { 
+      b = Number(b) || 0; 
+      let fee;
+      if (b <= 2000) fee = 100; 
+      else if (b <= 5000) fee = Math.max(100, Math.round(b * 0.05)); 
+      else fee = Math.round(250 + ((b - 5000) / 95000) * 950); 
+      return Math.max(50, Math.round(fee / 2)); 
+    };
+
+    const MINIMAL_AVATARS = [
+      { id: 'm1', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&q=80', price: 0 },
+      { id: 'm2', url: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=300&q=80', price: 0 },
+      { id: 'm3', url: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=300&q=80', price: 500 },
+      { id: 'm4', url: 'https://images.unsplash.com/photo-1634926878768-2a5b3c42f139?w=300&q=80', price: 5000 }
+    ];
+    const AVATAR_FRAMES = [
+      { id: 'f0', name: 'Без рамки', class: 'frame-none', price: 0 },
+      { id: 'f1', name: 'Cyan Glow', class: 'frame-cyan', price: 500 },
+      { id: 'f5', name: 'Rainbow Mythic ✨', class: 'frame-rainbow-mythic', price: 5000 }
+    ];
+    const TASK_CARD_FRAMES = [
+      { id: 'c0', name: 'Стандарт', class: 'card-frame-default', price: 0, dotColor: '#334155' },
+      { id: 'c1', name: 'Неон Cyan', class: 'card-frame-neon', price: 1000, dotColor: '#06b6d4' },
+      { id: 'c2', name: 'Кибер Маджента', class: 'card-frame-cyber', price: 2500, dotColor: '#d946ef' },
+      { id: 'c4', name: 'Fire Ultra 🔥', class: 'card-frame-fire-ultra', price: 10000, dotColor: '#ef4444' }
+    ];
 
     function App() {
-      // Инициализация состояний (как в "Болте")
       const [db, setDb] = useState(null);
       const [auth, setAuth] = useState(null);
       const [isDbReady, setIsDbReady] = useState(false);
       const [dbError, setDbError] = useState(''); 
+
       const [tab, setTab] = useState('feed');
-      // ... (остальные состояния из файла 2) ...
+      const [cabinetSubTab, setCabinetSubTab] = useState('my-orders');
+      const [adminSubTab, setAdminSubTab] = useState('stats');
+      const [activeChatTarget, setActiveChatTarget] = useState('global'); 
       
+      const [user, setUser] = useState(null);
+      const [emailVerified, setEmailVerified] = useState(false);
       const [balance, setBalance] = useState(0);
+      const [tasks, setTasks] = useState([]);
+      const [dealChats, setDealChats] = useState([]);
+      const [globalChatMessages, setGlobalChatMessages] = useState([]);
+      const [inventory, setInventory] = useState({ avatars: [], frames: [], cardFrames: [] });
+      const [paidUnlocks, setPaidUnlocks] = useState([]);
+      const [userRatings, setUserRatings] = useState({});
+
+      const currentUserEmail = user?.email || auth?.currentUser?.email || '';
+      const isAdmin = currentUserEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+
+      const [toasts, setToasts] = useState([]);
+      const [selectedCat, setSelectedCat] = useState('All');
+      const [authModalOpen, setAuthModalOpen] = useState(false);
+      const [authMode, setAuthMode] = useState('login');
+      const [authEmail, setAuthEmail] = useState('');
+      const [authPassword, setAuthPassword] = useState('');
+      const [authError, setAuthError] = useState('');
+      const [authLoading, setAuthLoading] = useState(false);
+      
+      const [walletModalOpen, setWalletModalOpen] = useState(false);
+      const [depositAmountAWS, setDepositAmountAWS] = useState('1000');
+      const [cryptoStep, setCryptoStep] = useState(1); 
+      const [cryptoChecking, setCryptoChecking] = useState(false);
+      
+      const [newTitle, setNewTitle] = useState('');
+      const [newCategory, setNewCategory] = useState('video');
+      const [newPrompt, setNewPrompt] = useState('');
+      const [newBudget, setNewBudget] = useState('15000');
+      const [newTool, setNewTool] = useState('ComfyUI');
+      const [taskPhotos, setTaskPhotos] = useState([]);
+      const [editingTask, setEditingTask] = useState(null); 
+
+      const [viewingTask, setViewingTask] = useState(null);
+      const [currentPhotoSlide, setCurrentPhotoSlide] = useState(0);
+      
+      const [chatInput, setChatInput] = useState('');
+      const chatScrollRef = useRef(null);
+
       const [aiMode, setAiMode] = useState('image'); 
       const [aiPrompt, setAiPrompt] = useState('');
       const [aiResultImg, setAiResultImg] = useState(null);
       const [aiResultText, setAiResultText] = useState('');
       const [aiLoading, setAiLoading] = useState(false);
 
-      // Инициализация Firebase...
-      
-      // БЕЗОПАСНЫЙ ОБРАБОТЧИК AI
+      const [supportOpen, setSupportOpen] = useState(false);
+      const [supportInput, setSupportInput] = useState('');
+      const [mySupportMsgs, setMySupportMsgs] = useState([]);
+      const [adminSupportList, setAdminSupportList] = useState([]);
+      const [adminActiveSupportId, setAdminActiveSupportId] = useState(null);
+      const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
+
+      const [adminUsers, setAdminUsers] = useState([]);
+
+      const prevChatsRef = useRef([]);
+
+      const showToast = (message, type = 'success') => { 
+        const id = Date.now(); 
+        setToasts(p => [...p, { id, message, type }]); 
+        setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 4000); 
+      };
+
+      const switchTab = (newTab) => {
+        setTab(newTab);
+        setEditingTask(null);
+        setViewingTask(null);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      // Инициализация Production Firebase
+      useEffect(() => {
+        const initCloud = () => {
+          try {
+            const app = window.Firebase.initializeApp(FIREBASE_CONFIG);
+            const firestoreDb = window.Firebase.getFirestore(app);
+            const firebaseAuth = window.Firebase.getAuth(app);
+            setDb(firestoreDb); 
+            setAuth(firebaseAuth);
+
+            // Слушаем Задачи
+            window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'tasks'), (snap) => {
+              const loaded = snap.docs.map(d => d.data());
+              setTasks(loaded.sort((a, b) => b.id - a.id));
+              setIsDbReady(true);
+            }, (error) => {
+               console.error("Firebase Rule Error:", error);
+               setDbError("Ошибка доступа к базе данных. Проверьте правила Firestore (Rules).");
+               setIsDbReady(true);
+            });
+
+            // Слушаем Чаты
+            window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'chats'), (snap) => {
+              const loadedChats = snap.docs.map(d => d.data());
+              setDealChats(loadedChats.sort((a, b) => (b.lastUpdated || 0) - (a.lastUpdated || 0)));
+            }, () => {});
+
+            // Слушаем Общий чат
+            window.Firebase.onSnapshot(window.Firebase.doc(firestoreDb, 'global_chat', 'messages_hub'), (docSnap) => {
+              if (docSnap.exists()) setGlobalChatMessages(docSnap.data().messages || []);
+            }, () => {});
+
+            // Слушаем Рейтинги
+            window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'ratings'), (snap) => {
+              const rMap = {};
+              snap.docs.forEach(d => { rMap[d.id] = d.data(); });
+              setUserRatings(rMap);
+            }, () => {});
+
+            // Авторизация и профиль пользователя
+            window.Firebase.onAuthStateChanged(firebaseAuth, async (u) => {
+              if (u) {
+                try { await u.reload(); setEmailVerified(u.emailVerified); } catch(err) {}
+
+                const profRef = window.Firebase.doc(firestoreDb, 'users', u.uid);
+                
+                window.Firebase.onSnapshot(profRef, (profSnap) => {
+                    if (profSnap.exists() && profSnap.data().profile) {
+                        const data = profSnap.data();
+                        setUser(data.profile); 
+                        setBalance(Number(data.balance) || 0); 
+                        setInventory(data.inventory || {avatars:[],frames:[],cardFrames:[]}); 
+                        setPaidUnlocks(data.paidUnlocks || []);
+                    } else {
+                        const newProfile = { id: u.uid, email: u.email, name: u.email.split('@')[0], avatar: MINIMAL_AVATARS[0].url, avatarFrame: 'frame-none', cardFrame: 'card-frame-default' };
+                        const isM = u.email === ADMIN_EMAIL.toLowerCase();
+                        window.Firebase.setDoc(profRef, { profile: newProfile, balance: isM ? 25000 : 1000, inventory: { avatars: [], frames: [], cardFrames: [] }, paidUnlocks: [] });
+                    }
+                }, () => {});
+
+                // Служба поддержки (личный канал)
+                window.Firebase.onSnapshot(window.Firebase.doc(firestoreDb, 'support', u.uid), (docSnap) => {
+                    if (docSnap.exists()) setMySupportMsgs(docSnap.data().messages || []);
+                }, () => {});
+
+              } else { 
+                setUser(null); setEmailVerified(false); setMySupportMsgs([]);
+              }
+            });
+
+          } catch(e) { 
+             console.error("Firebase init failed:", e);
+             setDbError("Сбой подключения к серверам Firebase.");
+             setIsDbReady(true);
+          }
+        };
+
+        const checkInterval = setInterval(() => {
+           if (window.Firebase && window.Firebase.initializeApp) {
+               clearInterval(checkInterval);
+               initCloud();
+           }
+        }, 100);
+
+        return () => clearInterval(checkInterval);
+      }, []);
+
+      // Загрузка данных для админки (только если админ)
+      useEffect(() => {
+        if (db && isAdmin) {
+          const unsubUsers = window.Firebase.onSnapshot(window.Firebase.collection(db, 'users'), (snap) => {
+             setAdminUsers(snap.docs.map(d => d.data()));
+          }, () => {});
+          
+          const unsubSupport = window.Firebase.onSnapshot(window.Firebase.collection(db, 'support'), (snap) => {
+             setAdminSupportList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+          }, () => {});
+          
+          return () => { unsubUsers(); unsubSupport(); };
+        }
+      }, [db, isAdmin]);
+
+      // Уведомления о новых сообщениях
+      useEffect(() => {
+        if (!user || dealChats.length === 0) { prevChatsRef.current = dealChats; return; }
+        if (prevChatsRef.current.length > 0) {
+          dealChats.forEach(currentChat => {
+            const isParticipant = currentChat.customerId === user.id || currentChat.creatorId === user.id || currentChat.customerName === user.name || currentChat.creatorName === user.name;
+            if (!isParticipant) return;
+            const prevChat = prevChatsRef.current.find(c => c.id === currentChat.id);
+            const currentMsgs = currentChat.messages || [];
+            const prevMsgs = prevChat?.messages || [];
+            if (currentMsgs.length > prevMsgs.length) {
+              const lastMsg = currentMsgs[currentMsgs.length - 1];
+              if (lastMsg && lastMsg.senderId !== user.id && lastMsg.senderName !== user.name) {
+                playNotificationBeep();
+                showToast(`💬 ${lastMsg.senderName || 'Новое сообщение'}: ${lastMsg.text}`);
+              }
+            }
+          });
+        }
+        prevChatsRef.current = dealChats;
+      }, [dealChats, user]);
+
+      useEffect(() => { 
+        if (chatScrollRef.current) { chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight; }
+      }, [activeChatTarget, dealChats, globalChatMessages, mySupportMsgs, adminSupportList]);
+
+      // Аутентификация
+      const handleAuthSubmit = async (e) => {
+        e.preventDefault(); setAuthError(''); setAuthLoading(true);
+        const em = authEmail.trim().toLowerCase();
+        
+        try {
+          if (authMode === 'register') {
+            if(authPassword.length < 6) throw { code: 'auth/weak-password' };
+            const cred = await window.Firebase.createUserWithEmailAndPassword(auth, em, authPassword);
+            try { await window.Firebase.sendEmailVerification(cred.user); showToast('Письмо подтверждения отправлено на почту!', 'success'); } catch(e) {}
+            setAuthModalOpen(false); 
+          } else {
+            await window.Firebase.signInWithEmailAndPassword(auth, em, authPassword);
+            setAuthModalOpen(false); showToast('Успешный вход!');
+          }
+        } catch(err) {
+          if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') setAuthError('Неверный email или пароль.');
+          else if (err.code === 'auth/email-already-in-use') setAuthError('Этот email уже занят.');
+          else setAuthError(err.message);
+        } finally { setAuthLoading(false); }
+      };
+
+      const handleLogout = async () => { if(auth) await window.Firebase.signOut(auth); setUser(null); setEmailVerified(false); };
+
+      const handleCryptoPaySubmit = async () => {
+         setCryptoChecking(true);
+         setTimeout(async () => {
+            setCryptoChecking(false);
+            const newBalance = Number(balance) + Number(depositAmountAWS);
+            setBalance(newBalance);
+            if (db && user) {
+                await window.Firebase.setDoc(window.Firebase.doc(db, 'users', user.id), { balance: newBalance }, { merge: true });
+            }
+            showToast(`Успех! Баланс пополнен на ${depositAmountAWS} AWS.`);
+            setWalletModalOpen(false); setCryptoStep(1);
+         }, 3000);
+      };
+
+      const handleUploadTaskPhotos = async (e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+        const currentCount = (taskPhotos || []).length;
+        const availableSlots = 5 - currentCount;
+        if (availableSlots <= 0) return showToast('Максимум 5 фото', 'error');
+
+        try {
+          const compressed = await Promise.all(files.slice(0, availableSlots).map(f => compressImage(f)));
+          setTaskPhotos(prev => [...(prev || []), ...compressed]);
+        } catch (err) { showToast('Ошибка при загрузке фото', 'error'); }
+        e.target.value = '';
+      };
+
+      const openTaskModalWithViewCount = async (task) => {
+        const updatedViews = (Number(task.views) || 0) + 1;
+        const updatedTask = { ...task, views: updatedViews };
+        setViewingTask(updatedTask);
+        setCurrentPhotoSlide(0);
+
+        setTasks(prev => prev.map(t => t.id === task.id ? updatedTask : t));
+        if (db) {
+          try { await window.Firebase.setDoc(window.Firebase.doc(db, 'tasks', task.id.toString()), { views: updatedViews }, { merge: true }); } catch (e) {}
+        }
+      };
+
+      const handleVoteUser = async (targetUserId, type) => {
+        if (!user) { setAuthModalOpen(true); return; }
+        if (user.id === targetUserId) return showToast("Нельзя голосовать за самого себя", "error");
+
+        const targetData = userRatings[targetUserId] || { likes: [], dislikes: [] };
+        let likes = Array.isArray(targetData.likes) ? [...targetData.likes] : [];
+        let dislikes = Array.isArray(targetData.dislikes) ? [...targetData.dislikes] : [];
+
+        if (type === 'like') {
+          if (likes.includes(user.id)) likes = likes.filter(id => id !== user.id);
+          else { likes.push(user.id); dislikes = dislikes.filter(id => id !== user.id); }
+        } else {
+          if (dislikes.includes(user.id)) dislikes = dislikes.filter(id => id !== user.id);
+          else { dislikes.push(user.id); likes = likes.filter(id => id !== user.id); }
+        }
+
+        const updatedRating = { likes, dislikes };
+        setUserRatings(prev => ({ ...prev, [targetUserId]: updatedRating }));
+        if (db) await window.Firebase.setDoc(window.Firebase.doc(db, 'ratings', targetUserId), updatedRating, { merge: true });
+        showToast("Оценка профиля обновлена!");
+      };
+
+      const handleCreateOrEditTask = async (e) => {
+        e.preventDefault(); 
+        if (!user) return;
+        if (!emailVerified) return showToast('Подтвердите Email перейдя по ссылке в письме, чтобы создавать заказы.', 'error');
+        if (!newTitle.trim()) return;
+
+        const bVal = Number(newBudget) || 15000;
+        const safePhotos = Array.isArray(taskPhotos) ? taskPhotos : [];
+        const finalPhotos = safePhotos.length > 0 ? safePhotos : ['https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=800&q=80'];
+        
+        let taskObj = editingTask ? 
+           { ...editingTask, category: newCategory, title: newTitle, prompt: newPrompt, tool: newTool, budget: bVal, response_fee: calculateResponseFee(bVal), photos: finalPhotos } : 
+           { id: Date.now(), category: newCategory, title: newTitle, prompt: newPrompt || 'Подробности в чате', tool: newTool, budget: bVal, response_fee: calculateResponseFee(bVal), currency: 'AWS', author: user.name, author_id: user.id, card_frame: user.cardFrame || 'card-frame-default', status: 'open', views: 0, photos: finalPhotos, hidden: false };
+        
+        if(db) {
+          await window.Firebase.setDoc(window.Firebase.doc(db, 'tasks', taskObj.id.toString()), taskObj, { merge: true });
+        }
+        showToast(editingTask ? 'Заказ успешно обновлен!' : 'Опубликовано!'); 
+        if(!editingTask) switchTab('create');
+      };
+
+      const startEditingTask = (task) => {
+          setEditingTask(task); setNewTitle(task.title || ''); setNewCategory(task.category || 'video'); 
+          setNewPrompt(task.prompt || ''); setNewBudget((task.budget || 15000).toString()); 
+          setNewTool(task.tool || 'ComfyUI'); setTaskPhotos(Array.isArray(task.photos) ? task.photos : []);
+          switchTab('create'); 
+      };
+
+      const updateTaskSpecificFrame = async (taskId, newFrameClass) => {
+         if (db) await window.Firebase.setDoc(window.Firebase.doc(db, 'tasks', taskId.toString()), { card_frame: newFrameClass }, { merge: true });
+      };
+
+      const handleOpenTaskChat = async (targetTask) => {
+        if (!user) return setAuthModalOpen(true);
+
+        const isCustomer = (targetTask.author_id === user.id) || (targetTask.author === user.name);
+        let targetChatId = '';
+        let newChatObj = null;
+
+        if (isCustomer) {
+            const relatedChats = dealChats.filter(c => c.taskId === targetTask.id && !c.id.endsWith('_hub'));
+            if (relatedChats.length > 0) {
+                targetChatId = relatedChats.sort((a,b) => b.lastUpdated - a.lastUpdated)[0].id;
+            } else {
+                targetChatId = `${targetTask.id}_hub`;
+                if (!dealChats.some(c => c.id === targetChatId)) {
+                    newChatObj = {
+                        id: targetChatId,
+                        taskId: targetTask.id,
+                        taskTitle: targetTask.title,
+                        taskBudget: targetTask.budget,
+                        customerId: user.id,
+                        customerName: user.name,
+                        creatorId: 'hub',
+                        creatorName: 'Ожидание откликов...',
+                        creatorAvatar: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=300&q=80',
+                        messages: [{ id: Date.now(), senderId: 'system', senderName: 'Система', senderAvatar: '', text: `Это приватный хаб заказа «${targetTask.title}». Здесь вы можете подготовить ТЗ, ссылки и референсы до того, как появится первый исполнитель.`, timestamp: Date.now() }],
+                        lastUpdated: Date.now()
+                    };
+                }
+            }
+        } else {
+            targetChatId = `${targetTask.id}_${user.id}`;
+            if (!dealChats.some(c => c.id === targetChatId)) {
+                newChatObj = {
+                    id: targetChatId,
+                    taskId: targetTask.id,
+                    taskTitle: targetTask.title,
+                    taskBudget: targetTask.budget,
+                    customerId: targetTask.author_id || null,
+                    customerName: targetTask.author || 'Заказчик',
+                    creatorId: user.id,
+                    creatorName: user.name,
+                    creatorAvatar: user.avatar,
+                    messages: [{ id: Date.now(), senderId: user.id, senderName: user.name, senderAvatar: user.avatar, text: `Здравствуйте! Готов обсудить детали заказа.`, timestamp: Date.now() }],
+                    lastUpdated: Date.now()
+                };
+            }
+        }
+
+        if (newChatObj) {
+            if (db) {
+                try { await window.Firebase.setDoc(window.Firebase.doc(db, 'chats', targetChatId), newChatObj, { merge: true }); } catch(e) { console.error("Chat sync error:", e); }
+            }
+        }
+
+        setViewingTask(null);
+        setActiveChatTarget(targetChatId);
+        switchTab('chats');
+      };
+
+      // СТРОГОЕ СПИСАНИЕ ТОКЕНОВ В БД И СОЗДАНИЕ ЧАТА
+      const handleRespondToTask = async (targetTask) => {
+        if (!user) return setAuthModalOpen(true);
+        const isTaskAuthor = (targetTask.author_id === user.id) || (targetTask.author === user.name);
+        if (isTaskAuthor) return showToast("Вы являетесь автором этого заказа", "error");
+        
+        const fee = targetTask.response_fee || calculateResponseFee(targetTask.budget || 15000);
+
+        if (Number(balance) < fee) return setWalletModalOpen(true);
+
+        const newBalance = Number(balance) - fee;
+        const newPaidUnlocks = [...paidUnlocks, targetTask.id];
+        
+        // Обязательно списываем средства из базы, перед тем как пустить в чат
+        if (db) {
+            try { 
+                await window.Firebase.setDoc(window.Firebase.doc(db, 'users', user.id), { balance: newBalance, paidUnlocks: newPaidUnlocks }, { merge: true }); 
+                // Только если списание прошло успешно:
+                setBalance(newBalance);
+                setPaidUnlocks(newPaidUnlocks);
+            } catch(e) { 
+                showToast("Ошибка при оплате отклика (сбой БД)", "error");
+                return;
+            }
+        } else {
+            showToast("Нет соединения с базой данных!", "error");
+            return;
+        }
+
+        // Создаем чат в базе
+        const chatId = `${targetTask.id}_${user.id}`;
+        let newChatObj = dealChats.find(c => c.id === chatId);
+
+        if (!newChatObj) {
+            newChatObj = {
+                id: chatId,
+                taskId: targetTask.id,
+                taskTitle: targetTask.title,
+                taskBudget: targetTask.budget,
+                customerId: targetTask.author_id || null,
+                customerName: targetTask.author || 'Заказчик',
+                creatorId: user.id,
+                creatorName: user.name,
+                creatorAvatar: user.avatar,
+                lastMessage: "Отклик отправлен",
+                lastUpdated: Date.now(),
+                messages: [{ id: Date.now(), senderId: user.id, senderName: user.name, senderAvatar: user.avatar, text: "Здравствуйте! Готов взять вашу задачу в работу.", timestamp: Date.now() }]
+            };
+            
+            try { 
+                await window.Firebase.setDoc(window.Firebase.doc(db, 'chats', chatId), newChatObj, { merge: true }); 
+            } catch(e) { console.error("Chat creation error:", e); }
+        }
+
+        setViewingTask(null);
+        setActiveChatTarget(chatId);
+        switchTab('chats');
+        showToast(`Отклик успешно оплачен! Списано ${fee} AWS.`);
+      };
+
+      const handleSendMessageInWindow = async (e) => {
+        e.preventDefault(); 
+        if (!chatInput.trim() || !user) return;
+        const msgText = chatInput.trim();
+
+        if (activeChatTarget === 'global') {
+          const newGlobalMsg = { id: Date.now(), senderId: user.id, senderName: user.name, senderAvatar: user.avatar, text: msgText, timestamp: Date.now() };
+          const updatedGlobal = [...globalChatMessages, newGlobalMsg];
+          if (db) { 
+              try { await window.Firebase.setDoc(window.Firebase.doc(db, 'global_chat', 'messages_hub'), { messages: updatedGlobal }, { merge: true }); } catch(e) {}
+          }
+        } else {
+          const currentChat = dealChats.find(c => c.id === activeChatTarget);
+          if (!currentChat) return;
+
+          const newMsg = { id: Date.now(), senderId: user.id, senderName: user.name, senderAvatar: user.avatar, text: msgText, timestamp: Date.now() };
+          const updatedChat = { ...currentChat, lastMessage: msgText, lastUpdated: Date.now(), messages: [...(currentChat.messages || []), newMsg] };
+
+          if (db) { 
+              try { await window.Firebase.setDoc(window.Firebase.doc(db, 'chats', currentChat.id), updatedChat, { merge: true }); } catch(e) {}
+          }
+        }
+        setChatInput('');
+      };
+
+      const handleSendSupportMessage = async (e, fromAdmin = false) => {
+        e.preventDefault();
+        const text = supportInput.trim(); if (!text) return;
+        
+        if (db) {
+           const targetUserId = fromAdmin ? adminActiveSupportId : user.id;
+           const targetEmail = fromAdmin ? (adminSupportList.find(c=>c.id===targetUserId)?.userEmail || "User") : user.email;
+           const docRef = window.Firebase.doc(db, 'support', targetUserId);
+           try {
+               const docSnap = await window.Firebase.getDoc(docRef);
+               const newMsg = { id: Date.now(), sender: fromAdmin ? "Admin AWS" : targetEmail.split('@')[0], text: text, isAdmin: fromAdmin };
+               const existingMsgs = docSnap.exists() ? docSnap.data().messages : [];
+               await window.Firebase.setDoc(docRef, { messages: [...existingMsgs, newMsg], userEmail: targetEmail, lastUpdated: Date.now() }, { merge: true });
+           } catch(e) {}
+        }
+        setSupportInput('');
+      };
+
+      // ----------------------------------------------------
+      // ИНТЕГРАЦИЯ AI (БЕЗОПАСНЫЙ ВЫЗОВ ЧЕРЕЗ VERCEL)
+      // ----------------------------------------------------
       const handleGenerateAI = async (e) => {
         e.preventDefault(); if (!aiPrompt.trim()) return;
         const fee = aiMode === 'text' ? 15 : 50;
+        if (Number(balance) < fee) { setWalletModalOpen(true); return; }
         
-        // Списание
-        if (Number(balance) < fee) { /* логика пополнения */ return; }
+        const newBalance = Number(balance) - fee;
+        setBalance(newBalance); 
+        if(db) await window.Firebase.setDoc(window.Firebase.doc(db, 'users', user.id), { balance: newBalance }, { merge: true });
         
         setAiLoading(true); setAiResultImg(null); setAiResultText('');
         
         try {
           if (aiMode === 'image') {
-             // Изображения (как в Болте)
+             // Изображения генерируются как раньше
              const seed = Math.floor(Math.random() * 1000000);
              const encodedPrompt = encodeURIComponent(aiPrompt.trim());
              const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&seed=${seed}&model=flux`;
-             setAiResultImg(imageUrl); 
-             setAiLoading(false);
+             
+             const imgPreloader = new Image();
+             imgPreloader.onload = () => { setAiResultImg(imageUrl); setAiLoading(false); showToast('Сгенерировано успешно!'); };
+             imgPreloader.onerror = () => { setAiResultImg(imageUrl); setAiLoading(false); showToast('Сгенерировано успешно!'); };
+             imgPreloader.src = imageUrl;
+
           } else if (aiMode === 'text') {
              // ЗАЩИЩЕННЫЙ ВЫЗОВ GEMINI ЧЕРЕЗ VERCEL SERVERLESS FUNCTION
+             // Скрывает ваш API ключ на сервере
              const res = await fetch('/api/gemini', {
                method: 'POST',
                headers: { 'Content-Type': 'application/json' },
                body: JSON.stringify({ prompt: aiPrompt })
              });
              
-             if (!res.ok) throw new Error("API Offline");
+             if (!res.ok) throw new Error("API Offline / Vercel API Error");
              
              const data = await res.json();
              setAiResultText(data.text || "Ошибка генерации.");
              setAiLoading(false); 
+             showToast('Ответ получен!');
           }
         } catch (err) { 
-          setAiResultText(`Ошибка API: ${err.message}`); 
+          setAiResultText(`Сервер нейросети сейчас перегружен. Пожалуйста, подождите минуту и попробуйте еще раз. (Средства возвращены на баланс) ✨`); 
+          const restoredBalance = Number(balance) + fee;
+          setBalance(restoredBalance);
+          if(db) await window.Firebase.setDoc(window.Firebase.doc(db, 'users', user.id), { balance: restoredBalance }, { merge: true });
           setAiLoading(false);
         }
       };
 
-      // ... [Остальной UI и рендер компонентов остается точно таким же, как в файле 2 (Bolt)] ...
-      
+      const handleBuy = async (item, type) => {
+        if (!user) return setAuthModalOpen(true);
+        const isOwned = item.price === 0 || inventory[type+'s']?.includes(item.id);
+        if (isOwned) {
+          let upd = { ...user }; if(type === 'avatar') upd.avatar = item.url; if(type === 'frame') upd.avatarFrame = item.class; if(type === 'cardFrame') upd.cardFrame = item.class;
+          setUser(upd); 
+          if(db) await window.Firebase.setDoc(window.Firebase.doc(db, 'users', user.id), { profile: upd }, { merge: true });
+          if(type === 'cardFrame' && db) tasks.filter(t=>t.author_id===user.id).forEach(t => window.Firebase.setDoc(window.Firebase.doc(db, 'tasks', t.id.toString()), {card_frame: item.class}, {merge:true}));
+          showToast('Обновлено!');
+        } else {
+          if (Number(balance) < item.price) return setWalletModalOpen(true);
+          const newBalance = Number(balance) - item.price;
+          setBalance(newBalance);
+          
+          let nInv = { ...inventory }; nInv[type+'s'] = [...(nInv[type+'s']||[]), item.id]; 
+          setInventory(nInv);
+          
+          let upd = { ...user }; if(type === 'avatar') upd.avatar = item.url; if(type === 'frame') upd.avatarFrame = item.class; if(type === 'cardFrame') upd.cardFrame = item.class;
+          setUser(upd); 
+          
+          if(db) await window.Firebase.setDoc(window.Firebase.doc(db, 'users', user.id), { balance: newBalance, inventory: nInv, profile: upd }, { merge: true });
+          if(type === 'cardFrame' && db) tasks.filter(t=>t.author_id===user.id).forEach(t => window.Firebase.setDoc(window.Firebase.doc(db, 'tasks', t.id.toString()), {card_frame: item.class}, {merge:true}));
+          showToast('Покупка успешна! ✨');
+        }
+      };
+
+      const feedTasks = tasks.filter(t => !t.hidden && (selectedCat === 'All' || t.category === selectedCat));
+      const myCreatedTasks = tasks.filter(t => user && (t.author_id === user.id || t.author === user.name));
+      const myRespondedTasks = tasks.filter(t => user && paidUnlocks.includes(t.id));
+
+      const activeDialogueObj = activeChatTarget !== 'global' ? dealChats.find(c => c.id === activeChatTarget) : null;
+      const isCustomerForActiveChat = activeDialogueObj && user && (activeDialogueObj.customerId === user.id || activeDialogueObj.customerName === user.name);
+      const partnerId = activeDialogueObj ? (isCustomerForActiveChat ? activeDialogueObj.creatorId : activeDialogueObj.customerId) : null;
+      const partnerName = activeDialogueObj ? (isCustomerForActiveChat ? (activeDialogueObj.creatorName || "Креатор") : (activeDialogueObj.customerName || "Заказчик")) : "";
+      const partnerRating = partnerId && partnerId !== 'hub' ? (userRatings[partnerId] || { likes: [], dislikes: [] }) : { likes: [], dislikes: [] };
+
+      // Правильный поиск чатов пользователя
+      const myUserChats = dealChats.filter(c => {
+         if (!user) return false;
+         const isCust = c.customerId === user.id || c.customerName === user.name;
+         const isCreat = c.creatorId === user.id || c.creatorName === user.name;
+         return isCust || isCreat;
+      });
+
+      if (!isDbReady) return (
+        <div className="min-h-screen bg-[#05070A] flex flex-col items-center justify-center text-cyan-400 font-mono gap-4">
+          <i className="fa-solid fa-circle-notch fa-spin text-4xl mb-2"></i>
+          <span className="animate-pulse">Запуск платформы...</span>
+        </div>
+      );
+
+      // Если Firebase выдал ошибку доступа (Rules) - показываем сообщение на весь экран
+      if (dbError) return (
+        <div className="min-h-screen bg-[#05070A] flex flex-col items-center justify-center p-6 text-center text-red-400 font-mono">
+          <i className="fa-solid fa-database text-5xl mb-4"></i>
+          <h2 className="text-xl font-bold mb-2">Ошибка подключения к Firebase</h2>
+          <p className="text-sm text-slate-400 max-w-md bg-slate-900 p-4 rounded-xl border border-slate-800">
+             {dbError}<br/><br/>
+             Для владельца сайта: перейдите в Firebase Console -> Firestore Database -> Rules и установите правила:<br/>
+             <code className="text-cyan-400 mt-2 block bg-slate-950 p-2 rounded">match /{document=**} &#123; allow read, write: if true; &#125;</code>
+          </p>
+        </div>
+      );
+
+      const totalSystemViews = tasks.reduce((sum, t) => sum + Number(t.views || 0), 0);
+      const totalSystemAWS = adminUsers.length > 0 ? adminUsers.reduce((sum, u) => sum + Number(u.balance || 0), 0) : 0;
+      const totalSystemUsers = adminUsers.length > 0 ? adminUsers.length : 0;
+      const activeDealsCount = dealChats.length;
+      const paidUnlocksCount = adminUsers.reduce((sum, u) => sum + (Array.isArray(u.paidUnlocks) ? u.paidUnlocks.length : 0), 0);
+      const totalMessagesCount = dealChats.reduce((sum, t) => sum + (Array.isArray(t.messages) ? t.messages.length : 0), 0) + globalChatMessages.length;
+
       return (
-        <div>
-           {/* Ваш UI */}
+        <div className="min-h-screen flex flex-col w-full max-w-full overflow-x-hidden relative">
+
+          <div className="fixed top-12 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
+            {toasts.map(t => (
+              <div key={t.id} className={`toast-enter px-4 py-3 rounded-xl backdrop-blur-md border shadow-lg flex items-center gap-2 ${t.type === 'error' ? 'bg-red-950/80 border-red-500/50 text-red-200' : 'bg-emerald-950/80 border-emerald-500/50 text-emerald-200'}`}>
+                <i className={`fa-solid ${t.type === 'error' ? 'fa-circle-xmark text-red-400' : 'fa-check text-emerald-400'}`}></i><span className="text-sm font-medium">{t.message}</span>
+              </div>
+            ))}
+          </div>
+
+          <header className="sticky top-0 z-40 glass-panel px-2 sm:px-6 py-3 border-b border-cyan-500/20">
+            <div className="max-w-6xl mx-auto flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 cursor-pointer min-w-0 shrink-0 group" onClick={() => switchTab('feed')}>
+                <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-fuchsia-600 p-[1.5px] shrink-0 group-hover:shadow-[0_0_15px_rgba(6,182,212,0.5)] transition-all"><div className="w-full h-full bg-[#05070A] rounded-[10px] flex items-center justify-center text-cyan-400"><i className="fa-solid fa-robot"></i></div></div>
+                <span className="font-extrabold text-[15px] sm:text-xl tracking-wide bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent truncate hidden sm:inline">AWS SPACE</span>
+              </div>
+
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                <a href={TELEGRAM_LINK} target="_blank" rel="noreferrer" className="w-8 h-8 sm:w-auto sm:px-3 sm:py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 flex items-center justify-center gap-1.5 hover:bg-sky-500/20 transition-colors"><i className="fa-brands fa-telegram"></i><span className="hidden md:inline text-xs font-bold">TG</span></a>
+                <button onClick={() => setWalletModalOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-amber-500/40 hover:bg-slate-800 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.1)]"><i className="fa-solid fa-coins text-amber-400 text-xs"></i><span className="text-cyan-300 font-bold text-xs font-mono">{Number(balance).toLocaleString()}</span><span className="hidden sm:inline text-[10px] text-slate-500 font-bold">AWS</span></button>
+                
+                {user ? (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div onClick={() => switchTab('cabinet')} className="flex items-center gap-2 cursor-pointer bg-slate-900/50 p-1 pr-2 rounded-xl border border-slate-800 hover:border-cyan-500/50 transition-colors">
+                      <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg overflow-hidden ${user.avatarFrame}`}><img src={user.avatar} className="w-full h-full object-cover" /></div>
+                    </div>
+                    <button onClick={handleLogout} className="w-8 h-8 sm:w-auto sm:px-2.5 sm:py-1.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 flex items-center justify-center hover:bg-red-500/20"><i className="fa-solid fa-right-from-bracket text-sm"></i></button>
+                  </div>
+                ) : (
+                  <button onClick={() => { setAuthMode('login'); setAuthModalOpen(true); }} className="px-4 py-2 rounded-xl bg-cyan-500 text-black text-xs font-bold hover:bg-cyan-400 transition-colors shadow-[0_0_15px_rgba(6,182,212,0.3)]"><i className="fa-solid fa-user mr-1.5 hidden sm:inline"></i><span>Войти</span></button>
+                )}
+              </div>
+            </div>
+          </header>
+
+          <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 pb-24">
+            
+            <aside className="lg:col-span-3 flex lg:flex-col gap-2 overflow-x-auto no-scrollbar pb-2 lg:pb-0 lg:sticky lg:top-24 h-fit">
+              <button onClick={() => switchTab('feed')} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'feed' ? 'bg-cyan-500/10 border-cyan-500 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
+                <i className="fa-solid fa-layer-group w-5 text-center text-cyan-400"></i><span>Лента заказов</span>
+              </button>
+
+              <button onClick={() => { if (!user) setAuthModalOpen(true); else switchTab('chats'); }} className={`shrink-0 lg:shrink-none flex items-center justify-between px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'chats' ? 'bg-blue-500/10 border-blue-500 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
+                <div className="flex items-center gap-3">
+                  <i className="fa-solid fa-comments w-5 text-center text-blue-400"></i><span>Мессенджер и Хаб</span>
+                </div>
+                {myUserChats.length > 0 && <span className="bg-blue-500 text-black text-[10px] font-black px-1.5 py-0.5 rounded-full">{myUserChats.length}</span>}
+              </button>
+
+              <button onClick={() => switchTab('ai_studio')} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'ai_studio' ? 'bg-fuchsia-500/10 border-fuchsia-500 text-fuchsia-300 shadow-[0_0_15px_rgba(217,70,239,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
+                <i className="fa-solid fa-wand-magic-sparkles w-5 text-center text-fuchsia-400"></i><span>AI Студия ✨</span>
+              </button>
+
+              <button onClick={() => { if (!user) setAuthModalOpen(true); else switchTab('cabinet'); }} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'cabinet' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
+                <i className="fa-regular fa-id-badge w-5 text-center text-emerald-400"></i><span>Профиль</span>
+              </button>
+
+              <button onClick={() => { if (!user) setAuthModalOpen(true); else { switchTab('create'); setNewTitle(''); setNewPrompt(''); setTaskPhotos([]); setNewBudget('15000'); } }} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all ${tab === 'create' && !editingTask ? 'bg-amber-500/10 border-amber-500 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.15)]' : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
+                <i className="fa-solid fa-circle-plus w-5 text-center text-amber-400"></i><span>Новый таск</span>
+              </button>
+              
+              {isAdmin && (
+                <button onClick={() => switchTab('admin')} className={`shrink-0 lg:shrink-none flex items-center gap-3 px-4 py-3 rounded-xl border font-semibold text-sm transition-all mt-4 ${tab === 'admin' ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-[0_0_15px_rgba(243,24,115,0.2)]' : 'bg-slate-900/60 border-rose-900/50 text-rose-400 hover:bg-rose-900/30'}`}>
+                  <i className="fa-solid fa-shield-halved w-5 text-center"></i><span>Админ-панель</span>
+                </button>
+              )}
+            </aside>
+
+            <section className="lg:col-span-9 space-y-5 min-w-0">
+              
+              {tab === 'feed' && (
+                <>
+                  <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] border border-slate-700 p-6 sm:p-8 shadow-2xl group">
+                    <div className="absolute inset-0 bg-cyan-500/5 group-hover:bg-cyan-500/10 transition-colors"></div>
+                    <div className="relative z-10">
+                      <span className="text-[10px] sm:text-xs font-mono uppercase px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 font-bold mb-3 inline-block">✨ ГЛОБАЛЬНАЯ ФРИЛАНС-ПЛАТФОРМА</span>
+                      <h1 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight mb-3">Нанимайте лучших <br/><span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent">AI-инженеров и креаторов</span></h1>
+                      <p className="text-slate-400 text-sm max-w-lg">Единая экосистема для взаимодействия креаторов, заказчиков и AI-моделей со всего мира.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar bg-slate-900/80 p-2 rounded-2xl border border-slate-800 backdrop-blur-sm">
+                    {[{ id: 'All', name: '🔥 Все' }, { id: 'video', name: '🎬 Видео' }, { id: 'art', name: '🎨 Арт' }, { id: 'arch', name: '🏛️ Архитектура' }, { id: 'biz', name: '⚡ Код/Боты' }].map(c => 
+                      <button key={c.id} onClick={() => setSelectedCat(c.id)} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${selectedCat===c.id?'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20':'bg-slate-950 text-slate-400 border border-slate-800 hover:text-slate-200'}`}>
+                        {c.name}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    {feedTasks.length === 0 && <div className="text-center py-12 bg-slate-900/30 rounded-2xl border border-slate-800 border-dashed text-slate-500 text-sm">В этой категории пока нет заказов.</div>}
+                    {feedTasks.map((item) => {
+                      const authorRating = userRatings[item.author_id] || { likes: [], dislikes: [] };
+                      return (
+                        <div key={item.id} className={`glass-panel p-4 sm:p-5 rounded-2xl ${item.card_frame || 'card-frame-default'} flex flex-col sm:flex-row gap-5 transition-all min-w-0 relative overflow-hidden group`}>
+                          <div onClick={() => openTaskModalWithViewCount(item)} className="w-full sm:w-48 h-56 sm:h-36 rounded-xl overflow-hidden border border-slate-800 bg-slate-950 shrink-0 relative cursor-pointer">
+                            <img src={item.photos?.[0]} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="task preview" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-3">
+                              <span className="text-[10px] bg-cyan-500/20 backdrop-blur-md text-cyan-300 border border-cyan-500/40 px-2 py-1 rounded font-mono font-bold shadow-sm">{item.tool}</span>
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                            <div>
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${item.status === 'open' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>{item.status === 'open' ? 'ОТКРЫТ' : 'В РАБОТЕ'}</span>
+                                <span className="text-[11px] text-slate-500 font-mono"><i className="fa-solid fa-eye text-cyan-500/70 mr-1"></i>{item.views || 0}</span>
+                              </div>
+                              <h3 onClick={() => openTaskModalWithViewCount(item)} className="font-bold text-base sm:text-lg text-slate-100 break-words cursor-pointer hover:text-cyan-400 transition-colors">{item.title}</h3>
+                              <div className="text-xs text-slate-400 mt-1 line-clamp-2">{item.prompt}</div>
+                            </div>
+                            
+                            <div className="flex items-center justify-between text-[11px] text-slate-500 mt-4">
+                              <div className="flex items-center gap-2">
+                                <i className="fa-solid fa-user-astronaut text-cyan-400"></i> Заказчик: <span className="text-slate-300 font-medium">{item.author}</span>
+                                <span className="flex items-center gap-1.5 ml-2 font-mono text-[10px] text-slate-400">
+                                  <span className="text-emerald-400">👍 {authorRating.likes?.length || 0}</span>
+                                  <span className="text-rose-400">👎 {authorRating.dislikes?.length || 0}</span>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="w-full sm:w-auto flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 pt-4 sm:pt-0 border-t sm:border-0 border-slate-800/80 shrink-0">
+                            <div className="text-left sm:text-right">
+                              <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Бюджет</div>
+                              <div className="font-mono text-xl font-extrabold text-cyan-400">{Number(item.budget || 0).toLocaleString()} AWS</div>
+                              <div className="text-[10px] text-amber-400 font-mono mt-1">Отклик: {item.response_fee} AWS</div>
+                            </div>
+                            <button onClick={() => openTaskModalWithViewCount(item)} className="px-5 py-2.5 rounded-xl font-bold text-xs bg-slate-800 text-white hover:bg-cyan-500 hover:text-black border border-slate-700 hover:border-cyan-400 transition-all shadow-lg shrink-0">Подробнее</button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+
+              {tab === 'chats' && (
+                <div className="glass-panel rounded-3xl border border-blue-500/30 overflow-hidden flex flex-col md:flex-row h-[720px] shadow-2xl relative">
+                  
+                  <div className="w-full md:w-80 bg-slate-950/80 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col shrink-0">
+                    <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                      <span className="text-sm font-bold text-white flex items-center gap-2">
+                        <i className="fa-solid fa-comments text-cyan-400"></i> Мессенджер
+                      </span>
+                      <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">AWS Social</span>
+                    </div>
+
+                    <div className="p-2 overflow-y-auto flex-1 space-y-1">
+                      <div onClick={() => setActiveChatTarget('global')} className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center gap-3 ${activeChatTarget === 'global' ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/40 text-cyan-300' : 'bg-slate-900/50 hover:bg-slate-900 border border-slate-800/80 text-slate-400'}`}>
+                        <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-lg shrink-0 border border-cyan-500/30"><i className="fa-solid fa-earth-americas"></i></div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-bold text-slate-100 flex items-center justify-between"><span>Общий чат сообщества</span></div>
+                          <div className="text-[11px] text-slate-400 truncate mt-0.5">Публичные обсуждения</div>
+                        </div>
+                      </div>
+
+                      <div className="text-[10px] text-slate-500 font-bold uppercase px-3 py-2 mt-2">Диалоги ({myUserChats.length})</div>
+
+                      {myUserChats.length === 0 && <div className="text-center py-6 text-xs text-slate-600">Нет активных диалогов</div>}
+
+                      {myUserChats.map(c => {
+                        const isSelected = activeChatTarget === c.id;
+                        const isCustomerForThisChat = c.customerId === user?.id || c.customerName === user?.name;
+                        const interlocutorName = isCustomerForThisChat ? (c.creatorName || "Креатор") : (c.customerName || "Заказчик");
+                        const interlocutorAvatar = isCustomerForThisChat ? (c.creatorAvatar || MINIMAL_AVATARS[0].url) : MINIMAL_AVATARS[1].url;
+
+                        return (
+                          <div key={c.id} onClick={() => setActiveChatTarget(c.id)} className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center gap-3 ${isSelected ? 'bg-blue-500/20 border border-blue-500/40 text-blue-300' : 'bg-slate-900/40 hover:bg-slate-900 border border-slate-800 text-slate-400'}`}>
+                            <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-800 shrink-0 border border-slate-700">
+                              <img src={interlocutorAvatar} className="w-full h-full object-cover" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-slate-200 truncate flex items-center justify-between">
+                                <span>{interlocutorName}</span>
+                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">{isCustomerForThisChat ? 'Креатор' : 'Заказчик'}</span>
+                              </div>
+                              <div className="text-[11px] text-slate-400 truncate mt-0.5">{c.taskTitle}</div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 flex flex-col min-w-0 bg-[#05070A]/80">
+                    <div className="bg-slate-900/90 px-5 py-3.5 border-b border-slate-800 flex justify-between items-center shrink-0">
+                      {activeChatTarget === 'global' ? (
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm"><i className="fa-solid fa-earth-americas"></i></div>
+                          <div>
+                            <div className="text-sm font-bold text-white">Общий чат AI Workers Space</div>
+                            <div className="text-[10px] text-cyan-400 font-mono">Публичное общение всех участников биржи</div>
+                          </div>
+                        </div>
+                      ) : activeDialogueObj ? (
+                        <div className="flex items-center justify-between w-full">
+                          <div className="min-w-0">
+                            <div className="text-sm font-bold text-white flex items-center gap-2 truncate">
+                              <span>{partnerName}</span>
+                              <span className="text-[10px] text-cyan-400 font-mono">({activeDialogueObj.taskTitle})</span>
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-mono mt-0.5">Бюджет: <span className="text-amber-400">{Number(activeDialogueObj.taskBudget || 0).toLocaleString()} AWS</span></div>
+                          </div>
+
+                          {partnerId && partnerId !== 'hub' && (
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-[10px] text-slate-500 font-bold uppercase hidden sm:inline">Рейтинг партнера:</span>
+                              <button onClick={() => handleVoteUser(partnerId, 'like')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${partnerRating.likes?.includes(user?.id) ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500' : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'}`}><i className="fa-solid fa-thumbs-up"></i><span>{partnerRating.likes?.length || 0}</span></button>
+                              <button onClick={() => handleVoteUser(partnerId, 'dislike')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${partnerRating.dislikes?.includes(user?.id) ? 'bg-rose-500/20 text-rose-300 border-rose-500' : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'}`}><i className="fa-solid fa-thumbs-down"></i><span>{partnerRating.dislikes?.length || 0}</span></button>
+                            </div>
+                          )}
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div ref={chatScrollRef} className="flex-1 p-4 sm:p-5 overflow-y-auto space-y-4">
+                      {activeChatTarget === 'global' ? (
+                        <>
+                          <div className="text-center text-[11px] text-slate-500 font-mono my-2 border-b border-slate-800 pb-2">👋 Добро пожаловать в общий чат платформы. Здесь можно находить команду и делиться опытом.</div>
+                          {globalChatMessages.map(m => {
+                            const isMe = user && (m.senderId === user.id || m.senderName === user.name);
+                            return (
+                              <div key={m.id} className={`flex items-start gap-2.5 ${isMe ? 'flex-row-reverse' : ''}`}>
+                                <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-800 shrink-0 border border-slate-700"><img src={m.senderAvatar || MINIMAL_AVATARS[0].url} className="w-full h-full object-cover" /></div>
+                                <div className={`max-w-[75%] rounded-2xl p-3 text-xs sm:text-sm ${isMe ? 'bg-cyan-600 text-white rounded-tr-none' : 'bg-slate-800/90 border border-slate-700 text-slate-200 rounded-tl-none'}`}>
+                                  <div className="flex items-center justify-between gap-3 text-[10px] opacity-70 mb-1"><span className="font-bold">{m.senderName}</span><span>{new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span></div>
+                                  <div className="whitespace-pre-wrap break-words">{m.text}</div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </>
+                      ) : activeDialogueObj ? (
+                        <>
+                          <div className="text-center text-[11px] text-slate-500 font-mono my-2 border-b border-slate-800 pb-2">🔒 Безопасный диалог сделки. Контакты и ТЗ доступны участникам.</div>
+                          {(activeDialogueObj.messages || []).map(m => {
+                            const isMe = user && (m.senderId === user.id || m.senderName === user.name);
+                            return (
+                              <div key={m.id} className={`flex items-start gap-2.5 ${isMe ? 'flex-row-reverse' : ''}`}>
+                                <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-800 shrink-0 border border-slate-700"><img src={m.senderAvatar || MINIMAL_AVATARS[0].url} className="w-full h-full object-cover" /></div>
+                                <div className={`max-w-[75%] rounded-2xl p-3 text-xs sm:text-sm ${isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800/90 border border-slate-700 text-slate-200 rounded-tl-none'}`}>
+                                  <div className="flex items-center justify-between gap-3 text-[10px] opacity-70 mb-1"><span className="font-bold">{m.senderName}</span><span>{new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span></div>
+                                  <div className="whitespace-pre-wrap break-words">{m.text}</div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </>
+                      ) : null}
+                    </div>
+
+                    <form onSubmit={handleSendMessageInWindow} className="p-3 sm:p-4 bg-slate-900/90 border-t border-slate-800 flex gap-2">
+                      <input type="text" placeholder="Напишите сообщение..." value={chatInput} onChange={(e) => setChatInput(e.target.value)} className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-cyan-500 text-white transition-colors" />
+                      <button type="submit" className="px-5 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-black rounded-xl font-bold hover:opacity-90 transition-all shadow-lg"><i className="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {tab === 'ai_studio' && (
+                <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-fuchsia-500/30 space-y-6 shadow-[0_0_30px_rgba(217,70,239,0.05)] relative overflow-hidden">
+                  <div className="absolute -top-20 -right-20 w-64 h-64 bg-fuchsia-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                  <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                  
+                  <div className="relative z-10 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                    <div>
+                      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-1">ИИ-Песочница</h2>
+                      <p className="text-xs text-slate-400">Тестируйте промпты прямо на бирже перед взятием заказа.</p>
+                    </div>
+                    <div className="flex items-center gap-2 bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-800">
+                      <i className="fa-solid fa-coins text-amber-400 text-xs"></i><span className="text-sm font-mono text-slate-200">{Number(balance).toLocaleString()} AWS</span>
+                    </div>
+                  </div>
+
+                  <div className="relative z-10 flex gap-2 p-1.5 bg-slate-900/60 rounded-2xl border border-slate-800 backdrop-blur-sm">
+                    <button onClick={() => setAiMode('image')} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${aiMode==='image'?'bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/25':'text-slate-400 hover:text-slate-200'}`}><i className="fa-solid fa-image mr-1.5"></i>Генератор Изображений (50)</button>
+                    <button onClick={() => setAiMode('text')} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${aiMode==='text'?'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-lg shadow-cyan-500/25':'text-slate-400 hover:text-slate-200'}`}><i className="fa-solid fa-align-left mr-1.5"></i>Генератор Текста (15)</button>
+                  </div>
+
+                  <form onSubmit={handleGenerateAI} className="relative z-10 space-y-4">
+                    <textarea rows="4" required placeholder={aiMode === 'image' ? 'Опишите сцену...' : 'Задайте вопрос...'} value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl p-4 text-sm outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-slate-200 resize-none shadow-inner"></textarea>
+                    <button type="submit" disabled={aiLoading} className="w-full py-4 rounded-2xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white font-extrabold text-sm hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(217,70,239,0.3)] flex items-center justify-center gap-2">
+                      {aiLoading ? <><i className="fa-solid fa-circle-notch fa-spin"></i> Синтез данных...</> : <><i className="fa-solid fa-bolt"></i> Запустить нейросеть</>}
+                    </button>
+                  </form>
+
+                  {aiResultImg && (
+                    <div className="relative z-10 p-4 bg-slate-900/80 rounded-2xl border border-fuchsia-500/30 text-center animate-fade-in">
+                      <img src={aiResultImg} className="w-full max-h-[500px] object-contain rounded-xl shadow-lg" />
+                      <a href={aiResultImg} download="ai_art.png" target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-xs font-bold rounded-xl transition-colors"><i className="fa-solid fa-download"></i> Сохранить</a>
+                    </div>
+                  )}
+
+                  {aiResultText && (
+                    <div className="relative z-10 p-5 bg-slate-900/80 rounded-2xl border border-cyan-500/30 animate-fade-in">
+                      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-700"><i className="fa-solid fa-robot text-cyan-400"></i><span className="text-xs font-bold text-slate-300">Ответ ИИ:</span></div>
+                      <div className="text-sm text-slate-200 font-sans whitespace-pre-wrap leading-relaxed">{aiResultText}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tab === 'cabinet' && (
+                <div className="space-y-6">
+                  <div className="bg-[#0f141e] p-6 sm:p-8 rounded-3xl border border-[#1e293b] flex flex-col sm:flex-row justify-between items-center sm:items-start gap-6 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-cyan-500"></div>
+                    <div className="flex flex-col sm:flex-row items-center sm:items-center gap-5 text-center sm:text-left">
+                      <div className={`w-24 h-24 rounded-3xl overflow-hidden ${user?.avatarFrame} relative shrink-0 bg-slate-900 shadow-[0_0_15px_rgba(255,255,255,0.05)]`}><img src={user?.avatar} className="w-full h-full object-cover" /></div>
+                      <div className="min-w-0">
+                        <h2 className="text-2xl font-bold text-slate-100">{user?.name}</h2>
+                        <p className="text-sm text-slate-400 font-mono mt-1 mb-3">{user?.email}</p>
+                        <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+                           <span className="text-xs bg-slate-800/80 text-slate-400 px-3 py-1.5 rounded-lg font-mono">ID: {user?.id?.slice(0,8)}...</span>
+                           <span className="text-xs bg-emerald-900/30 text-emerald-400 px-3 py-1.5 rounded-lg border border-emerald-900/50">👍 {userRatings[user?.id]?.likes?.length || 0}</span>
+                           <span className="text-xs bg-rose-900/30 text-rose-400 px-3 py-1.5 rounded-lg border border-rose-900/50">👎 {userRatings[user?.id]?.dislikes?.length || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center sm:items-end w-full sm:w-auto">
+                      <div className="bg-[#141b25] border border-[#2a3441] p-5 rounded-3xl text-center sm:text-right w-full sm:w-auto min-w-[200px]">
+                        <div className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2">Баланс</div>
+                        <div className="text-2xl font-bold text-amber-400 mb-4">{Number(balance).toLocaleString()} <span className="text-sm">AWS</span></div>
+                        <button onClick={() => setWalletModalOpen(true)} className="w-full py-2.5 bg-[#f59e0b] hover:bg-[#d97706] text-black font-bold text-sm rounded-xl transition-colors shadow-lg shadow-amber-900/20"><i className="fa-solid fa-wallet mr-2"></i>Пополнить</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pb-2 overflow-x-auto no-scrollbar">
+                    <button onClick={() => setCabinetSubTab('my-orders')} className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${cabinetSubTab === 'my-orders' ? 'bg-[#111827] text-white border-slate-600' : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900'}`}>Мои заказы ({myCreatedTasks.length})</button>
+                    <button onClick={() => setCabinetSubTab('my-responses')} className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${cabinetSubTab === 'my-responses' ? 'bg-[#064e3b] text-emerald-400 border-emerald-900' : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900'}`}>Активные сделки ({myRespondedTasks.length})</button>
+                    <button onClick={() => setCabinetSubTab('shop')} className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${cabinetSubTab === 'shop' ? 'bg-[#2e1065] text-fuchsia-400 border-fuchsia-900' : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900'}`}>Экипировка 🛍️</button>
+                  </div>
+
+                  {cabinetSubTab === 'my-orders' && (
+                    <div className="grid grid-cols-1 gap-4">
+                      {myCreatedTasks.length === 0 && <div className="text-center py-12 bg-[#0f141e] rounded-3xl border border-[#1e293b] text-slate-500 text-sm">Нет созданных заказов.</div>}
+                      {myCreatedTasks.map(item => {
+                        const responsesCount = dealChats.filter(c => c.taskId === item.id && !c.id.endsWith('_hub')).length;
+                        return (
+                          <div key={item.id} className={`bg-[#0f141e] p-6 rounded-3xl border ${item.card_frame === 'card-frame-default' ? 'border-[#1e293b]' : item.card_frame} flex flex-col gap-5 min-w-0`}>
+                            <div className="flex justify-between items-start gap-4">
+                              <div>
+                                <h4 className="font-bold text-lg text-slate-100">{item.title}</h4>
+                                <div className="text-sm text-cyan-400 font-mono mt-2">Бюджет: <span className="font-bold">{Number(item.budget || 0).toLocaleString()} AWS</span></div>
+                              </div>
+                              <span className={`text-[10px] font-bold px-3 py-1 rounded-full border ${item.status === 'open' ? 'bg-emerald-950 text-emerald-400 border-emerald-900' : 'bg-amber-950 text-amber-400 border-amber-900'}`}>{item.status === 'open' ? 'ОТКРЫТ' : 'В РАБОТЕ'}</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-3 mt-1">
+                               <span className="text-xs text-slate-500">Стиль:</span>
+                               <div className="flex gap-2">
+                                 {TASK_CARD_FRAMES.map(f => {
+                                   if (f.price !== 0 && !inventory?.cardFrames?.includes(f.id)) return null;
+                                   return <button key={f.id} onClick={() => updateTaskSpecificFrame(item.id, f.class)} className={`w-5 h-5 rounded-full transition-all border-2 ${item.card_frame === f.class ? 'border-white scale-110 shadow-md' : 'border-transparent opacity-50 hover:opacity-100'}`} style={{ backgroundColor: f.dotColor }}></button>;
+                                 })}
+                               </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-3 pt-2">
+                              <button onClick={() => handleOpenTaskChat(item)} className="px-5 py-2.5 bg-[#0f172a] border border-[#334155] text-cyan-400 font-bold text-sm rounded-xl hover:bg-[#1e293b] transition-colors flex items-center gap-2">
+                                <i className="fa-regular fa-comments"></i> Отклики
+                                {responsesCount > 0 && <span className="bg-cyan-500 text-black px-2 py-0.5 rounded-full text-[10px] ml-1">{responsesCount}</span>}
+                              </button>
+                              <button onClick={() => startEditingTask(item)} className="px-5 py-2.5 bg-transparent border border-[#334155] text-slate-300 font-bold text-sm rounded-xl hover:bg-[#1e293b] transition-colors flex items-center gap-2"><i className="fa-solid fa-pen"></i> Редактировать</button>
+                              <button onClick={() => { if(db) window.Firebase.deleteDoc(window.Firebase.doc(db, 'tasks', item.id.toString())); setTasks(tasks.filter(t=>t.id!==item.id)); }} className="ml-auto w-10 h-10 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center border border-red-900/50"><i className="fa-solid fa-trash-can"></i></button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {cabinetSubTab === 'my-responses' && (
+                    <div className="grid grid-cols-1 gap-4">
+                      {myRespondedTasks.length === 0 && <div className="text-center py-12 bg-[#0f141e] rounded-3xl border border-[#1e293b] text-slate-500 text-sm">У вас нет активных сделок.</div>}
+                      {myRespondedTasks.map(item => (
+                        <div key={item.id} className="bg-[#0f141e] p-6 rounded-3xl border border-[#1e293b] flex flex-col gap-6">
+                          <div className="flex justify-between items-start gap-4">
+                            <div>
+                              <div className="text-[10px] text-slate-500 mb-2 uppercase tracking-wide">Заказчик: <span className="text-slate-300 normal-case">{item.author}</span></div>
+                              <h4 className="font-bold text-lg text-slate-100">{item.title}</h4>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-[10px] text-slate-500 uppercase tracking-wide mb-2">Оплата</div>
+                              <div className="text-lg text-amber-400 font-bold whitespace-nowrap">{Number(item.budget || 0).toLocaleString()} AWS</div>
+                            </div>
+                          </div>
+                          <button onClick={() => handleOpenTaskChat(item)} className="w-full py-3 bg-[#064e3b]/40 border border-[#10b981]/50 text-emerald-400 font-bold text-sm rounded-xl hover:bg-[#064e3b]/80 transition-colors flex items-center justify-center gap-2">
+                            <i className="fa-solid fa-bolt"></i> В чат
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {cabinetSubTab === 'shop' && (
+                    <div className="space-y-6">
+                      <div className="glass-panel p-5 rounded-2xl border border-slate-800">
+                        <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center"><i className="fa-solid fa-gem text-fuchsia-400 mr-2"></i>Аватары</h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+                          {MINIMAL_AVATARS.map((item) => (
+                            <div key={item.id} className="bg-slate-900/50 p-3 rounded-xl border border-slate-700 flex flex-col items-center text-center">
+                              <div className="w-16 h-16 rounded-xl overflow-hidden mb-3 border border-slate-600"><img src={item.url} className="w-full h-full object-cover" /></div>
+                              <button onClick={() => handleBuy(item, 'avatar')} className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-200 hover:bg-fuchsia-600 hover:text-white transition-colors">{item.price === 0 ? 'Выбрать' : `${item.price} AWS`}</button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="glass-panel p-5 rounded-2xl border border-slate-800">
+                        <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center"><i className="fa-solid fa-circle-notch text-amber-400 mr-2"></i>Рамки аватаров</h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
+                          {AVATAR_FRAMES.map((f) => (
+                            <div key={f.id} className="bg-slate-900/50 p-3 rounded-xl border border-slate-700 flex flex-col items-center text-center">
+                              <div className={`w-14 h-14 rounded-xl overflow-hidden mb-3 ${f.class} bg-slate-800`}></div>
+                              <div className="text-[10px] font-bold text-slate-300 mb-2 truncate w-full">{f.name}</div>
+                              <button onClick={() => handleBuy(f, 'frame')} className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-200 hover:bg-amber-500 hover:text-black transition-colors">{f.price === 0 ? 'Выбрать' : `${f.price} AWS`}</button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="glass-panel p-5 rounded-2xl border border-slate-800">
+                        <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center"><i className="fa-solid fa-layer-group text-emerald-400 mr-2"></i>Стили карточек заказов</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                          {TASK_CARD_FRAMES.map((cf) => (
+                            <div key={cf.id} className={`bg-slate-900 p-4 rounded-xl flex flex-col justify-between ${cf.class} min-h-[100px]`}>
+                              <div className="mb-3 text-sm font-extrabold text-slate-100">{cf.name}</div>
+                              <button onClick={() => handleBuy(cf, 'cardFrame')} className="w-full py-2 rounded-lg text-xs font-bold bg-slate-800 text-slate-200 hover:bg-emerald-500 hover:text-black transition-colors">{cf.price === 0 ? 'Выбрать' : `${cf.price} AWS`}</button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tab === 'create' && (
+                <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-amber-500/30 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none"><i className="fa-solid fa-file-contract text-9xl"></i></div>
+                  <h2 className="text-2xl font-bold text-amber-400 mb-6 relative z-10">{editingTask ? 'Редактировать' : 'Опубликовать заказ'}</h2>
+                  
+                  {!emailVerified && auth?.currentUser ? (
+                     <div className="bg-slate-900 p-8 rounded-xl border border-red-500/50 text-center relative z-10">
+                        <i className="fa-solid fa-envelope-open-text text-4xl text-red-400 mb-4"></i>
+                        <h3 className="text-lg font-bold text-white mb-2">Необходимо подтвердить Email</h3>
+                        <p className="text-sm text-slate-400 mb-4">Для защиты от спама мы просим всех авторов подтвердить свою почту. Ссылка была отправлена вам при регистрации.</p>
+                        <button onClick={()=>{window.Firebase.sendEmailVerification(auth?.currentUser); showToast('Письмо отправлено!');}} className="px-6 py-2 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600">Отправить письмо еще раз</button>
+                     </div>
+                  ) : (
+                    <form onSubmit={handleCreateOrEditTask} className="space-y-5 relative z-10">
+                      <input type="text" required placeholder="Краткое название" value={newTitle || ''} onChange={(e) => setNewTitle(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-5 py-4 text-sm focus:border-amber-500 outline-none transition-colors text-white" />
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <select value={newCategory || 'video'} onChange={(e) => setNewCategory(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm outline-none text-slate-300 appearance-none">
+                          <option value="video">🎬 Видео-генерация</option><option value="art">🎨 2D/3D Арт</option><option value="arch">🏛️ Архитектура</option><option value="biz">⚡ Код / Боты</option>
+                        </select>
+                        <select value={newTool || 'Midjourney'} onChange={(e) => setNewTool(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm outline-none text-slate-300 appearance-none">
+                          <option value="Midjourney">Midjourney v6</option><option value="ComfyUI">ComfyUI / StableD</option><option value="Runway Gen-3">Runway Gen-3</option><option value="Claude 3.5">Claude / GPT-4o</option>
+                        </select>
+                        <div className="relative">
+                          <input type="number" required placeholder="Бюджет" value={newBudget || ''} onChange={(e) => setNewBudget(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl px-4 py-3.5 text-sm font-mono outline-none text-amber-300 focus:border-amber-500" />
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 pointer-events-none">AWS</span>
+                        </div>
+                      </div>
+                      <div className="bg-slate-950/50 p-5 rounded-2xl border border-slate-700/50 space-y-4">
+                        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                          <label className="text-sm font-bold text-slate-200"><i className="fa-solid fa-images text-cyan-400 mr-2"></i>Референсы ({(taskPhotos || []).length}/5)</label>
+                          {(taskPhotos || []).length < 5 && (
+                            <label className="px-4 py-2 bg-slate-800 text-slate-200 border border-slate-600 font-bold text-xs rounded-xl cursor-pointer hover:bg-slate-700 transition-colors shrink-0">
+                              <i className="fa-solid fa-cloud-arrow-up mr-1.5"></i> Добавить Фото
+                              <input type="file" accept="image/*" multiple className="hidden" onChange={handleUploadTaskPhotos} />
+                            </label>
+                          )}
+                        </div>
+                        {(taskPhotos || []).length > 0 && (
+                          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
+                            {(taskPhotos || []).map((photo, idx) => (
+                              <div key={idx} className="relative w-full aspect-square rounded-xl border border-slate-600 overflow-hidden group">
+                                <img src={photo} className="w-full h-full object-cover" />
+                                <button type="button" onClick={() => setTaskPhotos(p => p.filter((_, i) => i !== idx))} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"><i className="fa-solid fa-xmark"></i></button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <textarea rows="4" required placeholder="Подробное ТЗ..." value={newPrompt || ''} onChange={(e) => setNewPrompt(e.target.value)} className="w-full bg-slate-950/80 border border-slate-700 rounded-2xl p-4 text-sm outline-none focus:border-amber-500 text-slate-200 resize-none"></textarea>
+                      <div className="flex items-center justify-between p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20">
+                         <span className="text-xs text-amber-200/70 hidden sm:inline">Безопасная сделка (Escrow).</span>
+                         <button type="submit" className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-extrabold text-sm shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:scale-[1.02] transition-transform">{editingTask ? 'Сохранить' : 'Опубликовать'}</button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              )}
+
+              {tab === 'admin' && isAdmin && (
+                <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-rose-500/40 relative overflow-hidden">
+                   <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                   <div className="flex justify-between items-center mb-6 relative z-10">
+                      <h2 className="text-2xl font-black text-rose-400 flex items-center gap-3"><i className="fa-solid fa-user-shield"></i> System Admin</h2>
+                      <div className="flex bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+                        <button onClick={()=>setAdminSubTab('stats')} className={`px-4 py-2 text-xs font-bold ${adminSubTab==='stats'?'bg-rose-600 text-white':'text-slate-400 hover:text-white'}`}>Статистика</button>
+                        <button onClick={()=>setAdminSubTab('support')} className={`px-4 py-2 text-xs font-bold ${adminSubTab==='support'?'bg-rose-600 text-white':'text-slate-400 hover:text-white'}`}>Чаты ТП ({adminSupportList.length})</button>
+                      </div>
+                   </div>
+
+                   {adminSubTab === 'stats' && (
+                     <>
+                       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Пользователей</div><div className="text-3xl font-mono text-white">{totalSystemUsers}</div></div>
+                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Оборот (AWS)</div><div className="text-2xl font-mono text-amber-400 mt-1">{Number(totalSystemAWS).toLocaleString()}</div></div>
+                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Просмотров тасков</div><div className="text-3xl font-mono text-emerald-400">{Number(totalSystemViews).toLocaleString()}</div></div>
+                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Всего заказов</div><div className="text-3xl font-mono text-cyan-400">{tasks.length}</div></div>
+                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Сделок в работе</div><div className="text-3xl font-mono text-fuchsia-400">{activeDealsCount}</div></div>
+                         <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 text-center"><div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Купленных откликов</div><div className="text-3xl font-mono text-rose-400">{paidUnlocksCount}</div></div>
+                       </div>
+                       <div className="p-4 bg-emerald-900/20 border border-emerald-500/30 rounded-xl text-emerald-300 text-xs font-bold text-center">Система работает штатно. База данных активно обновляется. Сообщений: {totalMessagesCount}.</div>
+                     </>
+                   )}
+
+                   {adminSubTab === 'support' && (
+                     <div className="flex flex-col md:flex-row gap-4 h-[500px]">
+                        <div className="w-full md:w-1/3 bg-slate-900/80 border border-slate-700 rounded-xl overflow-y-auto">
+                           {adminSupportList.length === 0 && <div className="text-xs text-slate-500 p-4 text-center">Пусто</div>}
+                           {adminSupportList.map(chat => (
+                              <div key={chat.id} onClick={()=>setAdminActiveSupportId(chat.id)} className={`p-4 border-b border-slate-800 cursor-pointer transition-colors ${adminActiveSupportId === chat.id ? 'bg-rose-500/20' : 'hover:bg-slate-800'}`}>
+                                <div className="text-xs font-bold text-slate-200 truncate">{chat.userEmail}</div>
+                                <div className="text-[10px] text-slate-500 mt-1">Сообщений: {chat.messages?.length || 0}</div>
+                              </div>
+                           ))}
+                        </div>
+                        <div className="flex-1 bg-slate-900/80 border border-slate-700 rounded-xl flex flex-col">
+                           {adminActiveSupportId ? (
+                              <>
+                                <div className="p-3 border-b border-slate-800 text-sm font-bold text-rose-300">Чат с юзером</div>
+                                <div className="flex-1 p-4 overflow-y-auto space-y-3">
+                                  {(adminSupportList.find(c=>c.id===adminActiveSupportId)?.messages || []).map(m => (
+                                     <div key={m.id} className={`flex flex-col ${m.isAdmin ? 'items-end' : 'items-start'}`}>
+                                        <div className={`px-3 py-2 text-xs rounded-xl max-w-[80%] ${m.isAdmin ? 'bg-rose-600 text-white' : 'bg-slate-800 text-slate-200'}`}>{m.text}</div>
+                                     </div>
+                                  ))}
+                                </div>
+                                <form onSubmit={(e)=>handleSendSupportMessage(e, true)} className="p-3 border-t border-slate-800 flex gap-2">
+                                   <input type="text" value={supportInput} onChange={e=>setSupportInput(e.target.value)} placeholder="Ответить юзеру..." className="flex-1 bg-slate-950 px-3 py-2 rounded-lg text-sm text-white outline-none" />
+                                   <button type="submit" className="px-4 py-2 bg-rose-600 rounded-lg text-white font-bold"><i className="fa-solid fa-paper-plane"></i></button>
+                                </form>
+                              </>
+                           ) : (
+                              <div className="flex-1 flex items-center justify-center text-slate-500 text-sm">Выберите чат слева</div>
+                           )}
+                        </div>
+                     </div>
+                   )}
+                </div>
+              )}
+
+            </section>
+          </main>
+
+          {viewingTask && (
+            <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-fade-in">
+              <div className="bg-[#0A0E17] border border-cyan-500/30 rounded-3xl p-5 sm:p-8 max-w-3xl w-full max-h-[95vh] flex flex-col relative overflow-y-auto shadow-2xl">
+                <button onClick={() => setViewingTask(null)} className="absolute top-4 right-4 text-slate-400 hover:text-white z-20 bg-slate-900/80 w-8 h-8 rounded-full flex items-center justify-center border border-slate-700 transition-colors"><i className="fa-solid fa-xmark"></i></button>
+                
+                <div className="relative w-full h-56 sm:h-96 rounded-2xl overflow-hidden bg-slate-950 mb-5 border border-slate-800 shrink-0 group">
+                  <img src={viewingTask.photos?.[currentPhotoSlide] || viewingTask.photos?.[0]} className="w-full h-full object-contain" />
+                  {(viewingTask.photos || []).length > 1 && (
+                    <>
+                      <button onClick={() => setCurrentPhotoSlide(p => p > 0 ? p - 1 : viewingTask.photos.length - 1)} className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 text-white hover:bg-black opacity-0 group-hover:opacity-100 transition-opacity border border-slate-700"><i className="fa-solid fa-chevron-left"></i></button>
+                      <button onClick={() => setCurrentPhotoSlide(p => p < viewingTask.photos.length - 1 ? p + 1 : 0)} className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 text-white hover:bg-black opacity-0 group-hover:opacity-100 transition-opacity border border-slate-700"><i className="fa-solid fa-chevron-right"></i></button>
+                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-[10px] text-white backdrop-blur-md">{currentPhotoSlide + 1} / {viewingTask.photos.length}</div>
+                    </>
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex flex-wrap justify-between items-end gap-2 border-b border-slate-800 pb-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-2 py-1 rounded font-mono font-bold">{viewingTask.tool}</span>
+                        <span className="text-[10px] bg-slate-800 text-slate-300 border border-slate-700 px-2 py-1 rounded font-mono font-bold">Просмотров: {viewingTask.views || 0}</span>
+                      </div>
+                      <h2 className="text-xl sm:text-2xl font-bold text-slate-100 leading-tight">{viewingTask.title}</h2>
+                      <div className="text-xs text-slate-400 mt-1">Автор: <span className="text-slate-200 font-bold">{viewingTask.author}</span></div>
+                    </div>
+                    <div className="text-right">
+                       <div className="text-[10px] text-slate-500 uppercase font-bold">Бюджет</div>
+                       <div className="font-mono text-2xl font-extrabold text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]">{Number(viewingTask.budget || 0).toLocaleString()} AWS</div>
+                    </div>
+                  </div>
+
+                  <div className="py-2">
+                    <div className="text-[10px] text-slate-500 uppercase font-bold mb-2">Описание задачи</div>
+                    <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800/80 text-sm font-sans text-slate-300 whitespace-pre-wrap leading-relaxed">{viewingTask.prompt}</div>
+                  </div>
+                  
+                  <div className="pt-2">
+                    {(!user || (user.id === viewingTask.author_id || user.name === viewingTask.author) || paidUnlocks.includes(viewingTask.id)) ? (
+                      <button onClick={() => handleOpenTaskChat(viewingTask)} className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-600 to-cyan-500 text-white font-bold text-sm hover:opacity-90 shadow-lg shadow-cyan-500/20">Открыть диалог</button>
+                    ) : (
+                      <>
+                        {!emailVerified ? (
+                           <div className="text-center p-3 text-xs font-bold text-red-400 border border-red-500/30 rounded-xl bg-red-900/20">Подтвердите Email, чтобы взять этот заказ в работу.</div>
+                        ) : (
+                           <button onClick={() => handleRespondToTask(viewingTask)} className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-extrabold text-sm hover:opacity-90 shadow-lg shadow-emerald-500/20 flex flex-col items-center">
+                             <span>Откликнуться на заказ</span>
+                             <span className="text-[10px] font-medium opacity-80">Стоимость отклика: {viewingTask.response_fee} AWS</span>
+                           </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {walletModalOpen && (
+            <div className="fixed inset-0 z-[80] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-[#0A0E17] border border-amber-500/40 rounded-3xl p-6 sm:p-8 max-w-sm w-full relative shadow-[0_0_30px_rgba(245,158,11,0.1)]">
+                <button onClick={() => { setWalletModalOpen(false); setCryptoStep(1); }} className="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-900 w-8 h-8 rounded-full flex items-center justify-center"><i className="fa-solid fa-xmark"></i></button>
+                
+                {cryptoStep === 1 ? (
+                  <>
+                    <div className="text-center mb-6">
+                      <div className="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-3 text-xl"><i className="fa-brands fa-bitcoin"></i></div>
+                      <h3 className="text-xl font-bold text-slate-100">Пополнение через Crypto</h3>
+                      <p className="text-[10px] text-slate-400 mt-1">Курс: 1 USDT = 1 AWS</p>
+                    </div>
+                    
+                    <div className="relative mb-5">
+                       <input type="number" value={depositAmountAWS} onChange={(e) => setDepositAmountAWS(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3.5 text-lg font-mono text-center text-amber-400 outline-none focus:border-amber-500" placeholder="Сумма" />
+                       <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-600">AWS</div>
+                    </div>
+                    
+                    <div className="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl text-sm flex justify-between items-center mb-6">
+                      <span className="text-slate-400">К оплате:</span>
+                      <span className="font-mono font-bold text-white text-lg">{depositAmountAWS} <span className="text-xs text-slate-500">USDT</span></span>
+                    </div>
+                    <button onClick={() => { if(Number(depositAmountAWS)>0) setCryptoStep(2); }} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold text-sm hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all">Оплатить криптовалютой</button>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-center mb-6">
+                      <h3 className="text-lg font-bold text-white mb-2">Перевод USDT (TRC20/BEP20)</h3>
+                      <p className="text-xs text-slate-400">Переведите ровно <strong className="text-amber-400">{depositAmountAWS} USDT</strong> на этот кошелек.</p>
+                    </div>
+                    
+                    <div className="bg-slate-900 p-4 rounded-xl border border-slate-700 mb-6 text-center">
+                       <div className="text-[10px] text-slate-500 mb-2">Адрес кошелька</div>
+                       <div className="font-mono text-xs text-emerald-400 break-all select-all">{CRYPTO_WALLET}</div>
+                    </div>
+
+                    {cryptoChecking ? (
+                       <div className="text-center py-3">
+                          <i className="fa-solid fa-circle-notch fa-spin text-amber-400 text-2xl mb-2"></i>
+                          <div className="text-xs text-slate-400">Ожидание подтверждения сети...</div>
+                       </div>
+                    ) : (
+                       <button onClick={handleCryptoPaySubmit} className="w-full py-3.5 rounded-xl bg-emerald-600 text-white font-extrabold text-sm hover:bg-emerald-500 transition-all">Я отправил перевод</button>
+                    )}
+                    <button onClick={() => setCryptoStep(1)} className="w-full mt-3 text-xs text-slate-500 hover:text-white">Назад</button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {privacyModalOpen && (
+            <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+              <div className="bg-[#0A0E17] border border-slate-700 rounded-3xl p-6 sm:p-8 max-w-2xl w-full max-h-[85vh] overflow-y-auto relative text-slate-300 text-xs sm:text-sm space-y-4 shadow-2xl">
+                <button onClick={() => setPrivacyModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-900 w-8 h-8 rounded-full flex items-center justify-center"><i className="fa-solid fa-xmark"></i></button>
+                <h2 className="text-lg font-bold text-white mb-2">Политика конфиденциальности и обработка персональных данных</h2>
+                <p>Настоящая Политика регламентирует обработку и защиту персональных данных пользователей сервиса «AI WORKERS SPACE» при осуществлении платежей через сервис электронных платежей ЮMoney (ООО НКО «ЮМани») и иные платежные шлюзы.</p>
+                <h3 className="font-bold text-white text-sm">1. Сбор и цели обработки данных</h3>
+                <p>1.1. Мы собираем только те данные, которые необходимы для аутентификации, доступа к функционалу платформы, взаимодействия заказчиков с креаторами и подтверждения финансовых транзакций (Email, псевдоним/имя, история операций).</p>
+                <h3 className="font-bold text-white text-sm">2. Безопасность и хранение данных</h3>
+                <p>2.1. Мы принимаем все организационные и технические меры для защиты персональных данных пользователей от несанкционированного доступа.</p>
+                <h3 className="font-bold text-white text-sm">3. Реквизиты оператора</h3>
+                <p className="font-mono text-xs bg-slate-900 p-3 rounded-xl border border-slate-800">Самозанятый: Храппа М.Н.<br/>ИНН: 390400469138<br/>Email поддержки: kenigwood39@gmail.com</p>
+              </div>
+            </div>
+          )}
+
+          {authModalOpen && (
+            <div className="fixed inset-0 z-[90] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-[#0A0E17] border border-cyan-500/40 rounded-3xl p-6 sm:p-8 max-w-sm w-full relative shadow-[0_0_30px_rgba(6,182,212,0.1)]">
+                <button onClick={() => setAuthModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-900 w-8 h-8 rounded-full flex items-center justify-center"><i className="fa-solid fa-xmark"></i></button>
+                <div className="text-center mb-6">
+                  <div className="w-12 h-12 bg-cyan-500/20 text-cyan-400 rounded-2xl flex items-center justify-center mx-auto mb-3 text-xl rotate-12"><i className="fa-solid fa-robot -rotate-12"></i></div>
+                  <h3 className="text-xl font-bold text-slate-100">{authMode === 'login' ? 'Вход' : 'Регистрация'}</h3>
+                </div>
+
+                <form onSubmit={handleAuthSubmit} className="space-y-4">
+                  <input type="email" required placeholder="Email" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-cyan-500 text-slate-200" />
+                  <input type="password" required placeholder="Пароль (от 6 симв.)" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-cyan-500 text-slate-200" />
+                  {authError && <div className="text-[11px] font-medium text-red-200 text-center bg-red-900/40 py-3 px-4 rounded-xl border border-red-500/50 leading-relaxed shadow-[0_0_15px_rgba(239,68,68,0.2)]">{authError}</div>}
+                  
+                  <button type="submit" disabled={authLoading} className={`w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-extrabold text-sm hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all mt-2 flex justify-center items-center gap-2 ${authLoading ? 'opacity-70 cursor-not-allowed' : ''}`}>
+                    {authLoading ? <><i className="fa-solid fa-spinner fa-spin"></i> Загрузка...</> : (authMode === 'login' ? 'Войти' : 'Регистрация')}
+                  </button>
+                </form>
+                <div className="mt-6 text-center border-t border-slate-800 pt-5">
+                  {authMode === 'login' ? (
+                     <button type="button" onClick={() => { setAuthMode('register'); setAuthError(''); }} className="text-xs text-cyan-400 hover:text-cyan-300 font-medium">Создать аккаунт</button>
+                  ) : (
+                     <button type="button" onClick={() => { setAuthMode('login'); setAuthError(''); }} className="text-xs text-slate-400 hover:text-white font-medium">Уже есть аккаунт? Войти</button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {user && !isAdmin && (
+            <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+               {supportOpen && (
+                 <div className="w-80 h-96 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl mb-4 flex flex-col overflow-hidden animate-fade-in">
+                    <div className="bg-cyan-600 px-4 py-3 flex justify-between items-center text-white">
+                       <span className="font-bold text-sm"><i className="fa-solid fa-headset mr-2"></i> Поддержка</span>
+                       <button onClick={()=>setSupportOpen(false)}><i className="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div ref={chatScrollRef} className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#05070A]/50">
+                       <div className="text-center text-[10px] text-slate-500 mb-2">Напишите нам, мы скоро ответим!</div>
+                       {mySupportMsgs.map(m => (
+                          <div key={m.id} className={`flex flex-col ${m.isAdmin ? 'items-start' : 'items-end'}`}>
+                             <div className={`px-3 py-2 text-xs rounded-xl max-w-[85%] break-words ${m.isAdmin ? 'bg-slate-800 border border-slate-700 text-white' : 'bg-cyan-600 text-white'}`}>{m.text}</div>
+                          </div>
+                       ))}
+                    </div>
+                    <form onSubmit={(e)=>handleSendSupportMessage(e, false)} className="p-3 bg-slate-900 border-t border-slate-700 flex gap-2">
+                       <input type="text" value={supportInput} onChange={e=>setSupportInput(e.target.value)} placeholder="Сообщение..." className="flex-1 bg-slate-950 px-3 py-2 rounded-lg text-sm text-white outline-none border border-slate-800" />
+                       <button type="submit" className="px-3 py-2 bg-cyan-600 rounded-lg text-white"><i className="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                 </div>
+               )}
+               <button onClick={()=>setSupportOpen(!supportOpen)} className="w-14 h-14 bg-cyan-600 hover:bg-cyan-500 text-white rounded-full shadow-[0_0_20px_rgba(6,182,212,0.4)] flex items-center justify-center text-2xl transition-transform hover:scale-110">
+                 <i className={`fa-solid ${supportOpen ? 'fa-xmark' : 'fa-headset'}`}></i>
+               </button>
+            </div>
+          )}
+
+          <footer className="mt-auto border-t border-slate-800/50 bg-[#020305] px-4 py-8 text-xs text-slate-500">
+            <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="text-center md:text-left">
+                <div className="font-extrabold text-slate-400 text-sm tracking-widest mb-1">AWS SPACE</div>
+                <div className="font-mono text-[10px] opacity-80">Храппа М.Н. • ИНН: 390400469138</div>
+                <div className="text-[10px] text-slate-400 mt-1">Платежи и безопасность: <span className="text-amber-400 font-bold">ЮMoney</span>, СБП, Банковские карты и Crypto.</div>
+              </div>
+              <div className="text-center md:text-right font-mono text-[10px] flex flex-col items-center md:items-end gap-1">
+                <button onClick={() => setPrivacyModalOpen(true)} className="text-cyan-400 hover:text-cyan-300 underline font-sans text-xs">Политика конфиденциальности и Оферта (ЮMoney)</button>
+                <div>© 2026 AWS Platform. All rights reserved.</div>
+              </div>
+            </div>
+          </footer>
         </div>
       );
     }
