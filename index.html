@@ -207,12 +207,13 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
 
+      // Подгрузка данных для админки (только если админ)
       useEffect(() => {
         if (isGlobalMode && db && isAdmin) {
-          const unsubUsers = window.Firebase.onSnapshot(window.Firebase.collection(db, 'artifacts', appId, 'users'), (snap) => {
+          const unsubUsers = window.Firebase.onSnapshot(window.Firebase.collection(db, 'artifacts', appId, 'public', 'data', 'users'), (snap) => {
              setAdminUsers(snap.docs.map(d => d.data()));
           });
-          const unsubSupport = window.Firebase.onSnapshot(window.Firebase.collection(db, 'artifacts', appId, 'support'), (snap) => {
+          const unsubSupport = window.Firebase.onSnapshot(window.Firebase.collection(db, 'artifacts', appId, 'public', 'data', 'support'), (snap) => {
              setAdminSupportList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
           });
           return () => { unsubUsers(); unsubSupport(); };
@@ -244,21 +245,22 @@
             const firebaseAuth = window.Firebase.getAuth(app);
             setDb(firestoreDb); setAuth(firebaseAuth); setIsGlobalMode(true);
 
-            window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'artifacts', appId, 'tasks'), (snap) => {
+            // ИСПОЛЬЗУЕМ СТРОГО ПУБЛИЧНЫЕ ПУТИ ДЛЯ КОРРЕКТНОЙ СИНХРОНИЗАЦИИ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ
+            window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'artifacts', appId, 'public', 'data', 'tasks'), (snap) => {
               const loaded = snap.docs.map(d => d.data());
               setTasks(loaded.sort((a, b) => b.id - a.id));
-            }, () => activateLocalFallback());
+            }, (e) => { console.error("Tasks load error:", e); activateLocalFallback(); });
 
-            window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'artifacts', appId, 'chats'), (snap) => {
+            window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'artifacts', appId, 'public', 'data', 'chats'), (snap) => {
               const loadedChats = snap.docs.map(d => d.data());
               setDealChats(loadedChats.sort((a, b) => (b.lastUpdated || 0) - (a.lastUpdated || 0)));
-            }, () => {});
+            }, (err) => console.warn("Chats error", err));
 
-            window.Firebase.onSnapshot(window.Firebase.doc(firestoreDb, 'artifacts', appId, 'global_chat', 'messages_hub'), (docSnap) => {
+            window.Firebase.onSnapshot(window.Firebase.doc(firestoreDb, 'artifacts', appId, 'public', 'data', 'global', 'messages_hub'), (docSnap) => {
               if (docSnap.exists()) setGlobalChatMessages(docSnap.data().messages || []);
             });
 
-            window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'artifacts', appId, 'ratings'), (snap) => {
+            window.Firebase.onSnapshot(window.Firebase.collection(firestoreDb, 'artifacts', appId, 'public', 'data', 'ratings'), (snap) => {
               const rMap = {};
               snap.docs.forEach(d => { rMap[d.id] = d.data(); });
               setUserRatings(rMap);
@@ -272,7 +274,7 @@
                     setEmailVerified(u.emailVerified);
                   } catch(err) { console.warn("Reload skipped"); }
 
-                  const profRef = window.Firebase.doc(firestoreDb, 'artifacts', appId, 'users', u.uid);
+                  const profRef = window.Firebase.doc(firestoreDb, 'artifacts', appId, 'public', 'data', 'users', u.uid);
                   const profSnap = await window.Firebase.getDoc(profRef);
                   
                   if (profSnap.exists() && profSnap.data().profile) {
@@ -288,7 +290,7 @@
                     setUser(newProfile); setBalance(isM ? 25000 : 1000);
                   }
 
-                  window.Firebase.onSnapshot(window.Firebase.doc(firestoreDb, 'artifacts', appId, 'support', u.uid), (docSnap) => {
+                  window.Firebase.onSnapshot(window.Firebase.doc(firestoreDb, 'artifacts', appId, 'public', 'data', 'support', u.uid), (docSnap) => {
                       if (docSnap.exists()) setMySupportMsgs(docSnap.data().messages || []);
                   });
                 } else { 
@@ -307,7 +309,7 @@
 
       useEffect(() => {
         if (isGlobalMode && db && user && auth?.currentUser) {
-          window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'users', auth.currentUser.uid), { profile: user, balance: Number(balance), inventory, paidUnlocks }, { merge: true });
+          window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'public', 'data', 'users', auth.currentUser.uid), { profile: user, balance: Number(balance), inventory, paidUnlocks }, { merge: true });
         }
       }, [user, balance, inventory, paidUnlocks]);
 
@@ -315,14 +317,14 @@
         if (!user || dealChats.length === 0) { prevChatsRef.current = dealChats; return; }
         if (prevChatsRef.current.length > 0) {
           dealChats.forEach(currentChat => {
-            const isParticipant = currentChat.customerId === user.id || currentChat.creatorId === user.id || currentChat.customerName === user.name || currentChat.creatorName === user.name;
+            const isParticipant = currentChat.customerId === user.id || currentChat.creatorId === user.id;
             if (!isParticipant) return;
             const prevChat = prevChatsRef.current.find(c => c.id === currentChat.id);
             const currentMsgs = currentChat.messages || [];
             const prevMsgs = prevChat?.messages || [];
             if (currentMsgs.length > prevMsgs.length) {
               const lastMsg = currentMsgs[currentMsgs.length - 1];
-              if (lastMsg && lastMsg.senderId !== user.id && lastMsg.senderName !== user.name) {
+              if (lastMsg && lastMsg.senderId !== user.id) {
                 playNotificationBeep();
                 showToast(`💬 ${lastMsg.senderName || 'Новое сообщение'}: ${lastMsg.text}`);
               }
@@ -396,7 +398,7 @@
 
         setTasks(prev => prev.map(t => t.id === task.id ? updatedTask : t));
         if (isGlobalMode && db) {
-          try { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', task.id.toString()), { views: updatedViews }, { merge: true }); } catch (e) {}
+          try { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'public', 'data', 'tasks', task.id.toString()), { views: updatedViews }, { merge: true }); } catch (e) {}
         }
       };
 
@@ -418,7 +420,7 @@
 
         const updatedRating = { likes, dislikes };
         setUserRatings(prev => ({ ...prev, [targetUserId]: updatedRating }));
-        if (isGlobalMode && db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'ratings', targetUserId), updatedRating, { merge: true });
+        if (isGlobalMode && db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'public', 'data', 'ratings', targetUserId), updatedRating, { merge: true });
         showToast("Оценка профиля обновлена!");
       };
 
@@ -437,13 +439,13 @@
            { id: Date.now(), category: newCategory, title: newTitle, prompt: newPrompt || 'Подробности в чате', tool: newTool, budget: bVal, response_fee: calculateResponseFee(bVal), currency: 'AWS', author: user.name, author_id: user.id, card_frame: user.cardFrame || 'card-frame-default', status: 'open', views: 0, photos: finalPhotos, hidden: false };
         
         if(isGlobalMode && db) {
-          await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', taskObj.id.toString()), taskObj, { merge: true });
+          await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'public', 'data', 'tasks', taskObj.id.toString()), taskObj, { merge: true });
         } else {
           const updated = editingTask ? tasks.map(t => t.id === taskObj.id ? taskObj : t) : [taskObj, ...tasks];
           setTasks(updated); localStorage.setItem('aws_local_tasks', JSON.stringify(updated));
         }
         showToast(editingTask ? 'Заказ успешно обновлен!' : 'Опубликовано!'); 
-        if(!editingTask) switchTab('feed');
+        if(!editingTask) switchTab('create');
       };
 
       const startEditingTask = (task) => {
@@ -455,23 +457,25 @@
 
       const updateTaskSpecificFrame = async (taskId, newFrameClass) => {
          setTasks(tasks.map(t => t.id === taskId ? { ...t, card_frame: newFrameClass } : t));
-         if (isGlobalMode && db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', taskId.toString()), { card_frame: newFrameClass }, { merge: true });
+         if (isGlobalMode && db) await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'public', 'data', 'tasks', taskId.toString()), { card_frame: newFrameClass }, { merge: true });
       };
 
-      // === БРОНЕБОЙНАЯ СВЯЗЬ: Связываем заказчика и креатора даже если ID поменялся ===
+      // === БРОНЕБОЙНАЯ СИСТЕМА ОТКРЫТИЯ ЧАТОВ ===
       const handleOpenTaskChat = async (targetTask) => {
         if (!user) return setAuthModalOpen(true);
 
-        // Расширенная проверка: Заказчиком считается тот, у кого совпадает ID ИЛИ просто имя (если старый заказ)
         const isCustomer = (targetTask.author_id === user.id) || (targetTask.author === user.name);
         let targetChatId = '';
         let newChatObj = null;
 
         if (isCustomer) {
+            // Заказчик нажимает "Отклики"
             const relatedChats = dealChats.filter(c => c.taskId === targetTask.id && !c.id.endsWith('_hub'));
             if (relatedChats.length > 0) {
+                // Если есть отклики, берем самый свежий
                 targetChatId = relatedChats.sort((a,b) => b.lastUpdated - a.lastUpdated)[0].id;
             } else {
+                // Откликов нет — открываем "Хаб заказа"
                 targetChatId = `${targetTask.id}_hub`;
                 if (!dealChats.some(c => c.id === targetChatId)) {
                     newChatObj = {
@@ -490,14 +494,16 @@
                 }
             }
         } else {
+            // Креатор нажимает "В чат" из активных сделок
             targetChatId = `${targetTask.id}_${user.id}`;
             if (!dealChats.some(c => c.id === targetChatId)) {
+                // Запасное восстановление чата, если он потерялся при сохранении
                 newChatObj = {
                     id: targetChatId,
                     taskId: targetTask.id,
                     taskTitle: targetTask.title,
                     taskBudget: targetTask.budget,
-                    customerId: targetTask.author_id || targetTask.authorId || null,
+                    customerId: targetTask.author_id || null,
                     customerName: targetTask.author || 'Заказчик',
                     creatorId: user.id,
                     creatorName: user.name,
@@ -514,7 +520,7 @@
                 return [newChatObj, ...filtered];
             });
             if (isGlobalMode && db) {
-                try { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'chats', targetChatId), newChatObj, { merge: true }); } catch(e) {}
+                try { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'public', 'data', 'chats', targetChatId), newChatObj, { merge: true }); } catch(e) { console.error("Chat sync error:", e); }
             } else {
                 localStorage.setItem('aws_local_chats', JSON.stringify([newChatObj, ...dealChats]));
             }
@@ -525,19 +531,30 @@
         switchTab('chats');
       };
 
+      // === ПОЛНОЦЕННАЯ ЛОГИКА ОПЛАТЫ ОТКЛИКА ===
       const handleRespondToTask = async (targetTask) => {
         if (!user) return setAuthModalOpen(true);
         const isTaskAuthor = (targetTask.author_id === user.id) || (targetTask.author === user.name);
         if (isTaskAuthor) return showToast("Вы являетесь автором этого заказа", "error");
         
-        if (Number(balance) < targetTask.response_fee) return setWalletModalOpen(true);
+        const fee = targetTask.response_fee || calculateResponseFee(targetTask.budget || 15000);
 
-        const fee = targetTask.response_fee;
-        setBalance(Number(balance) - fee);
-        
+        if (Number(balance) < fee) return setWalletModalOpen(true);
+
+        // Мгновенное списание и обновление
+        const newBalance = Number(balance) - fee;
         const newPaidUnlocks = [...paidUnlocks, targetTask.id];
+        
+        setBalance(newBalance);
         setPaidUnlocks(newPaidUnlocks);
 
+        if (isGlobalMode && db) {
+            try { 
+                await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'public', 'data', 'users', user.id), { balance: newBalance, paidUnlocks: newPaidUnlocks }, { merge: true }); 
+            } catch(e) { console.error("Balance sync error:", e); }
+        }
+
+        // Создаем чат в базе
         const chatId = `${targetTask.id}_${user.id}`;
         let newChatObj = dealChats.find(c => c.id === chatId);
 
@@ -547,8 +564,7 @@
                 taskId: targetTask.id,
                 taskTitle: targetTask.title,
                 taskBudget: targetTask.budget,
-                // Гарантированно связываем по имени, даже если старый ID потерялся
-                customerId: targetTask.author_id || targetTask.authorId || null,
+                customerId: targetTask.author_id || null,
                 customerName: targetTask.author || 'Заказчик',
                 creatorId: user.id,
                 creatorName: user.name,
@@ -558,8 +574,9 @@
                 messages: [{ id: Date.now(), senderId: user.id, senderName: user.name, senderAvatar: user.avatar, text: "Здравствуйте! Готов взять вашу задачу в работу.", timestamp: Date.now() }]
             };
             setDealChats(prev => [newChatObj, ...prev]);
+            
             if (isGlobalMode && db) {
-                try { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'chats', chatId), newChatObj, { merge: true }); } catch(e) {}
+                try { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'public', 'data', 'chats', chatId), newChatObj, { merge: true }); } catch(e) { console.error("Chat creation error:", e); }
             } else {
                 localStorage.setItem('aws_local_chats', JSON.stringify([newChatObj, ...dealChats]));
             }
@@ -568,7 +585,7 @@
         setViewingTask(null);
         setActiveChatTarget(chatId);
         switchTab('chats');
-        showToast('Отклик успешно оплачен!');
+        showToast(`Отклик успешно оплачен! Списано ${fee} AWS.`);
       };
 
       const handleSendMessageInWindow = async (e) => {
@@ -580,8 +597,9 @@
           const newGlobalMsg = { id: Date.now(), senderId: user.id, senderName: user.name, senderAvatar: user.avatar, text: msgText, timestamp: Date.now() };
           const updatedGlobal = [...globalChatMessages, newGlobalMsg];
           setGlobalChatMessages(updatedGlobal);
-          if (isGlobalMode && db) { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'global_chat', 'messages_hub'), { messages: updatedGlobal }, { merge: true }); } 
-          else { localStorage.setItem('aws_local_global', JSON.stringify(updatedGlobal)); }
+          if (isGlobalMode && db) { 
+              try { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'public', 'data', 'global', 'messages_hub'), { messages: updatedGlobal }, { merge: true }); } catch(e) { console.error("Global chat err:", e); }
+          } else { localStorage.setItem('aws_local_global', JSON.stringify(updatedGlobal)); }
         } else {
           const currentChat = dealChats.find(c => c.id === activeChatTarget);
           if (!currentChat) return;
@@ -592,8 +610,9 @@
           const updatedChatsList = dealChats.map(c => c.id === currentChat.id ? updatedChat : c);
           setDealChats(updatedChatsList);
           
-          if (isGlobalMode && db) { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'chats', currentChat.id), updatedChat, { merge: true }); } 
-          else { localStorage.setItem('aws_local_chats', JSON.stringify(updatedChatsList)); }
+          if (isGlobalMode && db) { 
+              try { await window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChat.id), updatedChat, { merge: true }); } catch(e) { console.error("Message send err:", e); }
+          } else { localStorage.setItem('aws_local_chats', JSON.stringify(updatedChatsList)); }
         }
         setChatInput('');
       };
@@ -605,11 +624,13 @@
         if (isGlobalMode && db) {
            const targetUserId = fromAdmin ? adminActiveSupportId : user.id;
            const targetEmail = fromAdmin ? (adminSupportList.find(c=>c.id===targetUserId)?.userEmail || "User") : user.email;
-           const docRef = window.Firebase.doc(db, 'artifacts', appId, 'support', targetUserId);
-           const docSnap = await window.Firebase.getDoc(docRef);
-           const newMsg = { id: Date.now(), sender: fromAdmin ? "Admin AWS" : targetEmail.split('@')[0], text: text, isAdmin: fromAdmin };
-           const existingMsgs = docSnap.exists() ? docSnap.data().messages : [];
-           await window.Firebase.setDoc(docRef, { messages: [...existingMsgs, newMsg], userEmail: targetEmail, lastUpdated: Date.now() }, { merge: true });
+           const docRef = window.Firebase.doc(db, 'artifacts', appId, 'public', 'data', 'support', targetUserId);
+           try {
+               const docSnap = await window.Firebase.getDoc(docRef);
+               const newMsg = { id: Date.now(), sender: fromAdmin ? "Admin AWS" : targetEmail.split('@')[0], text: text, isAdmin: fromAdmin };
+               const existingMsgs = docSnap.exists() ? docSnap.data().messages : [];
+               await window.Firebase.setDoc(docRef, { messages: [...existingMsgs, newMsg], userEmail: targetEmail, lastUpdated: Date.now() }, { merge: true });
+           } catch(e) { console.error("Support chat err:", e); }
         }
         setSupportInput('');
       };
@@ -655,7 +676,7 @@
         if (isOwned) {
           let upd = { ...user }; if(type === 'avatar') upd.avatar = item.url; if(type === 'frame') upd.avatarFrame = item.class; if(type === 'cardFrame') upd.cardFrame = item.class;
           setUser(upd); 
-          if(type === 'cardFrame' && isGlobalMode && db) tasks.filter(t=>t.author_id===user.id).forEach(t => window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', t.id.toString()), {card_frame: item.class}, {merge:true}));
+          if(type === 'cardFrame' && isGlobalMode && db) tasks.filter(t=>t.author_id===user.id).forEach(t => window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'public', 'data', 'tasks', t.id.toString()), {card_frame: item.class}, {merge:true}));
           showToast('Обновлено!');
         } else {
           if (Number(balance) < item.price) return setWalletModalOpen(true);
@@ -663,28 +684,27 @@
           let nInv = { ...inventory }; nInv[type+'s'] = [...(nInv[type+'s']||[]), item.id]; setInventory(nInv);
           let upd = { ...user }; if(type === 'avatar') upd.avatar = item.url; if(type === 'frame') upd.avatarFrame = item.class; if(type === 'cardFrame') upd.cardFrame = item.class;
           setUser(upd); 
-          if(type === 'cardFrame' && isGlobalMode && db) tasks.filter(t=>t.author_id===user.id).forEach(t => window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', t.id.toString()), {card_frame: item.class}, {merge:true}));
+          if(type === 'cardFrame' && isGlobalMode && db) tasks.filter(t=>t.author_id===user.id).forEach(t => window.Firebase.setDoc(window.Firebase.doc(db, 'artifacts', appId, 'public', 'data', 'tasks', t.id.toString()), {card_frame: item.class}, {merge:true}));
           showToast('Покупка успешна! ✨');
         }
       };
-
-      // Безошибочный фильтр для отображения чатов
-      const myUserChats = dealChats.filter(c => {
-         if (!user) return false;
-         const isCust = c.customerId === user.id || c.customerName === user.name;
-         const isCreat = c.creatorId === user.id || c.creatorName === user.name;
-         return isCust || isCreat;
-      });
 
       const feedTasks = tasks.filter(t => !t.hidden && (selectedCat === 'All' || t.category === selectedCat));
       const myCreatedTasks = tasks.filter(t => user && (t.author_id === user.id || t.author === user.name));
       const myRespondedTasks = tasks.filter(t => user && paidUnlocks.includes(t.id));
 
       const activeDialogueObj = activeChatTarget !== 'global' ? dealChats.find(c => c.id === activeChatTarget) : null;
-      const isCustomerForActiveChat = activeDialogueObj && user && (activeDialogueObj.customerId === user.id || activeDialogueObj.customerName === user.name);
-      const partnerId = activeDialogueObj ? (isCustomerForActiveChat ? activeDialogueObj.creatorId : activeDialogueObj.customerId) : null;
-      const partnerName = activeDialogueObj ? (isCustomerForActiveChat ? (activeDialogueObj.creatorName || "Креатор") : (activeDialogueObj.customerName || "Заказчик")) : "";
+      const partnerId = activeDialogueObj ? (activeDialogueObj.customerId === user?.id || activeDialogueObj.customerName === user?.name ? activeDialogueObj.creatorId : activeDialogueObj.customerId) : null;
+      const partnerName = activeDialogueObj ? (activeDialogueObj.customerId === user?.id || activeDialogueObj.customerName === user?.name ? (activeDialogueObj.creatorName || "Креатор") : (activeDialogueObj.customerName || "Заказчик")) : "";
       const partnerRating = partnerId && partnerId !== 'hub' ? (userRatings[partnerId] || { likes: [], dislikes: [] }) : { likes: [], dislikes: [] };
+
+      // Правильный поиск чатов пользователя
+      const myUserChats = dealChats.filter(c => {
+         if (!user) return false;
+         const isCust = c.customerId === user.id || c.customerName === user.name;
+         const isCreat = c.creatorId === user.id || c.creatorName === user.name;
+         return isCust || isCreat;
+      });
 
       if (!isDbReady) return (
         <div className="min-h-screen bg-[#05070A] flex flex-col items-center justify-center text-cyan-400 font-mono gap-4">
@@ -694,7 +714,7 @@
 
       const totalSystemViews = tasks.reduce((sum, t) => sum + Number(t.views || 0), 0);
       const totalSystemAWS = adminUsers.length > 0 ? adminUsers.reduce((sum, u) => sum + Number(u.balance || 0), 0) : 0;
-      const totalSystemUsers = adminUsers.length > 0 ? adminUsers.length : (isGlobalMode ? "..." : "Локально");
+      const totalSystemUsers = adminUsers.length > 0 ? adminUsers.length : (isGlobalMode ? "0" : "Локально");
       const activeDealsCount = dealChats.length;
       const paidUnlocksCount = adminUsers.reduce((sum, u) => sum + (Array.isArray(u.paidUnlocks) ? u.paidUnlocks.length : 0), 0);
       const totalMessagesCount = dealChats.reduce((sum, t) => sum + (Array.isArray(t.messages) ? t.messages.length : 0), 0) + globalChatMessages.length;
@@ -869,7 +889,7 @@
 
                       {myUserChats.map(c => {
                         const isSelected = activeChatTarget === c.id;
-                        const isCustomerForThisChat = c.customerId === user.id || c.customerName === user.name;
+                        const isCustomerForThisChat = c.customerId === user?.id || c.customerName === user?.name;
                         const interlocutorName = isCustomerForThisChat ? (c.creatorName || "Креатор") : (c.customerName || "Заказчик");
                         const interlocutorAvatar = isCustomerForThisChat ? (c.creatorAvatar || MINIMAL_AVATARS[0].url) : MINIMAL_AVATARS[1].url;
 
@@ -1071,7 +1091,7 @@
                                 {responsesCount > 0 && <span className="bg-cyan-500 text-black px-2 py-0.5 rounded-full text-[10px] ml-1">{responsesCount}</span>}
                               </button>
                               <button onClick={() => startEditingTask(item)} className="px-5 py-2.5 bg-transparent border border-[#334155] text-slate-300 font-bold text-sm rounded-xl hover:bg-[#1e293b] transition-colors flex items-center gap-2"><i className="fa-solid fa-pen"></i> Редактировать</button>
-                              <button onClick={() => { if(isGlobalMode && db) window.Firebase.deleteDoc(window.Firebase.doc(db, 'artifacts', appId, 'tasks', item.id.toString())); setTasks(tasks.filter(t=>t.id!==item.id)); }} className="ml-auto w-10 h-10 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center border border-red-900/50"><i className="fa-solid fa-trash-can"></i></button>
+                              <button onClick={() => { if(isGlobalMode && db) window.Firebase.deleteDoc(window.Firebase.doc(db, 'artifacts', appId, 'public', 'data', 'tasks', item.id.toString())); setTasks(tasks.filter(t=>t.id!==item.id)); }} className="ml-auto w-10 h-10 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center border border-red-900/50"><i className="fa-solid fa-trash-can"></i></button>
                             </div>
                           </div>
                         );
